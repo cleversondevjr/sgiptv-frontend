@@ -3,202 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SG IPTV - Streaming Premium</title>
-
+  <title>SG IPTV</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="loader">
-  <div class="loader-logo">SG IPTV</div>
   <div class="spinner"></div>
 </div>
 
-<div class="cursor-glow"></div>
-
-<header class="header">
-  <div class="logo">SG <span>IPTV</span></div>
-
-  <nav>
-    <a href="#inicio">Início</a>
-    <a href="#planos">Planos</a>
-    <a href="#checkout">Pix</a>
-    <a href="#faq">FAQ</a>
-  </nav>
-
-  <a class="btn-header" href="#checkout">Assinar</a>
+<header>
+  <h1>SG IPTV</h1>
+  <a href="#checkout">Assinar</a>
 </header>
 
-<section id="inicio" class="hero reveal">
-  <div class="hero-overlay"></div>
+<section class="hero">
+  <div class="overlay"></div>
 
   <div class="hero-content">
-    <div class="badge">★ A melhor experiência em TV online</div>
-
-    <h1>
-      ASSISTA TUDO<br>
-      <span>O QUE VOCÊ AMA</span><br>
-      COM A SG IPTV
-    </h1>
-
-    <p>
-      Canais ao vivo, filmes, séries, esportes e muito mais em alta qualidade,
-      com estabilidade e suporte rápido.
-    </p>
-
-    <div class="hero-buttons">
-      <a href="#checkout" class="btn-primary">🚀 Assinar Agora</a>
-      <a href="#planos" class="btn-secondary">Ver Planos</a>
-    </div>
-
-    <div class="hero-stats">
-      <span>⚡ Ativação rápida</span>
-      <span>🎧 Suporte premium</span>
-      <span>📺 Multidispositivo</span>
-    </div>
+    <h2>ASSISTA TUDO <br><span>QUE VOCÊ AMA</span></h2>
+    <p>Canais, filmes e séries sem travamento</p>
+    <button onclick="scrollCheckout()">ASSINAR AGORA</button>
   </div>
 </section>
 
-<section class="features reveal">
-  <div class="feature-card">
-    <h3>📺 Qualidade HD/4K</h3>
-    <p>Imagem nítida para sua diversão.</p>
-  </div>
-
-  <div class="feature-card">
-    <h3>📱 Multidispositivos</h3>
-    <p>Smart TV, TV Box, celular e PC.</p>
-  </div>
-
-  <div class="feature-card">
-    <h3>⚡ Sem burocracia</h3>
-    <p>Gere o Pix e acompanhe a confirmação.</p>
-  </div>
-
-  <div class="feature-card">
-    <h3>💬 Suporte VIP</h3>
-    <p>Atendimento rápido via WhatsApp.</p>
-  </div>
-</section>
-
-<section id="planos" class="plans-section reveal">
-  <h2>Escolha seu <span>plano</span></h2>
-  <p class="subtitle">Planos acessíveis para toda a família</p>
+<section class="planos">
+  <h2>ESCOLHA SEU PLANO</h2>
 
   <div class="plans">
-
     <div class="plan">
-      <h3>Mensal</h3>
-      <h4>1 Tela</h4>
-      <div class="price">R$30<span>,00</span></div>
-      <ul>
-        <li>✔ Acesso por 30 dias</li>
-        <li>✔ 1 dispositivo</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
-      </ul>
-      <button onclick="selecionarPlano('30')">Escolher Plano</button>
+      <h3>Mensal 1 Tela</h3>
+      <p class="price">R$30</p>
+      <button onclick="selecionarPlano('30')">Escolher</button>
     </div>
 
-    <div class="plan popular">
-      <div class="tag">★ Mais escolhido</div>
-      <h3>Mensal</h3>
-      <h4>2 Telas</h4>
-      <div class="price">R$50<span>,00</span></div>
-      <ul>
-        <li>✔ Acesso por 30 dias</li>
-        <li>✔ 2 dispositivos</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Melhor custo mensal</li>
-      </ul>
-      <button onclick="selecionarPlano('50')">Escolher Plano</button>
+    <div class="plan destaque">
+      <h3>Mensal 2 Telas</h3>
+      <p class="price">R$50</p>
+      <button onclick="selecionarPlano('50')">Escolher</button>
     </div>
 
     <div class="plan">
-      <h3>Trimestral</h3>
-      <h4>1 Tela</h4>
-      <div class="price">R$80<span>,00</span></div>
-      <ul>
-        <li>✔ Acesso por 90 dias</li>
-        <li>✔ 1 dispositivo</li>
-        <li>✔ Economia garantida</li>
-        <li>✔ Suporte incluso</li>
-      </ul>
-      <button onclick="selecionarPlano('80')">Escolher Plano</button>
+      <h3>Trimestral 1 Tela</h3>
+      <p class="price">R$80</p>
+      <button onclick="selecionarPlano('80')">Escolher</button>
     </div>
 
     <div class="plan">
-      <h3>Trimestral</h3>
-      <h4>2 Telas</h4>
-      <div class="price">R$130<span>,00</span></div>
-      <ul>
-        <li>✔ Acesso por 90 dias</li>
-        <li>✔ 2 dispositivos</li>
-        <li>✔ Plano completo</li>
-        <li>✔ Suporte incluso</li>
-      </ul>
-      <button onclick="selecionarPlano('130')">Escolher Plano</button>
-    </div>
-
-  </div>
-</section>
-
-<section id="checkout" class="checkout reveal">
-  <div class="checkout-box">
-    <div class="checkout-left">
-      <h2>Pagamento via <span>Pix</span></h2>
-      <p>Rápido, seguro e com confirmação automática.</p>
-
-      <label>Escolha seu plano</label>
-      <select id="plano">
-        <option value="30">Mensal 1 Tela - R$30</option>
-        <option value="50">Mensal 2 Telas - R$50</option>
-        <option value="80">Trimestral 1 Tela - R$80</option>
-        <option value="130">Trimestral 2 Telas - R$130</option>
-      </select>
-
-      <label>Seu email</label>
-      <input type="email" id="email" placeholder="Digite seu melhor email">
-
-      <button class="btn-generate" onclick="gerarPix()">⚡ Gerar Pix</button>
-    </div>
-
-    <div class="checkout-right">
-      <div id="pix" class="pix-area">
-        <h3>Seu QR Code aparecerá aqui</h3>
-        <p>Escolha um plano, informe seu email e gere o Pix.</p>
-      </div>
+      <h3>Trimestral 2 Telas</h3>
+      <p class="price">R$130</p>
+      <button onclick="selecionarPlano('130')">Escolher</button>
     </div>
   </div>
 </section>
 
-<section id="faq" class="faq reveal">
-  <h2>Perguntas frequentes</h2>
+<section id="checkout" class="checkout">
+  <h2>Pagamento via Pix</h2>
 
-  <div class="faq-item">
-    <h3>Funciona em Smart TV?</h3>
-    <p>Sim, funciona em Smart TV, TV Box, celular, computador e dispositivos compatíveis.</p>
-  </div>
+  <select id="plano">
+    <option value="30">Mensal 1 Tela - R$30</option>
+    <option value="50">Mensal 2 Telas - R$50</option>
+    <option value="80">Trimestral 1 Tela - R$80</option>
+    <option value="130">Trimestral 2 Telas - R$130</option>
+  </select>
 
-  <div class="faq-item">
-    <h3>O pagamento confirma sozinho?</h3>
-    <p>Sim, após o pagamento aprovado, o sistema atualiza automaticamente no painel.</p>
-  </div>
+  <input type="email" id="email" placeholder="Seu email">
 
-  <div class="faq-item">
-    <h3>Como recebo suporte?</h3>
-    <p>Você pode falar diretamente pelo WhatsApp da SG IPTV.</p>
-  </div>
+  <button onclick="gerarPix()">GERAR PIX</button>
+
+  <div id="pix"></div>
 </section>
-
-<footer>
-  <div class="footer-logo">SG IPTV</div>
-  <p>© 2026 SG IPTV - Todos os direitos reservados</p>
-</footer>
-
-<a class="whatsapp" href="https://wa.me/5511951623333" target="_blank">
-  💬 WhatsApp
-</a>
 
 <script src="script.js"></script>
 </body>
