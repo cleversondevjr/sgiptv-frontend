@@ -1,3 +1,6 @@
+// ==========================
+// LOADER
+// ==========================
 window.addEventListener("load", () => {
   const loader = document.getElementById("loader");
 
@@ -8,11 +11,17 @@ window.addEventListener("load", () => {
   }
 });
 
+// ==========================
+// SELECIONAR PLANO
+// ==========================
 function selecionarPlano(valor) {
   document.getElementById("plano").value = valor;
   document.getElementById("checkout").scrollIntoView({ behavior: "smooth" });
 }
 
+// ==========================
+// GERAR PIX
+// ==========================
 async function gerarPix() {
   const valor = document.getElementById("plano").value;
   const plano = document.getElementById("plano").selectedOptions[0].text;
@@ -63,12 +72,18 @@ async function gerarPix() {
   }
 }
 
+// ==========================
+// COPIAR PIX
+// ==========================
 function copiarPix() {
   const codigo = document.getElementById("codigoPix").value;
   navigator.clipboard.writeText(codigo);
   alert("Pix copiado com sucesso!");
 }
 
+// ==========================
+// TESTE IPTV GRÁTIS
+// ==========================
 async function gerarTesteGratis() {
   const email = document.getElementById("testeEmail").value;
   const telefone = document.getElementById("testeTelefone").value;
@@ -102,14 +117,57 @@ async function gerarTesteGratis() {
       throw new Error(data.error || "Erro ao gerar teste.");
     }
 
-    const formatado = (data.resposta || "Sem resposta")
-      .replace(/,/g, "\n")
-      .replace(/:/g, ": ");
+    // ==========================
+    // EXTRAIR LOGIN E SENHA
+    // ==========================
+    const resposta = data.resposta || "";
+
+    const usuarioMatch = resposta.match(/usu[aá]rio[:\s]+([^,\n\r]+)/i);
+    const senhaMatch = resposta.match(/senha[:\s]+([^,\n\r]+)/i);
+
+    const usuario = usuarioMatch ? usuarioMatch[1].trim() : "Verifique seu email";
+    const senha = senhaMatch ? senhaMatch[1].trim() : "Verifique seu email";
+
+    // ==========================
+    // MENSAGEM WHATSAPP
+    // ==========================
+    const mensagemWhatsApp = encodeURIComponent(
+      `Olá! Meu teste SG IPTV foi gerado.\n\nLogin: ${usuario}\nSenha: ${senha}\n\nEmail: ${email}`
+    );
 
     resultado.innerHTML = `
       <h3 style="color:#facc15;">Teste gerado com sucesso!</h3>
-      <p>Enviamos os dados para seu email.</p>
-      <textarea readonly style="width:100%; height:120px;">${formatado}</textarea>
+      <p>As configurações completas foram enviadas para seu email.</p>
+
+      <div style="
+        background:#020617;
+        border:1px solid #7e22ce;
+        border-radius:12px;
+        padding:18px;
+        margin-top:15px;
+        text-align:left;
+      ">
+        <p><strong style="color:#facc15;">Login:</strong> ${usuario}</p>
+        <p><strong style="color:#facc15;">Senha:</strong> ${senha}</p>
+      </div>
+
+      <a
+        href="https://wa.me/${telefone}?text=${mensagemWhatsApp}"
+        target="_blank"
+        style="
+          display:block;
+          margin-top:15px;
+          background:#22c55e;
+          color:#000;
+          text-align:center;
+          padding:13px;
+          border-radius:8px;
+          font-weight:bold;
+          text-decoration:none;
+        "
+      >
+        Enviar no WhatsApp
+      </a>
     `;
 
   } catch (error) {
