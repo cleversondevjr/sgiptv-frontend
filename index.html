@@ -73,15 +73,28 @@
   </div>
 </section>
 
-<section id="teste" class="checkout">
-  <h2>Teste IPTV Grátis</h2>
+<section id="teste-gratis" class="checkout">
+  <div class="checkout-box">
+    <div class="checkout-left">
+      <h2>TESTE GRÁTIS <span>IPTV</span></h2>
+      <p>Informe seus dados para receber seu teste automático.</p>
 
-  <input type="email" id="testeEmail" placeholder="Digite seu email">
-  <input type="text" id="testeTelefone" placeholder="Digite seu WhatsApp">
+      <label>SEU EMAIL</label>
+      <input type="email" id="testeEmail" placeholder="Digite seu email">
 
-  <button onclick="gerarTeste()">Gerar Teste</button>
+      <label>SEU WHATSAPP</label>
+      <input type="text" id="testeTelefone" placeholder="Ex: 11951623333">
 
-  <div id="resultadoTeste"></div>
+      <button class="generate-btn" onclick="gerarTesteGratis()">GERAR TESTE GRÁTIS</button>
+    </div>
+
+    <div class="checkout-right">
+      <div id="resultadoTeste" class="pix-box">
+        <h3>Seu teste aparecerá aqui</h3>
+        <p>Você receberá também por email.</p>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section id="planos" class="plans-section">

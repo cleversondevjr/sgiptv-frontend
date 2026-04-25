@@ -64,3 +64,49 @@ function copiarPix() {
   navigator.clipboard.writeText(codigo);
   alert("Pix copiado com sucesso!");
 }
+async function gerarTesteGratis() {
+  const email = document.getElementById("testeEmail").value;
+  const telefone = document.getElementById("testeTelefone").value;
+  const resultado = document.getElementById("resultadoTeste");
+
+  if (!email || !telefone) {
+    resultado.innerHTML = `
+      <h3 style="color:#facc15;">Preencha todos os campos</h3>
+      <p>Informe email e WhatsApp para gerar o teste.</p>
+    `;
+    return;
+  }
+
+  resultado.innerHTML = `
+    <h3>Gerando teste...</h3>
+    <p>Aguarde alguns segundos.</p>
+  `;
+
+  try {
+    const res = await fetch("https://sgiptv-backend.onrender.com/teste-iptv", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, telefone })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar teste.");
+    }
+
+    resultado.innerHTML = `
+      <h3 style="color:#facc15;">Teste gerado com sucesso!</h3>
+      <p>Enviamos os dados para seu email.</p>
+      <textarea readonly>${data.resposta}</textarea>
+    `;
+
+  } catch (error) {
+    resultado.innerHTML = `
+      <h3 style="color:#ef4444;">Não foi possível gerar o teste</h3>
+      <p>${error.message}</p>
+    `;
+  }
+}
