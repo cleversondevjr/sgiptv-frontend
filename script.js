@@ -1,28 +1,20 @@
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    document.getElementById("loader").style.display = "none";
-  }, 700);
-});
-
-function selecionarPlano(valor) {
-  document.getElementById("plano").value = valor;
-  document.getElementById("checkout").scrollIntoView({ behavior: "smooth" });
-}
-
+// ==========================
+// GERAR PIX
+// ==========================
 async function gerarPix() {
-  const valor = document.getElementById("plano").value;
-  const plano = document.getElementById("plano").selectedOptions[0].text;
+  const plano = document.getElementById("plano").value;
   const email = document.getElementById("email").value;
-  const pixBox = document.getElementById("pix");
+  const resultado = document.getElementById("pixResultado");
 
-  if (!email) {
-    alert("Digite seu email antes de gerar o Pix.");
+  if (!plano || !email) {
+    resultado.innerHTML = `
+      <p style="color:#facc15;">Preencha todos os campos</p>
+    `;
     return;
   }
 
-  pixBox.innerHTML = `
-    <h3>Gerando Pix...</h3>
-    <p>Aguarde alguns segundos.</p>
+  resultado.innerHTML = `
+    <p>Gerando pagamento...</p>
   `;
 
   try {
@@ -31,39 +23,38 @@ async function gerarPix() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ plano, valor, email })
+      body: JSON.stringify({
+        plano,
+        valor: plano.split("R$")[1]?.replace(",", ".") || 0,
+        email
+      })
     });
+
+    const data = await res.json();
 
     if (!res.ok) {
       throw new Error("Erro ao gerar Pix");
     }
 
-    const data = await res.json();
-
-    pixBox.innerHTML = `
-      <h3>ESCANEIE O QR CODE</h3>
-      <p>OU COPIE O CÓDIGO PIX</p>
-      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
-      <textarea id="codigoPix" readonly>${data.qr_code}</textarea>
-      <br><br>
-      <button class="generate-btn" onclick="copiarPix()">Copiar Pix</button>
-      <p>Após o pagamento, a confirmação será automática.</p>
+    resultado.innerHTML = `
+      <h3>Escaneie o QR Code</h3>
+      <img src="data:image/png;base64,${data.qr_base64}" style="width:200px;">
+      <p>Ou copie o código:</p>
+      <textarea readonly style="width:100%; height:80px;">${data.qr_code}</textarea>
     `;
 
   } catch (error) {
     console.error(error);
-    pixBox.innerHTML = `
-      <h3>Erro ao gerar Pix</h3>
-      <p>Verifique se o backend e o ngrok estão rodando.</p>
+
+    resultado.innerHTML = `
+      <p style="color:red;">Erro ao gerar Pix</p>
     `;
   }
 }
 
-function copiarPix() {
-  const codigo = document.getElementById("codigoPix").value;
-  navigator.clipboard.writeText(codigo);
-  alert("Pix copiado com sucesso!");
-}
+// ==========================
+// TESTE IPTV GRÁTIS
+// ==========================
 async function gerarTesteGratis() {
   const email = document.getElementById("testeEmail").value;
   const telefone = document.getElementById("testeTelefone").value;
@@ -97,15 +88,34 @@ async function gerarTesteGratis() {
       throw new Error(data.error || "Erro ao gerar teste.");
     }
 
+    // 🔥 FORMATAÇÃO BONITA
+    const formatado = (data.resposta || "Sem resposta")
+      .replace(/,/g, "\n")
+      .replace(/:/g, ": ");
+
     resultado.innerHTML = `
       <h3 style="color:#facc15;">Teste gerado com sucesso!</h3>
       <p>Enviamos os dados para seu email.</p>
-      <textarea readonly>${data.resposta}</textarea>
+
+      <textarea readonly 
+        style="
+          width:100%;
+          height:120px;
+          background:#020617;
+          color:#22c55e;
+          border:1px solid #334155;
+          border-radius:8px;
+          padding:10px;
+        ">
+${formatado}
+      </textarea>
     `;
 
   } catch (error) {
+    console.error(error);
+
     resultado.innerHTML = `
-      <h3 style="color:#ef4444;">Não foi possível gerar o teste</h3>
+      <h3 style="color:#ef4444;">Erro ao gerar teste</h3>
       <p>${error.message}</p>
     `;
   }
