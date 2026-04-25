@@ -38,6 +38,7 @@ input {
   border: none;
   background: #020617;
   color: white;
+  box-sizing: border-box;
 }
 
 button {
@@ -55,6 +56,25 @@ button:hover {
   transform: scale(1.05);
 }
 
+#erro {
+  color: #ef4444;
+  margin-top: 12px;
+  display: none;
+  font-weight: bold;
+  animation: aparecer 0.3s ease;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 </style>
 </head>
 
@@ -67,26 +87,38 @@ button:hover {
   <input type="password" id="senha" placeholder="Senha">
 
   <button onclick="login()">Entrar</button>
+
+  <p id="erro">Usuário ou senha inválidos</p>
 </div>
 
 <script>
 async function login() {
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
+  const erro = document.getElementById("erro");
 
-  const res = await fetch("https://sgiptv-backend.onrender.com/login", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ usuario, senha })
-  });
+  erro.style.display = "none";
+  erro.innerText = "Usuário ou senha inválidos";
 
-  const data = await res.json();
+  try {
+    const res = await fetch("https://sgiptv-backend.onrender.com/login", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ usuario, senha })
+    });
 
-  if (data.token) {
-    localStorage.setItem("token_admin", data.token);
-    window.location.href = "admin.html";
-  } else {
-    alert("Usuário ou senha inválidos");
+    const data = await res.json();
+
+    if (data.token) {
+      localStorage.setItem("token_admin", data.token);
+      window.location.href = "admin.html";
+    } else {
+      erro.style.display = "block";
+    }
+
+  } catch (e) {
+    erro.innerText = "Erro de conexão. Tente novamente.";
+    erro.style.display = "block";
   }
 }
 </script>
