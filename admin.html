@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel SG IPTV</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    .main {
+      padding: 30px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    button {
+      background: #22c55e;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .sair {
+      background: #ef4444;
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px;
+      border-bottom: 1px solid #334155;
+      text-align: left;
+    }
+
+    th {
+      background: #020617;
+      color: #22c55e;
+    }
+
+    .pendente {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .confirmado {
+      color: #22c55e;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<main class="main">
+
+  <div class="top">
+    <h1>Painel SG IPTV</h1>
+    <div>
+      <button onclick="carregar()">Atualizar</button>
+      <button class="sair" onclick="sair()">Sair</button>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Plano</th>
+        <th>Valor</th>
+        <th>Status</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody id="tabela"></tbody>
+  </table>
+
+</main>
+
+<script>
+const token = localStorage.getItem("token_admin");
+
+if (!token) {
+  window.location.href = "login.html";
+}
+
+async function carregar() {
+  try {
+    const res = await fetch("http://127.0.0.1:4000/pagamentos", {
+      headers: {
+        Authorization: token
+      }
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("token_admin");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const dados = await res.json();
+
+    const tabela = document.getElementById("tabela");
+    tabela.innerHTML = "";
+
+    dados.forEach(p => {
+      tabela.innerHTML += `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.email}</td>
+          <td>${p.plano}</td>
+          <td>R$ ${p.valor}</td>
+          <td class="${p.status}">${p.status}</td>
+          <td>
+            ${
+              p.status === "confirmado"
+              ? "Confirmado"
+              : `<button onclick="confirmar(${p.id})">Confirmar</button>`
+            }
+          </td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    console.error("Erro ao carregar pagamentos:", error);
+    alert("Erro ao carregar pagamentos. Veja o console F12.");
+  }
+}
+
+async function confirmar(id) {
+  await fetch(`http://127.0.0.1:4000/pagamentos/${id}/confirmar`, {
+    method: "PUT",
+    headers: {
+      Authorization: token
+    }
+  });
+
+  alert("Pagamento confirmado!");
+  carregar();
+}
+
+function sair() {
+  localStorage.removeItem("token_admin");
+  window.location.href = "login.html";
+}
+
+carregar();
+</script>
+
+</body>
+</html>
