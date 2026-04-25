@@ -1,16 +1,73 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Login Admin - SG IPTV</title>
+<meta charset="UTF-8">
+<title>Login Admin - SG IPTV</title>
+
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(180deg, #000000, #0f172a);
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.box {
+  background: rgba(15, 23, 42, 0.9);
+  padding: 40px;
+  border-radius: 16px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(250, 204, 21, 0.15);
+}
+
+h1 {
+  color: #facc15;
+  margin-bottom: 25px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: none;
+  background: #020617;
+  color: white;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: #facc15;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+</style>
 </head>
+
 <body>
 
-<h1>Login Admin</h1>
+<div class="box">
+  <h1>SG IPTV</h1>
 
-<input type="text" id="usuario" placeholder="Usuário">
-<input type="password" id="senha" placeholder="Senha">
-<button onclick="login()">Entrar</button>
+  <input type="text" id="usuario" placeholder="Usuário">
+  <input type="password" id="senha" placeholder="Senha">
+
+  <button onclick="login()">Entrar</button>
+</div>
 
 <script>
 async function login() {
