@@ -172,3 +172,42 @@ button:hover {
     grid-template-columns: 1fr;
   }
 }
+.tabela-area {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #020617;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: 12px;
+  border-bottom: 1px solid #334155;
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  color: #facc15;
+  background: #0b0018;
+}
+
+td button {
+  width: auto;
+  padding: 8px 12px;
+  margin: 4px 0;
+}
+
+td .whatsapp-btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
