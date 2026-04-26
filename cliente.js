@@ -72,11 +72,63 @@ async function consultarCliente() {
 
 function montarPainel(cliente) {
   const box = document.getElementById("dadosCliente");
+
+  // 🔥 NOVO: CLIENTE DE TESTE
+  if (cliente.tipoCliente === "teste") {
+    const teste = cliente.ultimoTeste;
+
+    box.innerHTML = `
+      <h3 style="color:#facc15;">🎁 Teste Gratuito Ativo</h3>
+
+      <div class="info-grid">
+        <div class="info">
+          <strong>Email</strong>
+          <p>${cliente.email}</p>
+        </div>
+
+        <div class="info">
+          <strong>WhatsApp</strong>
+          <p>${cliente.telefone}</p>
+        </div>
+
+        <div class="info">
+          <strong>Login IPTV</strong>
+          <p>${teste.login}</p>
+        </div>
+
+        <div class="info">
+          <strong>Senha IPTV</strong>
+          <p>${teste.senha}</p>
+        </div>
+      </div>
+
+      <div style="margin-top:30px;">
+        <h3 style="color:#facc15;">🚀 Ativar Plano</h3>
+
+        <select id="planoRenovacao">
+          <option value="30">Mensal 1 Tela - R$30</option>
+          <option value="50">Mensal 2 Telas - R$50</option>
+          <option value="80">Trimestral 1 Tela - R$80</option>
+          <option value="140">Trimestral 2 Telas - R$140</option>
+        </select>
+
+        <button onclick="gerarPixRenovacao()" style="margin-top:10px;">
+          Ativar Plano via Pix
+        </button>
+
+        <div id="pixRenovacao" style="margin-top:20px;"></div>
+      </div>
+    `;
+
+    return;
+  }
+
+  // 🔥 CLIENTE COM PAGAMENTO (SEU CÓDIGO ORIGINAL)
   const pagamento = cliente.ultimoPagamento;
 
   if (!pagamento) {
     box.innerHTML = `
-      <p class="erro">Nenhum pagamento encontrado para este email e WhatsApp.</p>
+      <p class="erro">Nenhum pagamento encontrado.</p>
     `;
     return;
   }
@@ -118,16 +170,27 @@ function montarPainel(cliente) {
       </div>
     </div>
 
-    <p style="margin-top:20px;">
-      Caso seu pagamento esteja confirmado, envie seu nome de usuário pelo WhatsApp para ativação ou renovação no painel IPTV.
-    </p>
+    <div style="margin-top:30px;">
+      <h3 style="color:#facc15;">🔄 Renovar Plano</h3>
+
+      <select id="planoRenovacao">
+        <option value="30">Mensal 1 Tela - R$30</option>
+        <option value="50">Mensal 2 Telas - R$50</option>
+        <option value="80">Trimestral 1 Tela - R$80</option>
+        <option value="140">Trimestral 2 Telas - R$140</option>
+      </select>
+
+      <button onclick="gerarPixRenovacao()" style="margin-top:10px;">
+        Gerar Pix
+      </button>
+
+      <div id="pixRenovacao" style="margin-top:20px;"></div>
+    </div>
   `;
 }
 
 async function gerarPixRenovacao() {
-  if (!clienteAtual) {
-    return;
-  }
+  if (!clienteAtual) return;
 
   const valor = document.getElementById("planoRenovacao").value;
   const plano = nomePlano(valor);
@@ -135,10 +198,7 @@ async function gerarPixRenovacao() {
   const telefone = clienteAtual.telefone;
   const box = document.getElementById("pixRenovacao");
 
-  box.innerHTML = `
-    <h3 style="color:#facc15;">Gerando Pix...</h3>
-    <p>Aguarde alguns segundos.</p>
-  `;
+  box.innerHTML = `<p style="color:#facc15;">Gerando Pix...</p>`;
 
   try {
     const res = await fetch(`${API}/pix`, {
@@ -151,53 +211,28 @@ async function gerarPixRenovacao() {
 
     const data = await res.json();
 
-    if (!res.ok) {
-      throw new Error(data.error || "Erro ao gerar Pix.");
-    }
+    if (!res.ok) throw new Error(data.error);
 
     const mensagem = encodeURIComponent(
-      `Olá, segue comprovante de pagamento para renovação.\n\n` +
-      `📦 Plano: ${plano}\n` +
-      `💰 Valor: R$ ${valor},00\n` +
-      `📧 Email: ${email}\n` +
-      `📱 WhatsApp: ${telefone}\n\n` +
-      `Vou enviar o comprovante agora para ativação/renovação.`
+      `Olá, segue comprovante de pagamento.\nPlano: ${plano}`
     );
 
     box.innerHTML = `
-      <h3 style="color:#facc15;">Pix de renovação gerado</h3>
+      <img src="data:image/png;base64,${data.qr_base64}">
+      <textarea readonly>${data.qr_code}</textarea>
 
-      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
-
-      <p>Copie o código Pix:</p>
-
-      <textarea id="codigoPixRenovacao" readonly>${data.qr_code}</textarea>
-
-      <button onclick="copiarPixRenovacao()">Copiar Pix</button>
-
-      <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagem}" target="_blank">
-        Enviar comprovante no WhatsApp
+      <a href="https://wa.me/5511951623333?text=${mensagem}" target="_blank">
+        Enviar comprovante
       </a>
     `;
 
   } catch (error) {
-    console.error(error);
     box.innerHTML = `<p class="erro">${error.message}</p>`;
   }
 }
 
-function copiarPixRenovacao() {
-  const codigo = document.getElementById("codigoPixRenovacao");
-
-  if (!codigo) return;
-
-  navigator.clipboard.writeText(codigo.value);
-  alert("Pix copiado com sucesso!");
-}
-
 function sairCliente() {
-  localStorage.removeItem("cliente_email");
-  localStorage.removeItem("cliente_telefone");
+  localStorage.clear();
   location.reload();
 }
 
