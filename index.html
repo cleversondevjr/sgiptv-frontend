@@ -1,12 +1,13 @@
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Área do Cliente - SG IPTV</title>
+  <title>SG IPTV</title>
 
   <link rel="icon" href="/favicon.ico">
   <link rel="shortcut icon" href="/favicon.ico">
-
-  <link rel="stylesheet" href="cliente.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -26,14 +27,9 @@
     <a href="#faq">FAQ</a>
   </nav>
 
-  <a 
-  class="client-btn" 
-  href="https://sgiptv.com.br/cliente.html" 
-  target="_blank"
-  rel="noopener noreferrer"
->
-  Área do Cliente
-</a>
+  <a class="client-btn" href="https://sgiptv.com.br/cliente.html" target="_blank" rel="noopener noreferrer">
+    Área do Cliente
+  </a>
 </header>
 
 <section id="inicio" class="hero">
@@ -100,7 +96,7 @@
       <input type="email" id="testeEmail" placeholder="Digite seu email">
 
       <label>SEU WHATSAPP</label>
-      <input type="text" id="testeTelefone" placeholder="Ex: 11912345678">
+      <input type="text" id="testeTelefone" placeholder="Ex: 11951623333">
 
       <button class="generate-btn" onclick="gerarTesteGratis()">GERAR TESTE GRÁTIS</button>
     </div>
@@ -122,88 +118,69 @@
   </div>
 </section>
 
-<section id="planos" class="plans">
+<section id="planos" class="plans-section">
+  <h2>ESCOLHA SEU <span>PLANO</span></h2>
+  <p>Planos acessíveis para toda a família</p>
 
-  <h2 class="plans-title">
-    ESCOLHA <span>SEU PLANO</span>
-  </h2>
-
-  <div class="plans-grid">
-
-    <!-- DESTAQUE (R$30) -->
-    <div class="plan-card destaque-roxo">
-      <div class="badge-destaque">🔥 DESTAQUE</div>
-
-      <h3>Mensal 1 Tela</h3>
-      <p class="price grande">R$ 30,00</p>
-
+  <div class="plans">
+    <div class="plan destaque-principal">
+      <div class="tag">🔥 DESTAQUE</div>
+      <h3>MENSAL</h3>
+      <h4>1 TELA</h4>
+      <div class="price yellow">R$ 30<span>,00<br>/mês</span></div>
       <ul>
+        <li>✔ Acesso por 30 dias</li>
         <li>✔ 1 dispositivo</li>
-        <li>✔ Canais + Filmes + Séries</li>
-        <li>✔ Qualidade HD / Full HD</li>
+        <li>✔ Todos os canais</li>
         <li>✔ Suporte via WhatsApp</li>
       </ul>
-
-      <button onclick="selecionarPlano(30)">
-        ESCOLHER PLANO
-      </button>
+      <button class="yellow-btn" onclick="selecionarPlano('30')">ESCOLHER PLANO</button>
     </div>
 
-    <!-- MAIS VENDIDO -->
-    <div class="plan-card destaque-amarelo">
-      <div class="badge-top">🔥 MAIS VENDIDO</div>
-
-      <h3>Mensal 2 Telas</h3>
-      <p class="price">R$ 50,00</p>
-
+    <div class="plan">
+      <h3>MENSAL</h3>
+      <h4>2 TELAS</h4>
+      <div class="price">R$ 50<span>,00<br>/mês</span></div>
       <ul>
-        <li>✔ 2 dispositivos simultâneos</li>
-        <li>✔ Canais + Filmes + Séries</li>
-        <li>✔ Qualidade Full HD</li>
+        <li>✔ Acesso por 30 dias</li>
+        <li>✔ 2 dispositivos</li>
+        <li>✔ Todos os canais</li>
         <li>✔ Melhor custo-benefício</li>
       </ul>
-
-      <button onclick="selecionarPlano(50)">
-        ESCOLHER PLANO
-      </button>
+      <button onclick="selecionarPlano('50')">ESCOLHER PLANO</button>
     </div>
 
-    <!-- TRIMESTRAL 1 -->
-    <div class="plan-card">
-      <h3>Trimestral 1 Tela</h3>
-      <p class="price">R$ 80,00</p>
-
+    <div class="plan">
+      <h3>TRIMESTRAL</h3>
+      <h4>1 TELA</h4>
+      <div class="price">R$ 80<span>,00<br>/3 meses</span></div>
       <ul>
-        <li>✔ 3 meses de acesso</li>
+        <li>✔ Acesso por 90 dias</li>
+        <li>✔ 1 dispositivo</li>
         <li>✔ Economia garantida</li>
-        <li>✔ Qualidade HD / Full HD</li>
         <li>✔ Suporte VIP</li>
       </ul>
-
-      <button onclick="selecionarPlano(80)">
-        ESCOLHER PLANO
-      </button>
+      <button onclick="selecionarPlano('80')">ESCOLHER PLANO</button>
     </div>
 
-    <!-- TRIMESTRAL 2 -->
-    <div class="plan-card">
-      <h3>Trimestral 2 Telas</h3>
-      <p class="price">R$ 140,00</p>
-
+    <div class="plan">
+      <h3>TRIMESTRAL</h3>
+      <h4>2 TELAS</h4>
+      <div class="price">R$ 140<span>,00<br>/3 meses</span></div>
       <ul>
-        <li>✔ 2 dispositivos simultâneos</li>
-        <li>✔ 3 meses completos</li>
+        <li>✔ Acesso por 90 dias</li>
+        <li>✔ 2 dispositivos</li>
         <li>✔ Melhor experiência</li>
         <li>✔ Sem travamentos</li>
       </ul>
-
-      <button onclick="selecionarPlano(140)">
-        ESCOLHER PLANO
-      </button>
+      <button onclick="selecionarPlano('140')">ESCOLHER PLANO</button>
     </div>
-
   </div>
 
+  <div class="social-proof">
+    <p>🔥 Mais de <strong>2.000 clientes ativos</strong> usando SG IPTV</p>
+    <p>⚡ Ativação imediata após pagamento</p>
+  </div>
 </section>
 
 <section id="checkout" class="checkout">
@@ -224,7 +201,7 @@
       <input type="email" id="email" placeholder="Digite seu melhor email">
 
       <label>3. SEU WHATSAPP</label>
-      <input type="text" id="telefone" placeholder="Ex: 11912345678">
+      <input type="text" id="telefone" placeholder="Ex: 11951623333">
 
       <button class="generate-btn" onclick="gerarPix()">⚡ GERAR PIX</button>
     </div>
