@@ -1,127 +1,37 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Login Admin - SG IPTV</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - SG IPTV</title>
 
-<style>
-body {
-  margin: 0;
-  height: 100vh;
-  background: linear-gradient(180deg, #000000, #0f172a);
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-}
-
-.box {
-  background: rgba(15, 23, 42, 0.9);
-  padding: 40px;
-  border-radius: 16px;
-  width: 320px;
-  text-align: center;
-  box-shadow: 0 0 30px rgba(250, 204, 21, 0.15);
-}
-
-h1 {
-  color: #facc15;
-  margin-bottom: 25px;
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: none;
-  background: #020617;
-  color: white;
-  box-sizing: border-box;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  background: #facc15;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-button:hover {
-  transform: scale(1.05);
-}
-
-#erro {
-  color: #ef4444;
-  margin-top: 12px;
-  display: none;
-  font-weight: bold;
-  animation: aparecer 0.3s ease;
-}
-
-@keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="cliente.css">
 </head>
-
 <body>
 
-<div class="box">
-  <h1>SG IPTV</h1>
+<div class="container">
+  <div class="card login-card">
 
-  <input type="text" id="usuario" placeholder="Usuário">
-  <input type="password" id="senha" placeholder="Senha">
+    <img src="assets/logo.png" alt="SG IPTV" class="logo">
 
-  <button onclick="login()">Entrar</button>
+    <h1>Painel Admin</h1>
+    <p>Faça login para gerenciar pagamentos e clientes.</p>
 
-  <p id="erro">Usuário ou senha inválidos</p>
+    <label>Usuário</label>
+    <input type="text" id="adminUser" placeholder="Digite o usuário">
+
+    <label>Senha</label>
+    <input type="password" id="adminPass" placeholder="Digite a senha">
+
+    <button onclick="loginAdmin()">Entrar</button>
+
+    <div id="loginMsg"></div>
+
+  </div>
 </div>
 
-<script>
-async function login() {
-  const usuario = document.getElementById("usuario").value;
-  const senha = document.getElementById("senha").value;
-  const erro = document.getElementById("erro");
-
-  erro.style.display = "none";
-  erro.innerText = "Usuário ou senha inválidos";
-
-  try {
-    const res = await fetch("https://sgiptv-backend.onrender.com/login", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ usuario, senha })
-    });
-
-    const data = await res.json();
-
-    if (data.token) {
-      localStorage.setItem("token_admin", data.token);
-      window.location.href = "admin.html";
-    } else {
-      erro.style.display = "block";
-    }
-
-  } catch (e) {
-    erro.innerText = "Erro de conexão. Tente novamente.";
-    erro.style.display = "block";
-  }
-}
-</script>
+<script src="admin.js"></script>
 
 </body>
 </html>
