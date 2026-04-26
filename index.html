@@ -5,263 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SG IPTV</title>
 
+  <!-- FAVICON CORRETO -->
   <link rel="icon" href="/favicon.ico">
   <link rel="shortcut icon" href="/favicon.ico">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  
-
-<div id="loader">
-  <img src="assets/logo.png" alt="SG IPTV">
-</div>
-
 <header class="header">
-  <img src="assets/logo.png" class="logo" alt="SG IPTV">
+  <img src="assets/logo.png" class="logo">
 
   <nav>
     <a href="#inicio">Início</a>
     <a href="#teste-gratis">Teste</a>
     <a href="#planos">Planos</a>
-    <a href="#beneficios">Benefícios</a>
     <a href="#checkout">Pagamento</a>
-    <a href="#faq">FAQ</a>
   </nav>
 
-  <a class="client-btn" href="https://sgiptv.com.br/cliente.html" target="_blank" rel="noopener noreferrer">
+  <a class="client-btn" href="https://sgiptv.com.br/cliente.html" target="_blank">
     Área do Cliente
   </a>
 </header>
 
 <section id="inicio" class="hero">
-  <div class="hero-content">
-    <span class="badge">★ A MELHOR EXPERIÊNCIA EM TV</span>
-
-    <h1>
-      ASSISTA TUDO<br>
-      <strong>O QUE VOCÊ AMA</strong><br>
-      COM A <span>SG IPTV</span>
-    </h1>
-
-    <p>Canais ao vivo, filmes, séries e muito mais em alta qualidade e sem travamentos.</p>
-
-    <div class="hero-buttons">
-      <a href="#checkout" class="btn primary">🚀 ASSINAR AGORA</a>
-      <a href="#teste-gratis" class="btn secondary">🎁 TESTE GRÁTIS</a>
-    </div>
-
-    <div class="quick-info">
-      <span>⚡ Ativação Rápida</span>
-      <span>🎧 Suporte Premium</span>
-      <span>📺 +15.000 Canais</span>
-    </div>
-  </div>
+  <h1>ASSISTA TUDO COM A <span>SG IPTV</span></h1>
+  <p>Canais, filmes e séries sem travamentos</p>
 </section>
 
-<section id="beneficios" class="benefits">
-  <div class="benefit-card">
-    <h3>📺 QUALIDADE 4K</h3>
-    <p>A melhor resolução para sua diversão</p>
-  </div>
-
-  <div class="benefit-card">
-    <h3>🖥️ MULTIDISPOSITIVOS</h3>
-    <p>Assista onde e quando quiser</p>
-  </div>
-
-  <div class="benefit-card">
-    <h3>📶 SEM TRAVAMENTOS</h3>
-    <p>Servidores potentes e estáveis</p>
-  </div>
-
-  <div class="benefit-card">
-    <h3>👑 SUPORTE VIP</h3>
-    <p>Atendimento rápido e humanizado</p>
-  </div>
-</section>
-
-<section id="teste-gratis" class="checkout">
-  <div class="checkout-box">
-    <div class="checkout-left">
-      <h2>TESTE GRÁTIS <span>IPTV</span></h2>
-      <p>Informe seus dados para receber seu teste automático.</p>
-
-      <label>TIPO DE TESTE</label>
-      <select id="tipoTeste">
-        <option value="iptv_com_adulto">⚡ TESTE COMPLETO C/ ADULTO</option>
-        <option value="iptv_sem_adulto">⚡ TESTE COMPLETO S/ ADULTO</option>
-        <option value="p2p">🔥 P2P COMPLETO (CELULAR)</option>
-      </select>
-
-      <label>SEU EMAIL</label>
-      <input type="email" id="testeEmail" placeholder="Digite seu email">
-
-      <label>SEU WHATSAPP</label>
-      <input type="text" id="testeTelefone" placeholder="Ex: 11951623333">
-
-      <button class="generate-btn" onclick="gerarTesteGratis()">GERAR TESTE GRÁTIS</button>
-    </div>
-
-    <div class="checkout-right">
-      <div id="resultadoTeste" class="pix-box">
-        <h3>Seu teste aparecerá aqui</h3>
-        <p>Você receberá também por email as informações completas de instalação e configuração.</p>
-
-        <div class="apps-box">
-          <h4>📱 Códigos dos Aplicativos</h4>
-          <p>✅ <strong>PLAYSIM</strong> - 🔢 Código: <strong>pwrtv</strong></p>
-          <p>✅ <strong>ASSIST PLUS</strong> - 🔢 Código: <strong>pwrtv</strong></p>
-          <p>✅ <strong>POWER PIXEL</strong> - 🔢 Código: <strong>power</strong></p>
-          <p>✅ <strong>LAZER PLAY / FUN PLAY</strong> - 🔢 Código: <strong>powerpixel</strong></p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
+<!-- PLANOS -->
 <section id="planos" class="plans-section">
+
   <h2>ESCOLHA SEU <span>PLANO</span></h2>
-  <p>Planos acessíveis para toda a família</p>
 
   <div class="plans">
-    <div class="plan destaque-principal">
+
+    <div class="plan destaque">
       <div class="tag">🔥 DESTAQUE</div>
-      <h3>MENSAL</h3>
-      <h4>1 TELA</h4>
-      <div class="price yellow">R$ 30<span>,00<br>/mês</span></div>
-      <ul>
-        <li>✔ Acesso por 30 dias</li>
-        <li>✔ 1 dispositivo</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Suporte via WhatsApp</li>
-      </ul>
-      <button class="yellow-btn" onclick="selecionarPlano('30')">ESCOLHER PLANO</button>
+      <h3>Mensal</h3>
+      <h4>1 Tela</h4>
+      <div class="price">R$ 30</div>
+      <button onclick="selecionarPlano(30)">ESCOLHER</button>
     </div>
 
     <div class="plan">
-      <h3>MENSAL</h3>
-      <h4>2 TELAS</h4>
-      <div class="price">R$ 50<span>,00<br>/mês</span></div>
-      <ul>
-        <li>✔ Acesso por 30 dias</li>
-        <li>✔ 2 dispositivos</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Melhor custo-benefício</li>
-      </ul>
-      <button onclick="selecionarPlano('50')">ESCOLHER PLANO</button>
+      <h3>Mensal</h3>
+      <h4>2 Telas</h4>
+      <div class="price">R$ 50</div>
+      <button onclick="selecionarPlano(50)">ESCOLHER</button>
     </div>
 
     <div class="plan">
-      <h3>TRIMESTRAL</h3>
-      <h4>1 TELA</h4>
-      <div class="price">R$ 80<span>,00<br>/3 meses</span></div>
-      <ul>
-        <li>✔ Acesso por 90 dias</li>
-        <li>✔ 1 dispositivo</li>
-        <li>✔ Economia garantida</li>
-        <li>✔ Suporte VIP</li>
-      </ul>
-      <button onclick="selecionarPlano('80')">ESCOLHER PLANO</button>
+      <h3>Trimestral</h3>
+      <h4>1 Tela</h4>
+      <div class="price">R$ 80</div>
+      <button onclick="selecionarPlano(80)">ESCOLHER</button>
     </div>
 
     <div class="plan">
-      <h3>TRIMESTRAL</h3>
-      <h4>2 TELAS</h4>
-      <div class="price">R$ 140<span>,00<br>/3 meses</span></div>
-      <ul>
-        <li>✔ Acesso por 90 dias</li>
-        <li>✔ 2 dispositivos</li>
-        <li>✔ Melhor experiência</li>
-        <li>✔ Sem travamentos</li>
-      </ul>
-      <button onclick="selecionarPlano('140')">ESCOLHER PLANO</button>
+      <h3>Trimestral</h3>
+      <h4>2 Telas</h4>
+      <div class="price">R$ 140</div>
+      <button onclick="selecionarPlano(140)">ESCOLHER</button>
     </div>
+
   </div>
 
-  <div class="social-proof">
-    <p>🔥 Mais de <strong>2.000 clientes ativos</strong> usando SG IPTV</p>
-    <p>⚡ Ativação imediata após pagamento</p>
-  </div>
 </section>
 
+<!-- CHECKOUT -->
 <section id="checkout" class="checkout">
-  <div class="checkout-box">
-    <div class="checkout-left">
-      <h2>PAGAMENTO VIA <span>PIX</span></h2>
-      <p>Rápido, seguro e com confirmação automática</p>
 
-      <label>1. ESCOLHA SEU PLANO</label>
-      <select id="plano">
-        <option value="30">Mensal - 1 Tela (R$ 30,00)</option>
-        <option value="50">Mensal - 2 Telas (R$ 50,00)</option>
-        <option value="80">Trimestral - 1 Tela (R$ 80,00)</option>
-        <option value="140">Trimestral - 2 Telas (R$ 140,00)</option>
-      </select>
+  <h2>PAGAMENTO PIX</h2>
 
-      <label>2. SEU EMAIL</label>
-      <input type="email" id="email" placeholder="Digite seu melhor email">
+  <select id="plano">
+    <option value="30">Mensal 1 Tela</option>
+    <option value="50">Mensal 2 Telas</option>
+    <option value="80">Trimestral 1 Tela</option>
+    <option value="140">Trimestral 2 Telas</option>
+  </select>
 
-      <label>3. SEU WHATSAPP</label>
-      <input type="text" id="telefone" placeholder="Ex: 11951623333">
+  <input type="email" id="email" placeholder="Seu email">
+  <input type="text" id="telefone" placeholder="Seu WhatsApp">
 
-      <button class="generate-btn" onclick="gerarPix()">⚡ GERAR PIX</button>
-    </div>
+  <button onclick="gerarPix()">GERAR PIX</button>
 
-    <div class="checkout-right">
-      <div class="steps">
-        <span>1<br>DADOS</span>
-        <span class="active">2<br>PAGAMENTO</span>
-        <span>3<br>CONFIRMAÇÃO</span>
-      </div>
+  <div id="pix"></div>
 
-      <div id="pix" class="pix-box">
-        <h3>ESCANEIE O QR CODE</h3>
-        <p>O QR Code aparecerá aqui após gerar o Pix.</p>
-      </div>
-    </div>
-  </div>
 </section>
-
-<section class="why">
-  <h2>POR QUE ASSINAR A <span>SG IPTV?</span></h2>
-
-  <div class="why-grid">
-    <div>📺 <strong>+15.000</strong><br>CANAIS AO VIVO</div>
-    <div>🎬 <strong>+80.000</strong><br>FILMES & SÉRIES</div>
-    <div>🔄 <strong>ATUALIZAÇÕES</strong><br>DIÁRIAS</div>
-    <div>🖥️ <strong>COMPATÍVEL</strong><br>COM TUDO</div>
-    <div>🛡️ <strong>GARANTIA</strong><br>7 DIAS</div>
-    <div>🎧 <strong>SUPORTE</strong><br>TODOS OS DIAS</div>
-  </div>
-</section>
-
-<section id="faq" class="faq">
-  <h2>FAQ</h2>
-
-  <div class="faq-item">
-    <h3>Como recebo meu acesso?</h3>
-    <p>Após a confirmação do pagamento, envie o comprovante pelo WhatsApp para ativação do plano.</p>
-  </div>
-
-  <div class="faq-item">
-    <h3>Funciona em Smart TV?</h3>
-    <p>Sim, funciona em Smart TV, TV Box, celular, computador e outros dispositivos compatíveis.</p>
-  </div>
-
-  <div class="faq-item">
-    <h3>Tem teste grátis?</h3>
-    <p>Sim. Você pode gerar um teste automático informando seu email e WhatsApp.</p>
-  </div>
-</section>
-
-<footer>
-  <img src="assets/logo.png" alt="SG IPTV">
-  <p>SG IPTV © 2026 - Todos os direitos reservados</p>
-  <p>Atendimento: (11) 95162-3333</p>
-</footer>
-
-<a class="whatsapp" href="https://wa.me/5511951623333" target="_blank">💬</a>
 
 <script src="script.js"></script>
 </body>
