@@ -133,6 +133,60 @@ async function carregarPagamentos() {
   }
 }
 
+async function carregarTestes() {
+  const token = verificarAdminLogado();
+  const lista = document.getElementById("listaTestes");
+
+  if (!token) return;
+  if (!lista) return;
+
+  lista.innerHTML = `<tr><td colspan="5">Carregando...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API}/testes-iptv`, {
+      headers: {
+        Authorization: token
+      }
+    });
+
+    const dados = await res.json();
+
+    if (res.status === 401) {
+      localStorage.removeItem("admin_token");
+      window.location.href = "login.html";
+      return;
+    }
+
+    if (!res.ok) {
+      lista.innerHTML = `<tr><td colspan="5">Erro ao carregar testes.</td></tr>`;
+      return;
+    }
+
+    if (dados.length === 0) {
+      lista.innerHTML = `<tr><td colspan="5">Nenhum teste encontrado.</td></tr>`;
+      return;
+    }
+
+    lista.innerHTML = "";
+
+    dados.forEach(t => {
+      lista.innerHTML += `
+        <tr>
+          <td>${t.id}</td>
+          <td>${t.email || "-"}</td>
+          <td>${t.telefone || "-"}</td>
+          <td>${t.login || "-"}</td>
+          <td>${t.senha || "-"}</td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    console.error(error);
+    lista.innerHTML = `<tr><td colspan="5">Erro ao carregar testes.</td></tr>`;
+  }
+}
+
 async function confirmarPagamento(id) {
   const token = verificarAdminLogado();
 
@@ -175,5 +229,6 @@ window.addEventListener("load", () => {
   if (window.location.pathname.includes("admin.html")) {
     verificarAdminLogado();
     carregarPagamentos();
+    carregarTestes();
   }
 });
