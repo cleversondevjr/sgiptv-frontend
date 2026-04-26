@@ -8,140 +8,91 @@
 </head>
 <body>
 
-<!-- LOADER -->
 <div id="loader">
-  <img src="assets/logo.png" alt="SG IPTV">
+  <img src="assets/logo.png">
 </div>
 
-<!-- HEADER -->
 <header class="header">
-  <img src="assets/logo.png" class="logo" alt="SG IPTV">
+  <img src="assets/logo.png" class="logo">
 
   <nav>
     <a href="#inicio">Início</a>
-    <a href="#teste-gratis">Teste</a>
+    <a href="#teste">Teste</a>
     <a href="#planos">Planos</a>
     <a href="#beneficios">Benefícios</a>
     <a href="#checkout">Pagamento</a>
     <a href="#faq">FAQ</a>
   </nav>
 
-  <a class="client-btn" href="login.html">Área do Cliente</a>
+  <a href="login.html" class="client-btn">Área do Cliente</a>
 </header>
 
-<!-- HERO -->
 <section id="inicio" class="hero">
-  <div class="hero-content">
-    <span class="badge">★ A MELHOR EXPERIÊNCIA EM TV</span>
-
-    <h1>
-      ASSISTA TUDO<br>
-      <strong>O QUE VOCÊ AMA</strong><br>
-      COM A <span>SG IPTV</span>
-    </h1>
-
-    <p>Canais ao vivo, filmes, séries e muito mais em alta qualidade e sem travamentos.</p>
-
-    <div class="hero-buttons">
-      <a href="#checkout" class="btn primary">🚀 ASSINAR AGORA</a>
-      <a href="#planos" class="btn secondary">▶ SAIBA MAIS</a>
-    </div>
-  </div>
+  <h1>SG IPTV</h1>
+  <p>Qualidade premium sem travamentos</p>
 </section>
 
-<!-- BENEFICIOS -->
 <section id="beneficios" class="benefits">
-  <div class="benefit-card">
-    <h3>📺 QUALIDADE 4K</h3>
-  </div>
-  <div class="benefit-card">
-    <h3>🖥️ MULTIDISPOSITIVOS</h3>
-  </div>
-  <div class="benefit-card">
-    <h3>📶 SEM TRAVAMENTOS</h3>
-  </div>
-  <div class="benefit-card">
-    <h3>👑 SUPORTE VIP</h3>
+  <div>📺 4K</div>
+  <div>🖥️ Multiplataforma</div>
+  <div>📶 Estável</div>
+  <div>👑 Suporte</div>
+</section>
+
+<section id="teste" class="box">
+  <h2>Teste Grátis</h2>
+
+  <select id="tipoTeste">
+    <option value="iptv_com_adulto">IPTV c/ adulto</option>
+    <option value="iptv_sem_adulto">IPTV s/ adulto</option>
+    <option value="p2p">P2P</option>
+  </select>
+
+  <input type="email" id="testeEmail" placeholder="Email">
+  <input type="text" id="testeTelefone" placeholder="WhatsApp">
+
+  <button onclick="gerarTesteGratis()">Gerar Teste</button>
+
+  <div id="resultadoTeste"></div>
+
+  <div class="apps">
+    <p>PLAYSIM: pwrtv</p>
+    <p>ASSIST: pwrtv</p>
+    <p>POWER: power</p>
+    <p>LAZER: powerpixel</p>
   </div>
 </section>
 
-<!-- TESTE GRATIS -->
-<section id="teste-gratis" class="checkout">
-  <div class="checkout-box">
+<section id="planos" class="plans">
 
-    <div class="checkout-left">
-      <h2>TESTE GRÁTIS</h2>
-
-      <label>TIPO DE TESTE</label>
-      <select id="tipoTeste">
-        <option value="iptv_com_adulto">⚡ IPTV C/ ADULTO</option>
-        <option value="iptv_sem_adulto">⚡ IPTV S/ ADULTO</option>
-        <option value="p2p">🔥 P2P</option>
-      </select>
-
-      <label>EMAIL</label>
-      <input type="email" id="testeEmail">
-
-      <label>WHATSAPP</label>
-      <input type="text" id="testeTelefone">
-
-      <button onclick="gerarTesteGratis()">GERAR TESTE</button>
-    </div>
-
-    <div class="checkout-right">
-      <div id="resultadoTeste">
-        <h3>Seu teste aparecerá aqui</h3>
-
-        <!-- CÓDIGOS FIXOS -->
-        <div class="apps-box">
-          <h4>📱 Códigos dos Apps</h4>
-          <p>PLAYSIM → pwrtv</p>
-          <p>ASSIST PLUS → pwrtv</p>
-          <p>POWER PIXEL → power</p>
-          <p>LAZER PLAY → powerpixel</p>
-        </div>
-      </div>
-    </div>
-
+  <div class="plan">
+    <h3>Mensal 1 Tela</h3>
+    <p>R$30</p>
+    <button onclick="selecionarPlano('30')">Escolher</button>
   </div>
+
+  <div class="plan">
+    <h3>Mensal 2 Telas</h3>
+    <p>R$50</p>
+    <button onclick="selecionarPlano('50')">Escolher</button>
+  </div>
+
+  <div class="plan">
+    <h3>Trimestral 1 Tela</h3>
+    <p>R$80</p>
+    <button onclick="selecionarPlano('80')">Escolher</button>
+  </div>
+
+  <div class="plan">
+    <h3>Trimestral 2 Telas</h3>
+    <p>R$140</p>
+    <button onclick="selecionarPlano('140')">Escolher</button>
+  </div>
+
 </section>
 
-<!-- PLANOS -->
-<section id="planos" class="plans-section">
-  <h2>PLANOS</h2>
-
-  <div class="plans">
-
-    <div class="plan">
-      <h3>MENSAL 1 TELA</h3>
-      <p>R$ 30,00</p>
-      <button onclick="selecionarPlano('30')">ESCOLHER</button>
-    </div>
-
-    <div class="plan">
-      <h3>MENSAL 2 TELAS</h3>
-      <p>R$ 50,00</p>
-      <button onclick="selecionarPlano('50')">ESCOLHER</button>
-    </div>
-
-    <div class="plan">
-      <h3>TRIMESTRAL 1 TELA</h3>
-      <p>R$ 80,00</p>
-      <button onclick="selecionarPlano('80')">ESCOLHER</button>
-    </div>
-
-    <div class="plan">
-      <h3>TRIMESTRAL 2 TELAS</h3>
-      <p>R$ 140,00</p>
-      <button onclick="selecionarPlano('140')">ESCOLHER</button>
-    </div>
-
-  </div>
-</section>
-
-<!-- PAGAMENTO -->
-<section id="checkout">
-  <h2>PAGAMENTO</h2>
+<section id="checkout" class="box">
+  <h2>Pagamento</h2>
 
   <select id="plano">
     <option value="30">Mensal 1 Tela</option>
@@ -153,30 +104,18 @@
   <input type="email" id="email" placeholder="Email">
   <input type="text" id="telefone" placeholder="WhatsApp">
 
-  <button onclick="gerarPix()">GERAR PIX</button>
+  <button onclick="gerarPix()">Gerar Pix</button>
 
   <div id="pix"></div>
 </section>
 
-<!-- FAQ -->
-<section id="faq">
+<section id="faq" class="box">
   <h2>FAQ</h2>
-
-  <div class="faq-item">
-    <h4>Funciona em Smart TV?</h4>
-    <p>Sim, funciona em TV, celular e TV Box.</p>
-  </div>
-
-  <div class="faq-item">
-    <h4>Tem fidelidade?</h4>
-    <p>Não, pagamento mensal sem contrato.</p>
-  </div>
-
+  <p>Funciona em todos dispositivos.</p>
+  <p>Sem fidelidade.</p>
 </section>
 
-<!-- FOOTER -->
 <footer>
-  <img src="assets/logo.png">
   <p>SG IPTV © 2026</p>
 </footer>
 
