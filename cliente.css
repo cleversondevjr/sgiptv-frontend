@@ -1,0 +1,174 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(0,0,0,.95), rgba(30,0,55,.9)),
+    url("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1600&q=80") center/cover;
+  color: #fff;
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.card {
+  width: 100%;
+  max-width: 760px;
+  background: rgba(8, 0, 17, .94);
+  border: 1px solid #7e22ce;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 0 35px rgba(185, 54, 255, .28);
+}
+
+.login-card {
+  max-width: 420px;
+  text-align: center;
+}
+
+.logo {
+  width: 120px;
+  margin-bottom: 15px;
+}
+
+.logo-small {
+  width: 80px;
+}
+
+h1, h2 {
+  color: #facc15;
+}
+
+p {
+  color: #e5e7eb;
+}
+
+label {
+  display: block;
+  text-align: left;
+  margin: 18px 0 8px;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #7e22ce;
+  background: #020617;
+  color: #fff;
+}
+
+button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: #facc15;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+.sair {
+  width: auto;
+  background: #ef4444;
+  color: white;
+  padding: 10px 16px;
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.info {
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.info strong {
+  color: #facc15;
+}
+
+.status-confirmado {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.status-pendente {
+  color: #facc15;
+  font-weight: bold;
+}
+
+.renovar-box {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #7e22ce;
+}
+
+#pixRenovacao {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#pixRenovacao img {
+  max-width: 230px;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.whatsapp-btn {
+  display: block;
+  margin-top: 15px;
+  background: #22c55e;
+  color: #000;
+  text-align: center;
+  padding: 13px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.erro {
+  color: #ef4444;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.sucesso {
+  color: #22c55e;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+@media (max-width: 700px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
