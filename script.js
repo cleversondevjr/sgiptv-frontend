@@ -20,7 +20,12 @@ async function gerarPix() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ plano, valor: plano, email, telefone })
+      body: JSON.stringify({
+        plano,
+        valor: plano,
+        email,
+        telefone
+      })
     });
 
     const data = await res.json();
