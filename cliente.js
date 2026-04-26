@@ -41,7 +41,9 @@ async function consultarCliente() {
   try {
     const res = await fetch(`${API}/cliente/consulta`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ email, telefone })
     });
 
@@ -71,7 +73,6 @@ async function consultarCliente() {
 function montarPainel(cliente) {
   const box = document.getElementById("dadosCliente");
 
-  // ===== CLIENTE DE TESTE =====
   if (cliente.tipoCliente === "teste") {
     const teste = cliente.ultimoTeste;
 
@@ -79,19 +80,39 @@ function montarPainel(cliente) {
       <h3 style="color:#facc15;">🎁 Teste Gratuito Ativo</h3>
 
       <div class="info-grid">
-        <div class="info"><strong>Email</strong><p>${cliente.email}</p></div>
-        <div class="info"><strong>WhatsApp</strong><p>${cliente.telefone}</p></div>
-        <div class="info"><strong>Login IPTV</strong><p>${teste.login}</p></div>
-        <div class="info"><strong>Senha IPTV</strong><p>${teste.senha}</p></div>
+        <div class="info">
+          <strong>Email</strong>
+          <p>${cliente.email}</p>
+        </div>
+
+        <div class="info">
+          <strong>WhatsApp</strong>
+          <p>${cliente.telefone}</p>
+        </div>
+
+        <div class="info">
+          <strong>Login IPTV</strong>
+          <p>${teste.login}</p>
+        </div>
+
+        <div class="info">
+          <strong>Senha IPTV</strong>
+          <p>${teste.senha}</p>
+        </div>
       </div>
 
       <div style="margin-top:30px;">
         <h3 style="color:#facc15;">📺 Tipo de Acesso</h3>
+
         <select>
           <option>IPTV COM ADULTO</option>
           <option>IPTV SEM ADULTO</option>
           <option>P2P</option>
         </select>
+
+        <p style="margin-top:10px; color:#aaa;">
+          Escolha o tipo de conteúdo desejado para sua ativação.
+        </p>
       </div>
 
       <div style="margin-top:30px;">
@@ -111,14 +132,16 @@ function montarPainel(cliente) {
         <div id="pixRenovacao" style="margin-top:20px;"></div>
       </div>
     `;
+
     return;
   }
 
-  // ===== CLIENTE COM PAGAMENTO =====
   const pagamento = cliente.ultimoPagamento;
 
   if (!pagamento) {
-    box.innerHTML = `<p class="erro">Nenhum pagamento encontrado.</p>`;
+    box.innerHTML = `
+      <p class="erro">Nenhum pagamento encontrado.</p>
+    `;
     return;
   }
 
@@ -128,12 +151,35 @@ function montarPainel(cliente) {
 
   box.innerHTML = `
     <div class="info-grid">
-      <div class="info"><strong>Email</strong><p>${cliente.email}</p></div>
-      <div class="info"><strong>WhatsApp</strong><p>${cliente.telefone}</p></div>
-      <div class="info"><strong>Plano atual</strong><p>${pagamento.plano || nomePlano(pagamento.valor)}</p></div>
-      <div class="info"><strong>Valor</strong><p>R$ ${pagamento.valor}</p></div>
-      <div class="info"><strong>Status</strong><p class="${statusClass}">${pagamento.status}</p></div>
-      <div class="info"><strong>Data</strong><p>${formatarData(pagamento.criado_em)}</p></div>
+      <div class="info">
+        <strong>Email</strong>
+        <p>${cliente.email}</p>
+      </div>
+
+      <div class="info">
+        <strong>WhatsApp</strong>
+        <p>${cliente.telefone}</p>
+      </div>
+
+      <div class="info">
+        <strong>Plano atual</strong>
+        <p>${pagamento.plano || nomePlano(pagamento.valor)}</p>
+      </div>
+
+      <div class="info">
+        <strong>Valor</strong>
+        <p>R$ ${pagamento.valor}</p>
+      </div>
+
+      <div class="info">
+        <strong>Status</strong>
+        <p class="${statusClass}">${pagamento.status}</p>
+      </div>
+
+      <div class="info">
+        <strong>Data</strong>
+        <p>${formatarData(pagamento.criado_em)}</p>
+      </div>
     </div>
 
     <div style="margin-top:30px;">
@@ -169,26 +215,60 @@ async function gerarPixRenovacao() {
   try {
     const res = await fetch(`${API}/pix`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ plano, valor, email, telefone })
     });
 
     const data = await res.json();
 
-    if (!res.ok) throw new Error(data.error);
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar Pix.");
+    }
+
+    const mensagem = encodeURIComponent(
+      `Olá, segue comprovante de pagamento.\n\n` +
+      `📦 Plano: ${plano}\n` +
+      `💰 Valor: R$ ${valor},00\n` +
+      `📧 Email: ${email}\n` +
+      `📱 WhatsApp: ${telefone}`
+    );
 
     box.innerHTML = `
-      <img src="data:image/png;base64,${data.qr_base64}">
-      <textarea readonly>${data.qr_code}</textarea>
+      <h3 style="color:#facc15;">Pix gerado</h3>
+
+      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
+
+      <p>Copie o código Pix:</p>
+
+      <textarea id="codigoPixRenovacao" readonly>${data.qr_code}</textarea>
+
+      <button onclick="copiarPixRenovacao()">Copiar Pix</button>
+
+      <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagem}" target="_blank">
+        Enviar comprovante no WhatsApp
+      </a>
     `;
 
   } catch (error) {
+    console.error(error);
     box.innerHTML = `<p class="erro">${error.message}</p>`;
   }
 }
 
+function copiarPixRenovacao() {
+  const codigo = document.getElementById("codigoPixRenovacao");
+
+  if (!codigo) return;
+
+  navigator.clipboard.writeText(codigo.value);
+  alert("Pix copiado com sucesso!");
+}
+
 function sairCliente() {
-  localStorage.clear();
+  localStorage.removeItem("cliente_email");
+  localStorage.removeItem("cliente_telefone");
   location.reload();
 }
 
@@ -199,5 +279,7 @@ window.addEventListener("load", () => {
   if (email && telefone) {
     document.getElementById("clienteEmail").value = email;
     document.getElementById("clienteTelefone").value = telefone;
+
+    consultarCliente();
   }
 });
