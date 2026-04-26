@@ -23,6 +23,18 @@ function selecionarPlano(valor) {
   }
 }
 
+function formatarDataHora() {
+  const agora = new Date();
+
+  return agora.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
 async function gerarPix() {
   const valor = document.getElementById("plano").value;
   const plano = document.getElementById("plano").selectedOptions[0].text;
@@ -58,9 +70,16 @@ async function gerarPix() {
       throw new Error(data.error || "Erro ao gerar Pix");
     }
 
-    // ✅ MENSAGEM WHATSAPP CORRIGIDA
+    const dataHora = formatarDataHora();
+
     const mensagemWhatsApp = encodeURIComponent(
-      `Olá, segue comprovante de pagamento.\n\nPlano: ${plano}\nEmail: ${email}\nWhatsApp: ${telefone}`
+      `Olá, segue comprovante de pagamento.\n\n` +
+      `📦 Plano: ${plano}\n` +
+      `💰 Valor: R$ ${valor},00\n` +
+      `📧 Email: ${email}\n` +
+      `📱 WhatsApp: ${telefone}\n` +
+      `🗓️ Gerado em: ${dataHora}\n\n` +
+      `Vou enviar o comprovante agora para ativação do meu acesso.`
     );
 
     pixBox.innerHTML = `
