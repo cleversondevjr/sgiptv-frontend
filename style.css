@@ -509,3 +509,36 @@ footer img {
     font-size: 30px;
   }
 }
+
+.catalogo {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.catalogo h2 {
+  color: #facc15;
+  margin-bottom: 10px;
+}
+
+.catalogo p {
+  color: #ccc;
+  margin-bottom: 30px;
+}
+
+.grid-catalogo {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.grid-catalogo img {
+  width: 100%;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.grid-catalogo img:hover {
+  transform: scale(1.05);
+}
