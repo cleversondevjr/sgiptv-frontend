@@ -90,19 +90,68 @@ function normalizarTelefone(telefone) {
 }
 
 // ==========================
+// DECODIFICAR RETORNO DO PAINEL
+// ==========================
+function decodificarRespostaPainel(texto) {
+  return String(texto || "")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "")
+    .replace(/\\t/g, " ")
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, codigo) => {
+      return String.fromCharCode(parseInt(codigo, 16));
+    });
+}
+
+// ==========================
 // EXTRAIR LOGIN E SENHA
 // ==========================
-function extrairCampo(resposta, nomes) {
-  for (const nome of nomes) {
-    const regex = new RegExp(`${nome}[:\\s]+([^,\\n\\r]+)`, "i");
-    const match = resposta.match(regex);
+function extrairLoginSenha(respostaOriginal) {
+  const resposta = decodificarRespostaPainel(respostaOriginal);
 
-    if (match && match[1]) {
-      return match[1].trim();
+  let login = null;
+  let senha = null;
+
+  const linhas = resposta
+    .split("\n")
+    .map(linha => linha.trim())
+    .filter(Boolean);
+
+  for (const linha of linhas) {
+    const linhaLimpa = linha.replace(/\*/g, "").trim();
+
+    if (!login) {
+      const loginMatch = linhaLimpa.match(/^(usu[aá]rio|usuario|login|user)\s*:?\s*(.+)$/i);
+      if (loginMatch) {
+        login = loginMatch[2].trim();
+      }
+    }
+
+    if (!senha) {
+      const senhaMatch = linhaLimpa.match(/^(senha|password|pass)\s*:?\s*(.+)$/i);
+      if (senhaMatch) {
+        senha = senhaMatch[2].trim();
+      }
     }
   }
 
-  return null;
+  if (!login) {
+    const loginUrlMatch = resposta.match(/username=([^&\s\n\r]+)/i);
+    if (loginUrlMatch) {
+      login = loginUrlMatch[1].trim();
+    }
+  }
+
+  if (!senha) {
+    const senhaUrlMatch = resposta.match(/password=([^&\s\n\r]+)/i);
+    if (senhaUrlMatch) {
+      senha = senhaUrlMatch[1].trim();
+    }
+  }
+
+  return {
+    login: login || "Verifique seu email",
+    senha: senha || "Verifique seu email"
+  };
 }
 
 // ==========================
@@ -146,18 +195,10 @@ async function gerarTesteGratis() {
       return;
     }
 
-    const resposta = data.resposta || "";
-
-    const usuario =
-      extrairCampo(resposta, ["usu[aá]rio", "usuario", "login", "user"]) ||
-      "Verifique seu email";
-
-    const senha =
-      extrairCampo(resposta, ["senha", "password", "pass"]) ||
-      "Verifique seu email";
+    const dados = extrairLoginSenha(data.resposta);
 
     const mensagemWhatsApp = encodeURIComponent(
-      `Olá! Meu teste SG IPTV foi gerado.\n\nLogin: ${usuario}\nSenha: ${senha}\n\nEmail: ${email}`
+      `Olá! Meu teste SG IPTV foi gerado.\n\nLogin: ${dados.login}\nSenha: ${dados.senha}\n\nEmail: ${email}`
     );
 
     resultado.innerHTML = `
@@ -171,9 +212,17 @@ async function gerarTesteGratis() {
         padding:18px;
         margin-top:15px;
         text-align:left;
+        max-width:420px;
       ">
-        <p><strong style="color:#facc15;">Login:</strong> ${usuario}</p>
-        <p><strong style="color:#facc15;">Senha:</strong> ${senha}</p>
+        <p style="margin:8px 0;">
+          <strong style="color:#facc15;">Login:</strong>
+          <span style="color:#fff;">${dados.login}</span>
+        </p>
+
+        <p style="margin:8px 0;">
+          <strong style="color:#facc15;">Senha:</strong>
+          <span style="color:#fff;">${dados.senha}</span>
+        </p>
       </div>
 
       <a
@@ -189,6 +238,7 @@ async function gerarTesteGratis() {
           border-radius:8px;
           font-weight:bold;
           text-decoration:none;
+          max-width:420px;
         "
       >
         Enviar no WhatsApp
