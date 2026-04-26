@@ -1,256 +1,121 @@
-// ==========================
-// LOADER
-// ==========================
-window.addEventListener("load", () => {
-  const loader = document.getElementById("loader");
+// 🔧 URL DO BACKEND
+const API_URL = "https://sgiptv-backend.onrender.com";
 
-  if (loader) {
-    setTimeout(() => {
-      loader.style.display = "none";
-    }, 700);
-  }
-});
-
-// ==========================
-// SELECIONAR PLANO
-// ==========================
-function selecionarPlano(valor) {
-  document.getElementById("plano").value = valor;
-  document.getElementById("checkout").scrollIntoView({ behavior: "smooth" });
+// 🔄 NORMALIZA TELEFONE
+function normalizarTelefone(numero) {
+  return numero.replace(/\D/g, "");
 }
 
-// ==========================
-// GERAR PIX
-// ==========================
-async function gerarPix() {
-  const valor = document.getElementById("plano").value;
-  const plano = document.getElementById("plano").selectedOptions[0].text;
-  const email = document.getElementById("email").value;
-  const pixBox = document.getElementById("pix");
-
-  if (!email) {
-    alert("Digite seu email antes de gerar o Pix.");
-    return;
-  }
-
-  pixBox.innerHTML = `
-    <h3 style="color:#facc15;">Gerando Pix...</h3>
-    <p>Aguarde alguns segundos.</p>
-  `;
-
-  try {
-    const res = await fetch("https://sgiptv-backend.onrender.com/pix", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ plano, valor, email })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "Erro ao gerar Pix");
-    }
-
-    pixBox.innerHTML = `
-      <h3 style="color:#facc15;">ESCANEIE O QR CODE</h3>
-      <p>OU COPIE O CÓDIGO PIX</p>
-      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
-      <textarea id="codigoPix" readonly>${data.qr_code}</textarea>
-      <br><br>
-      <button class="generate-btn" onclick="copiarPix()">Copiar Pix</button>
-      <p>Após o pagamento, a confirmação será automática.</p>
-    `;
-
-  } catch (error) {
-    console.error(error);
-
-    pixBox.innerHTML = `
-      <h3 style="color:#ef4444;">Erro ao gerar Pix</h3>
-      <p>${error.message}</p>
-    `;
-  }
-}
-
-// ==========================
-// COPIAR PIX
-// ==========================
-function copiarPix() {
-  const codigo = document.getElementById("codigoPix").value;
-  navigator.clipboard.writeText(codigo);
-  alert("Pix copiado com sucesso!");
-}
-
-// ==========================
-// NORMALIZAR TELEFONE
-// ==========================
-function normalizarTelefone(telefone) {
-  return String(telefone || "").replace(/\D/g, "");
-}
-
-// ==========================
-// DECODIFICAR RETORNO DO PAINEL
-// ==========================
-function decodificarRespostaPainel(texto) {
-  return String(texto || "")
-    .replace(/\\n/g, "\n")
-    .replace(/\\r/g, "")
-    .replace(/\\t/g, " ")
-    .replace(/\\u([0-9a-fA-F]{4})/g, (_, codigo) => {
-      return String.fromCharCode(parseInt(codigo, 16));
-    });
-}
-
-// ==========================
-// EXTRAIR LOGIN E SENHA
-// ==========================
-function extrairLoginSenha(respostaOriginal) {
-  const resposta = decodificarRespostaPainel(respostaOriginal);
-
-  let login = null;
-  let senha = null;
-
-  const linhas = resposta
-    .split("\n")
-    .map(linha => linha.trim())
-    .filter(Boolean);
-
-  for (const linha of linhas) {
-    const linhaLimpa = linha.replace(/\*/g, "").trim();
-
-    if (!login) {
-      const loginMatch = linhaLimpa.match(/^(usu[aá]rio|usuario|login|user)\s*:?\s*(.+)$/i);
-      if (loginMatch) {
-        login = loginMatch[2].trim();
-      }
-    }
-
-    if (!senha) {
-      const senhaMatch = linhaLimpa.match(/^(senha|password|pass)\s*:?\s*(.+)$/i);
-      if (senhaMatch) {
-        senha = senhaMatch[2].trim();
-      }
-    }
-  }
-
-  if (!login) {
-    const loginUrlMatch = resposta.match(/username=([^&\s\n\r]+)/i);
-    if (loginUrlMatch) {
-      login = loginUrlMatch[1].trim();
-    }
-  }
-
-  if (!senha) {
-    const senhaUrlMatch = resposta.match(/password=([^&\s\n\r]+)/i);
-    if (senhaUrlMatch) {
-      senha = senhaUrlMatch[1].trim();
-    }
-  }
+// 🔐 EXTRAIR LOGIN E SENHA
+function extrairLoginSenha(texto) {
+  const userMatch = texto.match(/Usu[aá]rio[:\s]*([0-9]+)/i);
+  const passMatch = texto.match(/Senha[:\s]*([0-9]+)/i);
 
   return {
-    login: login || "Verifique seu email",
-    senha: senha || "Verifique seu email"
+    usuario: userMatch ? userMatch[1] : null,
+    senha: passMatch ? passMatch[1] : null
   };
 }
 
-// ==========================
-// TESTE IPTV GRÁTIS
-// ==========================
+// 🚀 GERAR TESTE
 async function gerarTesteGratis() {
   const email = document.getElementById("testeEmail").value.trim().toLowerCase();
   const telefoneOriginal = document.getElementById("testeTelefone").value;
   const telefone = normalizarTelefone(telefoneOriginal);
-  const resultado = document.getElementById("resultadoTeste");
+  const tipoTeste = document.getElementById("tipoTeste").value;
 
+  const resultadoBox = document.getElementById("resultadoTeste");
+
+  // VALIDAÇÃO
   if (!email || !telefone) {
-    resultado.innerHTML = `
-      <h3 style="color:#facc15;">Preencha todos os campos</h3>
-      <p>Informe email e WhatsApp para gerar o teste.</p>
+    resultadoBox.innerHTML = `
+      <h3 style="color:red;">Erro</h3>
+      <p>Preencha email e WhatsApp corretamente.</p>
     `;
     return;
   }
 
-  resultado.innerHTML = `
-    <h3 style="color:#facc15;">Gerando teste...</h3>
-    <p>Aguarde alguns segundos.</p>
+  // LOADING
+  resultadoBox.innerHTML = `
+    <h3>Gerando teste...</h3>
+    <p>Aguarde alguns segundos ⏳</p>
   `;
 
   try {
-    const res = await fetch("https://sgiptv-backend.onrender.com/teste-iptv", {
+    const response = await fetch(`${API_URL}/teste-iptv`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ email, telefone })
+      body: JSON.stringify({ email, telefone, tipoTeste })
     });
 
-    const data = await res.json();
+    const data = await response.json();
 
-    if (!res.ok) {
-      resultado.innerHTML = `
-        <h3 style="color:#ef4444;">Não foi possível gerar o teste</h3>
-        <p>${data.error || "Erro ao gerar teste."}</p>
+    if (!response.ok) {
+      resultadoBox.innerHTML = `
+        <h3 style="color:red;">Erro ao gerar teste</h3>
+        <p>${data.error || "Tente novamente mais tarde."}</p>
       `;
       return;
     }
 
-    const dados = extrairLoginSenha(data.resposta);
+    // 🔥 EXTRAIR LOGIN E SENHA
+    const credenciais = extrairLoginSenha(data.resposta);
 
-    const mensagemWhatsApp = encodeURIComponent(
-      `Olá! Meu teste SG IPTV foi gerado.\n\nLogin: ${dados.login}\nSenha: ${dados.senha}\n\nEmail: ${email}`
-    );
+    if (!credenciais.usuario || !credenciais.senha) {
+      resultadoBox.innerHTML = `
+        <h3 style="color:red;">Erro</h3>
+        <p>Não foi possível identificar login e senha.</p>
+      `;
+      return;
+    }
 
-    resultado.innerHTML = `
-      <h3 style="color:#facc15;">Teste gerado com sucesso!</h3>
+    // ✅ SUCESSO
+    resultadoBox.innerHTML = `
+      <h3 style="color:#22c55e;">Teste gerado com sucesso!</h3>
       <p>As configurações completas foram enviadas para seu email.</p>
 
       <div style="
+        margin-top:15px;
+        padding:15px;
+        border-radius:10px;
         background:#020617;
         border:1px solid #7e22ce;
-        border-radius:12px;
-        padding:18px;
-        margin-top:15px;
         text-align:left;
-        max-width:420px;
       ">
-        <p style="margin:8px 0;">
-          <strong style="color:#facc15;">Login:</strong>
-          <span style="color:#fff;">${dados.login}</span>
-        </p>
-
-        <p style="margin:8px 0;">
-          <strong style="color:#facc15;">Senha:</strong>
-          <span style="color:#fff;">${dados.senha}</span>
-        </p>
+        <p><strong>Login:</strong> ${credenciais.usuario}</p>
+        <p><strong>Senha:</strong> ${credenciais.senha}</p>
       </div>
-
-      <a
-        href="https://wa.me/55${telefone}?text=${mensagemWhatsApp}"
-        target="_blank"
-        style="
-          display:block;
-          margin-top:15px;
-          background:#22c55e;
-          color:#000;
-          text-align:center;
-          padding:13px;
-          border-radius:8px;
-          font-weight:bold;
-          text-decoration:none;
-          max-width:420px;
-        "
-      >
-        Enviar no WhatsApp
-      </a>
     `;
 
   } catch (error) {
-    console.error(error);
+    console.error("Erro:", error);
 
-    resultado.innerHTML = `
-      <h3 style="color:#ef4444;">Erro ao gerar teste</h3>
-      <p>Não foi possível conectar ao servidor. Tente novamente.</p>
+    resultadoBox.innerHTML = `
+      <h3 style="color:red;">Erro</h3>
+      <p>Falha ao conectar com o servidor.</p>
     `;
   }
 }
+
+// 🚀 SCROLL SUAVE MENU
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    const target = document.querySelector(this.getAttribute("href"));
+
+    if (target) {
+      target.scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+  });
+});
+
+// 🔄 REMOVER LOADING INICIAL
+window.addEventListener("load", () => {
+  const loader = document.getElementById("loader");
+  if (loader) loader.style.display = "none";
+});
