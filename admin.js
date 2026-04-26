@@ -1,8 +1,8 @@
 const API = "https://sgiptv-backend.onrender.com";
 
 async function loginAdmin() {
-  const usuario = document.getElementById("adminUser").value;
-  const senha = document.getElementById("adminPass").value;
+  const usuario = document.getElementById("adminUser").value.trim();
+  const senha = document.getElementById("adminPass").value.trim();
   const msg = document.getElementById("loginMsg");
 
   if (!usuario || !senha) {
@@ -24,15 +24,12 @@ async function loginAdmin() {
     const data = await res.json();
 
     if (!res.ok) {
-      msg.innerHTML = `<p class="erro">${data.error || "Login inválido."}</p>`;
+      msg.innerHTML = `<p class="erro">${data.error || "Usuário ou senha inválidos."}</p>`;
       return;
     }
 
     localStorage.setItem("admin_token", data.token);
-
-    setTimeout(() => {
-      window.location.href = "admin.html";
-    }, 500);
+    window.location.href = "admin.html";
 
   } catch (error) {
     console.error(error);
@@ -45,6 +42,7 @@ function verificarAdminLogado() {
 
   if (!token && window.location.pathname.includes("admin.html")) {
     window.location.href = "login.html";
+    return null;
   }
 
   return token;
@@ -55,7 +53,7 @@ async function carregarPagamentos() {
   const lista = document.getElementById("listaPagamentos");
   const msg = document.getElementById("adminMensagem");
 
-  if (!lista) return;
+  if (!lista || !token) return;
 
   lista.innerHTML = `
     <tr>
@@ -71,6 +69,12 @@ async function carregarPagamentos() {
     });
 
     const dados = await res.json();
+
+    if (res.status === 401) {
+      localStorage.removeItem("admin_token");
+      window.location.href = "login.html";
+      return;
+    }
 
     if (!res.ok) {
       msg.innerHTML = `<p class="erro">${dados.error || "Erro ao buscar pagamentos."}</p>`;
@@ -131,6 +135,8 @@ async function carregarPagamentos() {
 
 async function confirmarPagamento(id) {
   const token = verificarAdminLogado();
+
+  if (!token) return;
 
   if (!confirm("Confirmar este pagamento?")) {
     return;
