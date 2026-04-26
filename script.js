@@ -34,7 +34,7 @@ async function gerarPix() {
   }
 
   pixBox.innerHTML = `
-    <h3>Gerando Pix...</h3>
+    <h3 style="color:#facc15;">Gerando Pix...</h3>
     <p>Aguarde alguns segundos.</p>
   `;
 
@@ -47,14 +47,14 @@ async function gerarPix() {
       body: JSON.stringify({ plano, valor, email })
     });
 
-    if (!res.ok) {
-      throw new Error("Erro ao gerar Pix");
-    }
-
     const data = await res.json();
 
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar Pix");
+    }
+
     pixBox.innerHTML = `
-      <h3>ESCANEIE O QR CODE</h3>
+      <h3 style="color:#facc15;">ESCANEIE O QR CODE</h3>
       <p>OU COPIE O CÓDIGO PIX</p>
       <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
       <textarea id="codigoPix" readonly>${data.qr_code}</textarea>
@@ -65,9 +65,10 @@ async function gerarPix() {
 
   } catch (error) {
     console.error(error);
+
     pixBox.innerHTML = `
-      <h3>Erro ao gerar Pix</h3>
-      <p>Verifique se o backend está online.</p>
+      <h3 style="color:#ef4444;">Erro ao gerar Pix</h3>
+      <p>${error.message}</p>
     `;
   }
 }
@@ -82,11 +83,35 @@ function copiarPix() {
 }
 
 // ==========================
+// NORMALIZAR TELEFONE
+// ==========================
+function normalizarTelefone(telefone) {
+  return String(telefone || "").replace(/\D/g, "");
+}
+
+// ==========================
+// EXTRAIR LOGIN E SENHA
+// ==========================
+function extrairCampo(resposta, nomes) {
+  for (const nome of nomes) {
+    const regex = new RegExp(`${nome}[:\\s]+([^,\\n\\r]+)`, "i");
+    const match = resposta.match(regex);
+
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+
+  return null;
+}
+
+// ==========================
 // TESTE IPTV GRÁTIS
 // ==========================
 async function gerarTesteGratis() {
-  const email = document.getElementById("testeEmail").value;
-  const telefone = document.getElementById("testeTelefone").value;
+  const email = document.getElementById("testeEmail").value.trim().toLowerCase();
+  const telefoneOriginal = document.getElementById("testeTelefone").value;
+  const telefone = normalizarTelefone(telefoneOriginal);
   const resultado = document.getElementById("resultadoTeste");
 
   if (!email || !telefone) {
@@ -98,7 +123,7 @@ async function gerarTesteGratis() {
   }
 
   resultado.innerHTML = `
-    <h3>Gerando teste...</h3>
+    <h3 style="color:#facc15;">Gerando teste...</h3>
     <p>Aguarde alguns segundos.</p>
   `;
 
@@ -114,23 +139,23 @@ async function gerarTesteGratis() {
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.error || "Erro ao gerar teste.");
+      resultado.innerHTML = `
+        <h3 style="color:#ef4444;">Não foi possível gerar o teste</h3>
+        <p>${data.error || "Erro ao gerar teste."}</p>
+      `;
+      return;
     }
 
-    // ==========================
-    // EXTRAIR LOGIN E SENHA
-    // ==========================
     const resposta = data.resposta || "";
 
-    const usuarioMatch = resposta.match(/usu[aá]rio[:\s]+([^,\n\r]+)/i);
-    const senhaMatch = resposta.match(/senha[:\s]+([^,\n\r]+)/i);
+    const usuario =
+      extrairCampo(resposta, ["usu[aá]rio", "usuario", "login", "user"]) ||
+      "Verifique seu email";
 
-    const usuario = usuarioMatch ? usuarioMatch[1].trim() : "Verifique seu email";
-    const senha = senhaMatch ? senhaMatch[1].trim() : "Verifique seu email";
+    const senha =
+      extrairCampo(resposta, ["senha", "password", "pass"]) ||
+      "Verifique seu email";
 
-    // ==========================
-    // MENSAGEM WHATSAPP
-    // ==========================
     const mensagemWhatsApp = encodeURIComponent(
       `Olá! Meu teste SG IPTV foi gerado.\n\nLogin: ${usuario}\nSenha: ${senha}\n\nEmail: ${email}`
     );
@@ -152,7 +177,7 @@ async function gerarTesteGratis() {
       </div>
 
       <a
-        href="https://wa.me/${telefone}?text=${mensagemWhatsApp}"
+        href="https://wa.me/55${telefone}?text=${mensagemWhatsApp}"
         target="_blank"
         style="
           display:block;
@@ -175,7 +200,7 @@ async function gerarTesteGratis() {
 
     resultado.innerHTML = `
       <h3 style="color:#ef4444;">Erro ao gerar teste</h3>
-      <p>${error.message}</p>
+      <p>Não foi possível conectar ao servidor. Tente novamente.</p>
     `;
   }
 }
