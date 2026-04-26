@@ -125,64 +125,97 @@
   </div>
 </section>
 
-<section id="planos" class="plans-section">
-  <h2>ESCOLHA SEU <span>PLANO</span></h2>
-  <p>Planos acessíveis para toda a família</p>
+<section id="planos" class="plans">
 
-  <div class="plans">
-    <div class="plan">
-      <h3>MENSAL</h3>
-      <h4>1 TELA</h4>
-      <div class="price">R$ 30<span>,00<br>/mês</span></div>
+  <h2 style="text-align:center; color:#facc15; margin-bottom:30px;">
+    ESCOLHA SEU PLANO
+  </h2>
+
+  <div class="plans-grid">
+
+    <!-- PLANO 1 -->
+    <div class="plan-card">
+      <h3>Mensal 1 Tela</h3>
+      <p class="price">R$ 30,00</p>
+
       <ul>
-        <li>✔ Acesso por 30 dias</li>
         <li>✔ 1 dispositivo</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
+        <li>✔ Canais + Filmes + Séries</li>
+        <li>✔ Qualidade HD / Full HD</li>
+        <li>✔ Suporte via WhatsApp</li>
       </ul>
-      <button onclick="selecionarPlano('30')">ESCOLHER PLANO</button>
+
+      <button onclick="selecionarPlano(30)">
+        Escolher Plano
+      </button>
     </div>
 
-    <div class="plan destaque">
-      <div class="tag">★ MAIS ESCOLHIDO</div>
-      <h3>MENSAL</h3>
-      <h4>2 TELAS</h4>
-      <div class="price yellow">R$ 50<span>,00<br>/mês</span></div>
+    <!-- PLANO 2 (DESTAQUE) -->
+    <div class="plan-card destaque">
+      <div class="badge-top">MAIS VENDIDO 🔥</div>
+
+      <h3>Mensal 2 Telas</h3>
+      <p class="price">R$ 50,00</p>
+
       <ul>
-        <li>✔ Acesso por 30 dias</li>
-        <li>✔ 2 dispositivos</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
+        <li>✔ 2 dispositivos simultâneos</li>
+        <li>✔ Canais + Filmes + Séries</li>
+        <li>✔ Qualidade Full HD</li>
+        <li>✔ Melhor custo-benefício</li>
       </ul>
-      <button class="yellow-btn" onclick="selecionarPlano('50')">ESCOLHER PLANO</button>
+
+      <button onclick="selecionarPlano(50)">
+        Escolher Plano
+      </button>
     </div>
 
-    <div class="plan">
-      <h3>TRIMESTRAL</h3>
-      <h4>1 TELA</h4>
-      <div class="price">R$ 80<span>,00<br>/3 meses</span></div>
+    <!-- PLANO 3 -->
+    <div class="plan-card">
+      <h3>Trimestral 1 Tela</h3>
+      <p class="price">R$ 80,00</p>
+
       <ul>
-        <li>✔ Acesso por 90 dias</li>
-        <li>✔ 1 dispositivo</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
+        <li>✔ 3 meses de acesso</li>
+        <li>✔ Economia garantida</li>
+        <li>✔ Qualidade HD / Full HD</li>
+        <li>✔ Suporte VIP</li>
       </ul>
-      <button onclick="selecionarPlano('80')">ESCOLHER PLANO</button>
+
+      <button onclick="selecionarPlano(80)">
+        Escolher Plano
+      </button>
     </div>
 
-    <div class="plan">
-      <h3>TRIMESTRAL</h3>
-      <h4>2 TELAS</h4>
-      <div class="price">R$ 140<span>,00<br>/3 meses</span></div>
+    <!-- PLANO 4 -->
+    <div class="plan-card">
+      <h3>Trimestral 2 Telas</h3>
+      <p class="price">R$ 140,00</p>
+
       <ul>
-        <li>✔ Acesso por 90 dias</li>
-        <li>✔ 2 dispositivos</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
+        <li>✔ 2 dispositivos simultâneos</li>
+        <li>✔ 3 meses completos</li>
+        <li>✔ Melhor experiência</li>
+        <li>✔ Sem travamentos</li>
       </ul>
-      <button onclick="selecionarPlano('140')">ESCOLHER PLANO</button>
+
+      <button onclick="selecionarPlano(140)">
+        Escolher Plano
+      </button>
     </div>
+
   </div>
+
+  <!-- PROVA SOCIAL -->
+  <div style="text-align:center; margin-top:40px;">
+    <p style="color:#22c55e; font-weight:bold;">
+      🔥 Mais de 2.000 clientes ativos usando SG IPTV
+    </p>
+
+    <p style="color:#facc15;">
+      ⚡ Ativação imediata após pagamento
+    </p>
+  </div>
+
 </section>
 
 <section id="checkout" class="checkout">
