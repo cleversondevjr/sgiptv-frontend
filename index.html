@@ -8,10 +8,12 @@
 </head>
 <body>
 
+<!-- LOADER -->
 <div id="loader">
   <img src="assets/logo.png" alt="SG IPTV">
 </div>
 
+<!-- HEADER -->
 <header class="header">
   <img src="assets/logo.png" class="logo" alt="SG IPTV">
 
@@ -19,22 +21,54 @@
     <a href="#inicio">Início</a>
     <a href="#teste-gratis">Teste</a>
     <a href="#planos">Planos</a>
+    <a href="#beneficios">Benefícios</a>
     <a href="#checkout">Pagamento</a>
+    <a href="#faq">FAQ</a>
   </nav>
 
   <a class="client-btn" href="login.html">Área do Cliente</a>
 </header>
 
+<!-- HERO -->
 <section id="inicio" class="hero">
   <div class="hero-content">
-    <h1>SG IPTV</h1>
-    <p>A melhor experiência em IPTV</p>
+    <span class="badge">★ A MELHOR EXPERIÊNCIA EM TV</span>
+
+    <h1>
+      ASSISTA TUDO<br>
+      <strong>O QUE VOCÊ AMA</strong><br>
+      COM A <span>SG IPTV</span>
+    </h1>
+
+    <p>Canais ao vivo, filmes, séries e muito mais em alta qualidade e sem travamentos.</p>
+
+    <div class="hero-buttons">
+      <a href="#checkout" class="btn primary">🚀 ASSINAR AGORA</a>
+      <a href="#planos" class="btn secondary">▶ SAIBA MAIS</a>
+    </div>
   </div>
 </section>
 
-<!-- TESTE -->
+<!-- BENEFICIOS -->
+<section id="beneficios" class="benefits">
+  <div class="benefit-card">
+    <h3>📺 QUALIDADE 4K</h3>
+  </div>
+  <div class="benefit-card">
+    <h3>🖥️ MULTIDISPOSITIVOS</h3>
+  </div>
+  <div class="benefit-card">
+    <h3>📶 SEM TRAVAMENTOS</h3>
+  </div>
+  <div class="benefit-card">
+    <h3>👑 SUPORTE VIP</h3>
+  </div>
+</section>
+
+<!-- TESTE GRATIS -->
 <section id="teste-gratis" class="checkout">
   <div class="checkout-box">
+
     <div class="checkout-left">
       <h2>TESTE GRÁTIS</h2>
 
@@ -55,13 +89,25 @@
     </div>
 
     <div class="checkout-right">
-      <div id="resultadoTeste"></div>
+      <div id="resultadoTeste">
+        <h3>Seu teste aparecerá aqui</h3>
+
+        <!-- CÓDIGOS FIXOS -->
+        <div class="apps-box">
+          <h4>📱 Códigos dos Apps</h4>
+          <p>PLAYSIM → pwrtv</p>
+          <p>ASSIST PLUS → pwrtv</p>
+          <p>POWER PIXEL → power</p>
+          <p>LAZER PLAY → powerpixel</p>
+        </div>
+      </div>
     </div>
+
   </div>
 </section>
 
 <!-- PLANOS -->
-<section id="planos">
+<section id="planos" class="plans-section">
   <h2>PLANOS</h2>
 
   <div class="plans">
@@ -104,13 +150,35 @@
     <option value="140">Trimestral 2 Telas</option>
   </select>
 
-  <input type="email" id="email" placeholder="Seu email">
-  <input type="text" id="telefone" placeholder="Seu WhatsApp">
+  <input type="email" id="email" placeholder="Email">
+  <input type="text" id="telefone" placeholder="WhatsApp">
 
   <button onclick="gerarPix()">GERAR PIX</button>
 
   <div id="pix"></div>
 </section>
+
+<!-- FAQ -->
+<section id="faq">
+  <h2>FAQ</h2>
+
+  <div class="faq-item">
+    <h4>Funciona em Smart TV?</h4>
+    <p>Sim, funciona em TV, celular e TV Box.</p>
+  </div>
+
+  <div class="faq-item">
+    <h4>Tem fidelidade?</h4>
+    <p>Não, pagamento mensal sem contrato.</p>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <img src="assets/logo.png">
+  <p>SG IPTV © 2026</p>
+</footer>
 
 <script src="script.js"></script>
 </body>
