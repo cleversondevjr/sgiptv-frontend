@@ -1,46 +1,258 @@
 const API = "https://sgiptv-backend.onrender.com";
 
-window.onload = () => {
-  document.getElementById("loader").style.display = "none";
-};
+window.addEventListener("load", () => {
+  const loader = document.getElementById("loader");
+
+  if (loader) {
+    setTimeout(() => {
+      loader.style.display = "none";
+    }, 700);
+  }
+});
 
 function selecionarPlano(valor) {
-  document.getElementById("plano").value = valor;
-  document.getElementById("checkout").scrollIntoView();
+  const plano = document.getElementById("plano");
+  const checkout = document.getElementById("checkout");
+
+  if (plano) {
+    plano.value = valor;
+  }
+
+  if (checkout) {
+    checkout.scrollIntoView({ behavior: "smooth" });
+  }
 }
 
 async function gerarPix() {
   const valor = document.getElementById("plano").value;
-  const email = document.getElementById("email").value;
-  const telefone = document.getElementById("telefone").value;
+  const plano = document.getElementById("plano").selectedOptions[0].text;
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const telefone = document.getElementById("telefone").value.trim();
+  const pixBox = document.getElementById("pix");
 
-  const res = await fetch(API + "/pix", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({valor,email,telefone})
-  });
+  if (!email || !telefone) {
+    pixBox.innerHTML = `
+      <h3 style="color:#ef4444;">Preencha todos os campos</h3>
+      <p>Informe seu email e WhatsApp para gerar o Pix.</p>
+    `;
+    return;
+  }
 
-  const data = await res.json();
-
-  document.getElementById("pix").innerHTML = `
-    <img src="data:image/png;base64,${data.qr_base64}">
-    <textarea>${data.qr_code}</textarea>
-    <a href="https://wa.me/5511951623333" target="_blank">Enviar comprovante</a>
+  pixBox.innerHTML = `
+    <h3 style="color:#facc15;">Gerando Pix...</h3>
+    <p>Aguarde alguns segundos.</p>
   `;
+
+  try {
+    const res = await fetch(`${API}/pix`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ plano, valor, email, telefone })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar Pix");
+    }
+
+    const mensagemWhatsApp = encodeURIComponent(
+      `Olá, realizei o pagamento do plano ${plano}.\n\nEmail: ${email}\nWhatsApp: ${telefone}\n\nSegue o comprovante.`
+    );
+
+    pixBox.innerHTML = `
+      <h3 style="color:#facc15;">ESCANEIE O QR CODE</h3>
+      <p>OU COPIE O CÓDIGO PIX</p>
+
+      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
+
+      <textarea id="codigoPix" readonly>${data.qr_code}</textarea>
+
+      <br><br>
+
+      <button class="generate-btn" onclick="copiarPix()">Copiar Pix</button>
+
+      <p style="margin-top:15px;">
+        Após realizar o pagamento, envie o comprovante pelo WhatsApp para ativação do seu plano.
+      </p>
+
+      <a
+        href="https://wa.me/5511951623333?text=${mensagemWhatsApp}"
+        target="_blank"
+        style="
+          display:block;
+          margin-top:15px;
+          background:#22c55e;
+          color:#000;
+          text-align:center;
+          padding:13px;
+          border-radius:8px;
+          font-weight:bold;
+          text-decoration:none;
+        "
+      >
+        Enviar comprovante no WhatsApp
+      </a>
+    `;
+
+  } catch (error) {
+    console.error(error);
+
+    pixBox.innerHTML = `
+      <h3 style="color:#ef4444;">Erro ao gerar Pix</h3>
+      <p>${error.message}</p>
+    `;
+  }
+}
+
+function copiarPix() {
+  const codigo = document.getElementById("codigoPix");
+
+  if (!codigo) {
+    return;
+  }
+
+  navigator.clipboard.writeText(codigo.value);
+  alert("Pix copiado com sucesso!");
+}
+
+function normalizarTelefone(numero) {
+  return String(numero || "").replace(/\D/g, "");
+}
+
+function decodificarRespostaPainel(texto) {
+  return String(texto || "")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "")
+    .replace(/\\t/g, " ")
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, codigo) => {
+      return String.fromCharCode(parseInt(codigo, 16));
+    });
+}
+
+function extrairLoginSenha(respostaOriginal) {
+  const resposta = decodificarRespostaPainel(respostaOriginal);
+
+  let login = null;
+  let senha = null;
+
+  const linhas = resposta
+    .split("\n")
+    .map(linha => linha.trim())
+    .filter(Boolean);
+
+  for (const linha of linhas) {
+    const linhaLimpa = linha.replace(/\*/g, "").trim();
+
+    if (!login) {
+      const loginMatch = linhaLimpa.match(/^(usu[aá]rio|usuario|login|user)\s*:?\s*(.+)$/i);
+      if (loginMatch) {
+        login = loginMatch[2].trim();
+      }
+    }
+
+    if (!senha) {
+      const senhaMatch = linhaLimpa.match(/^(senha|password|pass)\s*:?\s*(.+)$/i);
+      if (senhaMatch) {
+        senha = senhaMatch[2].trim();
+      }
+    }
+  }
+
+  if (!login) {
+    const loginUrlMatch = resposta.match(/username=([^&\s\n\r]+)/i);
+    if (loginUrlMatch) {
+      login = loginUrlMatch[1].trim();
+    }
+  }
+
+  if (!senha) {
+    const senhaUrlMatch = resposta.match(/password=([^&\s\n\r]+)/i);
+    if (senhaUrlMatch) {
+      senha = senhaUrlMatch[1].trim();
+    }
+  }
+
+  return {
+    login: login || "Verifique seu email",
+    senha: senha || "Verifique seu email"
+  };
 }
 
 async function gerarTesteGratis() {
   const tipoTeste = document.getElementById("tipoTeste").value;
-  const email = document.getElementById("testeEmail").value;
-  const telefone = document.getElementById("testeTelefone").value;
+  const email = document.getElementById("testeEmail").value.trim().toLowerCase();
+  const telefoneOriginal = document.getElementById("testeTelefone").value;
+  const telefone = normalizarTelefone(telefoneOriginal);
+  const resultado = document.getElementById("resultadoTeste");
 
-  const res = await fetch(API + "/teste-iptv", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({tipoTeste,email,telefone})
-  });
+  if (!email || !telefone) {
+    resultado.innerHTML = `
+      <h3 style="color:#facc15;">Preencha todos os campos</h3>
+      <p>Informe email e WhatsApp para gerar o teste.</p>
+    `;
+    return;
+  }
 
-  const data = await res.json();
+  resultado.innerHTML = `
+    <h3 style="color:#facc15;">Gerando teste...</h3>
+    <p>Aguarde alguns segundos.</p>
+  `;
 
-  document.getElementById("resultadoTeste").innerHTML = data.resposta;
+  try {
+    const res = await fetch(`${API}/teste-iptv`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, telefone, tipoTeste })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      resultado.innerHTML = `
+        <h3 style="color:#ef4444;">Não foi possível gerar o teste</h3>
+        <p>${data.error || "Erro ao gerar teste."}</p>
+      `;
+      return;
+    }
+
+    const dados = extrairLoginSenha(data.resposta);
+
+    resultado.innerHTML = `
+      <h3 style="color:#facc15;">Teste gerado com sucesso!</h3>
+      <p>As configurações completas foram enviadas para seu email.</p>
+
+      <div style="
+        background:#020617;
+        border:1px solid #7e22ce;
+        border-radius:12px;
+        padding:18px;
+        margin-top:15px;
+        text-align:left;
+        max-width:420px;
+      ">
+        <p style="margin:8px 0;">
+          <strong style="color:#facc15;">Login:</strong>
+          <span style="color:#fff;">${dados.login}</span>
+        </p>
+
+        <p style="margin:8px 0;">
+          <strong style="color:#facc15;">Senha:</strong>
+          <span style="color:#fff;">${dados.senha}</span>
+        </p>
+      </div>
+    `;
+
+  } catch (error) {
+    console.error(error);
+
+    resultado.innerHTML = `
+      <h3 style="color:#ef4444;">Erro ao gerar teste</h3>
+      <p>Não foi possível conectar ao servidor. Tente novamente.</p>
+    `;
+  }
 }
