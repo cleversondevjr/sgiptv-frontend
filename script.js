@@ -32,24 +32,24 @@ async function gerarPix() {
 
   if (!email || !telefone) {
     pixBox.innerHTML = `
-      <h3 style="color:#ef4444;">Preencha os dados</h3>
-      <p>Informe email e WhatsApp.</p>
+      <h3 style="color:#ef4444;">Preencha todos os campos</h3>
+      <p>Informe seu email e WhatsApp para gerar o Pix.</p>
     `;
     return;
   }
 
   pixBox.innerHTML = `
-    <h3 style="color:#facc15;">Gerando QR Code Pix...</h3>
-    <p>Aguarde alguns segundos...</p>
+    <h3 style="color:#facc15;">Gerando Pix...</h3>
+    <p>Aguarde alguns segundos.</p>
   `;
 
   try {
-    const res = await fetch("https://sgiptv-backend.onrender.com/pix", {
+    const res = await fetch(`${API}/pix`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ valor, email, telefone })
+      body: JSON.stringify({ plano, valor, email, telefone })
     });
 
     const data = await res.json();
@@ -58,32 +58,43 @@ async function gerarPix() {
       throw new Error(data.error || "Erro ao gerar Pix");
     }
 
+    // ✅ MENSAGEM WHATSAPP CORRIGIDA
+    const mensagemWhatsApp = encodeURIComponent(
+      `Olá, segue comprovante de pagamento.\n\nPlano: ${plano}\nEmail: ${email}\nWhatsApp: ${telefone}`
+    );
+
     pixBox.innerHTML = `
-      <h3 style="color:#22c55e;">Pagamento gerado</h3>
+      <h3 style="color:#facc15;">ESCANEIE O QR CODE</h3>
+      <p>OU COPIE O CÓDIGO PIX</p>
 
-      <p>Escaneie o QR Code:</p>
+      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
 
-      <img 
-        src="data:image/png;base64,${data.qr_base64}" 
-        style="width:220px; margin:15px 0;"
-      >
+      <textarea id="codigoPix" readonly>${data.qr_code}</textarea>
 
-      <p>Ou copie o código:</p>
+      <br><br>
 
-      <textarea id="codigoPix">${data.qr_code}</textarea>
-
-      <button onclick="copiarPix()">Copiar Pix</button>
+      <button class="generate-btn" onclick="copiarPix()">Copiar Pix</button>
 
       <p style="margin-top:15px;">
-        Após pagar, envie o comprovante no WhatsApp
+        Após realizar o pagamento, envie o comprovante pelo WhatsApp para ativação do seu plano.
       </p>
 
       <a 
-        href="https://wa.me/5511951623333"
+        href="https://wa.me/5511951623333?text=${mensagemWhatsApp}"
         target="_blank"
-        class="generate-btn"
+        style="
+          display:block;
+          margin-top:15px;
+          background:#22c55e;
+          color:#000;
+          text-align:center;
+          padding:13px;
+          border-radius:8px;
+          font-weight:bold;
+          text-decoration:none;
+        "
       >
-        Enviar comprovante
+        Enviar comprovante no WhatsApp
       </a>
     `;
 
@@ -103,7 +114,7 @@ function copiarPix() {
   if (!codigo) return;
 
   navigator.clipboard.writeText(codigo.value);
-  alert("Código Pix copiado!");
+  alert("Pix copiado com sucesso!");
 }
 
 function normalizarTelefone(numero) {
@@ -223,15 +234,8 @@ async function gerarTesteGratis() {
         text-align:left;
         max-width:420px;
       ">
-        <p style="margin:8px 0;">
-          <strong style="color:#facc15;">Login:</strong>
-          <span style="color:#fff;">${dados.login}</span>
-        </p>
-
-        <p style="margin:8px 0;">
-          <strong style="color:#facc15;">Senha:</strong>
-          <span style="color:#fff;">${dados.senha}</span>
-        </p>
+        <p><strong style="color:#facc15;">Login:</strong> ${dados.login}</p>
+        <p><strong style="color:#facc15;">Senha:</strong> ${dados.senha}</p>
       </div>
     `;
 
@@ -240,7 +244,7 @@ async function gerarTesteGratis() {
 
     resultado.innerHTML = `
       <h3 style="color:#ef4444;">Erro ao gerar teste</h3>
-      <p>Não foi possível conectar ao servidor. Tente novamente.</p>
+      <p>Não foi possível conectar ao servidor.</p>
     `;
   }
 }
