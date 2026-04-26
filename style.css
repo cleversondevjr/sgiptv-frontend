@@ -83,3 +83,11 @@ button {
   border: none;
   cursor: pointer;
 }
+.plan.destaque {
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
+  transform: scale(1.05);
+}
+
+.plan.destaque:hover {
+  transform: scale(1.05) translateY(-5px);
+}
