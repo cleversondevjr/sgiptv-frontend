@@ -32,24 +32,24 @@ async function gerarPix() {
 
   if (!email || !telefone) {
     pixBox.innerHTML = `
-      <h3 style="color:#ef4444;">Preencha todos os campos</h3>
-      <p>Informe seu email e WhatsApp para gerar o Pix.</p>
+      <h3 style="color:#ef4444;">Preencha os dados</h3>
+      <p>Informe email e WhatsApp.</p>
     `;
     return;
   }
 
   pixBox.innerHTML = `
-    <h3 style="color:#facc15;">Gerando Pix...</h3>
-    <p>Aguarde alguns segundos.</p>
+    <h3 style="color:#facc15;">Gerando QR Code Pix...</h3>
+    <p>Aguarde alguns segundos...</p>
   `;
 
   try {
-    const res = await fetch(`${API}/pix`, {
+    const res = await fetch("https://sgiptv-backend.onrender.com/pix", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ plano, valor, email, telefone })
+      body: JSON.stringify({ valor, email, telefone })
     });
 
     const data = await res.json();
@@ -58,42 +58,32 @@ async function gerarPix() {
       throw new Error(data.error || "Erro ao gerar Pix");
     }
 
-    const mensagemWhatsApp = encodeURIComponent(
-      `Olá, realizei o pagamento do plano ${plano}.\n\nEmail: ${email}\nWhatsApp: ${telefone}\n\nSegue o comprovante.`
-    );
-
     pixBox.innerHTML = `
-      <h3 style="color:#facc15;">ESCANEIE O QR CODE</h3>
-      <p>OU COPIE O CÓDIGO PIX</p>
+      <h3 style="color:#22c55e;">Pagamento gerado</h3>
 
-      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
+      <p>Escaneie o QR Code:</p>
 
-      <textarea id="codigoPix" readonly>${data.qr_code}</textarea>
+      <img 
+        src="data:image/png;base64,${data.qr_base64}" 
+        style="width:220px; margin:15px 0;"
+      >
 
-      <br><br>
+      <p>Ou copie o código:</p>
 
-      <button class="generate-btn" onclick="copiarPix()">Copiar Pix</button>
+      <textarea id="codigoPix">${data.qr_code}</textarea>
+
+      <button onclick="copiarPix()">Copiar Pix</button>
 
       <p style="margin-top:15px;">
-        Após realizar o pagamento, envie o comprovante pelo WhatsApp para ativação do seu plano.
+        Após pagar, envie o comprovante no WhatsApp
       </p>
 
-      <a
-        href="https://wa.me/5511951623333?text=${mensagemWhatsApp}"
+      <a 
+        href="https://wa.me/5511951623333"
         target="_blank"
-        style="
-          display:block;
-          margin-top:15px;
-          background:#22c55e;
-          color:#000;
-          text-align:center;
-          padding:13px;
-          border-radius:8px;
-          font-weight:bold;
-          text-decoration:none;
-        "
+        class="generate-btn"
       >
-        Enviar comprovante no WhatsApp
+        Enviar comprovante
       </a>
     `;
 
@@ -110,12 +100,10 @@ async function gerarPix() {
 function copiarPix() {
   const codigo = document.getElementById("codigoPix");
 
-  if (!codigo) {
-    return;
-  }
+  if (!codigo) return;
 
   navigator.clipboard.writeText(codigo.value);
-  alert("Pix copiado com sucesso!");
+  alert("Código Pix copiado!");
 }
 
 function normalizarTelefone(numero) {
