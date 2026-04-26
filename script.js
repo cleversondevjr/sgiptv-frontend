@@ -1,96 +1,118 @@
 const API = "https://sgiptv-backend.onrender.com";
 
+window.addEventListener("load", () => {
+  const loader = document.getElementById("loader");
+
+  if (loader) {
+    setTimeout(() => {
+      loader.style.display = "none";
+    }, 700);
+  }
+});
+
 function selecionarPlano(valor) {
-  document.getElementById("plano").value = valor;
-  document.getElementById("checkout").scrollIntoView();
+  const plano = document.getElementById("plano");
+  const checkout = document.getElementById("checkout");
+
+  if (plano) plano.value = valor;
+  if (checkout) checkout.scrollIntoView({ behavior: "smooth" });
+}
+
+function normalizarTelefone(numero) {
+  return String(numero || "").replace(/\D/g, "");
 }
 
 async function gerarPix() {
-  const plano = document.getElementById("plano").value;
-  const email = document.getElementById("email").value;
-  const telefone = document.getElementById("telefone").value;
-
+  const valor = document.getElementById("plano").value;
+  const plano = document.getElementById("plano").selectedOptions[0].text;
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const telefone = normalizarTelefone(document.getElementById("telefone").value);
   const pixBox = document.getElementById("pix");
 
-  pixBox.innerHTML = "Gerando PIX...";
+  if (!email || !telefone) {
+    pixBox.innerHTML = `<h3 style="color:#ef4444;">Preencha todos os campos</h3>`;
+    return;
+  }
+
+  pixBox.innerHTML = `<h3 style="color:#facc15;">Gerando Pix...</h3>`;
 
   try {
     const res = await fetch(`${API}/pix`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        plano,
-        valor: plano,
-        email,
-        telefone
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plano, valor, email, telefone })
     });
 
     const data = await res.json();
 
-    pixBox.innerHTML = `
-      <img src="data:image/png;base64,${data.qr_base64}" />
-      <textarea>${data.qr_code}</textarea>
-    `;
+    if (!res.ok) throw new Error(data.error || "Erro ao gerar Pix");
 
-  } catch {
-    pixBox.innerHTML = "Erro ao gerar PIX";
+    const mensagemWhatsApp = encodeURIComponent(
+      `Olá, segue comprovante de pagamento.\n\nPlano: ${plano}\nEmail: ${email}\nWhatsApp: ${telefone}`
+    );
+
+    pixBox.innerHTML = `
+      <h3 style="color:#facc15;">ESCANEIE O QR CODE</h3>
+      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
+      <textarea id="codigoPix" readonly>${data.qr_code}</textarea>
+      <button class="generate-btn" onclick="copiarPix()">Copiar Pix</button>
+      <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagemWhatsApp}" target="_blank">
+        Enviar comprovante no WhatsApp
+      </a>
+    `;
+  } catch (error) {
+    pixBox.innerHTML = `<h3 style="color:#ef4444;">Erro ao gerar Pix</h3><p>${error.message}</p>`;
   }
 }
 
-// 🔥 NOVO: GERAR TESTE COM LOGIN AUTOMÁTICO
-async function gerarTeste() {
-  const email = document.getElementById("email").value.trim().toLowerCase();
-  const telefone = document.getElementById("telefone").value.replace(/\D/g, "");
-  const tipoTeste = document.getElementById("tipoTeste")?.value || "iptv_com_adulto";
+function copiarPix() {
+  const codigo = document.getElementById("codigoPix");
+  if (!codigo) return;
 
-  const box = document.getElementById("resultadoTeste");
+  navigator.clipboard.writeText(codigo.value);
+  alert("Pix copiado com sucesso!");
+}
+
+async function gerarTesteGratis() {
+  const tipoTeste = document.getElementById("tipoTeste").value;
+  const email = document.getElementById("testeEmail").value.trim().toLowerCase();
+  const telefone = normalizarTelefone(document.getElementById("testeTelefone").value);
+  const resultado = document.getElementById("resultadoTeste");
 
   if (!email || !telefone) {
-    box.innerHTML = "Preencha email e WhatsApp.";
+    resultado.innerHTML = `<h3 style="color:#facc15;">Preencha todos os campos</h3>`;
     return;
   }
 
-  box.innerHTML = "Gerando teste...";
+  resultado.innerHTML = `<h3 style="color:#facc15;">Gerando teste...</h3>`;
 
   try {
     const res = await fetch(`${API}/teste-iptv`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email,
-        telefone,
-        tipoTeste
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, telefone, tipoTeste })
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      box.innerHTML = data.error || "Erro ao gerar teste.";
+      resultado.innerHTML = `<h3 style="color:#ef4444;">${data.error || "Erro ao gerar teste."}</h3>`;
       return;
     }
 
-    // 🔥 SALVA PARA LOGIN AUTOMÁTICO
     localStorage.setItem("cliente_email", email);
     localStorage.setItem("cliente_telefone", telefone);
 
-    box.innerHTML = `
-      <p style="color:#22c55e;">Teste gerado com sucesso!</p>
-      <p>Redirecionando para área do cliente...</p>
+    resultado.innerHTML = `
+      <h3 style="color:#22c55e;">Teste gerado com sucesso!</h3>
+      <p>Redirecionando para a Área do Cliente...</p>
     `;
 
-    // 🔥 REDIRECIONA AUTOMATICAMENTE
     setTimeout(() => {
       window.location.href = "cliente.html";
     }, 1500);
 
   } catch (error) {
-    console.error(error);
-    box.innerHTML = "Erro ao gerar teste.";
+    resultado.innerHTML = `<h3 style="color:#ef4444;">Erro ao gerar teste</h3>`;
   }
 }
