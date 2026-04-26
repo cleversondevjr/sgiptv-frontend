@@ -510,35 +510,54 @@ footer img {
   }
 }
 
-.catalogo {
+.netflix-section {
+  background: #05000f;
+  padding: 70px 20px;
   text-align: center;
-  padding: 60px 20px;
 }
 
-.catalogo h2 {
+.netflix-section h2 {
   color: #facc15;
+  font-size: 36px;
   margin-bottom: 10px;
 }
 
-.catalogo p {
-  color: #ccc;
-  margin-bottom: 30px;
+.netflix-section p {
+  color: #d1d5db;
+  margin-bottom: 35px;
 }
 
-.grid-catalogo {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  max-width: 1000px;
+.netflix-row {
+  max-width: 1180px;
   margin: auto;
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding: 15px 5px 25px;
+  scroll-snap-type: x mandatory;
 }
 
-.grid-catalogo img {
-  width: 100%;
+.netflix-row::-webkit-scrollbar {
+  height: 8px;
+}
+
+.netflix-row::-webkit-scrollbar-thumb {
+  background: #7e22ce;
   border-radius: 10px;
-  transition: 0.3s;
 }
 
-.grid-catalogo img:hover {
-  transform: scale(1.05);
+.netflix-row img {
+  width: 190px;
+  min-width: 190px;
+  height: 285px;
+  object-fit: cover;
+  border-radius: 14px;
+  scroll-snap-align: start;
+  transition: 0.3s;
+  box-shadow: 0 0 20px rgba(126, 34, 206, 0.35);
+}
+
+.netflix-row img:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 35px rgba(250, 204, 21, 0.45);
 }
