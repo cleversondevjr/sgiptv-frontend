@@ -19,17 +19,26 @@ function formatarData(data) {
   }
 }
 
+function formatarDataFimDoDia(data) {
+  if (!data) return "Aguardando confirmacao";
+
+  try {
+    return `${new Date(data).toLocaleDateString("pt-BR")}, 23:59:59`;
+  } catch {
+    return "Nao informado";
+  }
+}
+
 function textoExpiracao(item) {
   if (!item?.data_expiracao) return "Aguardando confirmacao";
 
   return item.expirado
-    ? `${formatarData(item.data_expiracao)} (vencido)`
-    : formatarData(item.data_expiracao);
+    ? `${formatarDataFimDoDia(item.data_expiracao)} (vencido)`
+    : formatarDataFimDoDia(item.data_expiracao);
 }
 
 function textoPrazoPagamento(pagamento) {
   if (pagamento.status === "cancelado") return "Cancelado";
-  if (pagamento.status === "confirmado") return textoExpiracao(pagamento);
   if (!pagamento.pix_expira_em) return "15 min apos gerar";
 
   const expiraEm = new Date(pagamento.pix_expira_em);
@@ -39,6 +48,31 @@ function textoPrazoPagamento(pagamento) {
   return expiraEm < new Date()
     ? `${formatarData(pagamento.pix_expira_em)} (vencido)`
     : formatarData(pagamento.pix_expira_em);
+}
+
+function quantidadeTelas(plano) {
+  const texto = String(plano || "").toLowerCase();
+
+  if (texto.includes("2 tela")) return "2";
+  if (texto.includes("1 tela")) return "1";
+
+  return "-";
+}
+
+function statusClassPagamento(status) {
+  if (status === "confirmado") return "status-confirmado";
+  if (status === "cancelado") return "status-cancelado";
+  return "status-pendente";
+}
+
+function alternarDetalhesPagamento(id) {
+  const detalhes = document.getElementById(`detalhes-pagamento-${id}`);
+  const botao = document.getElementById(`toggle-pagamento-${id}`);
+
+  if (!detalhes || !botao) return;
+
+  const fechado = detalhes.classList.toggle("admin-hidden");
+  botao.textContent = fechado ? "+" : "-";
 }
 
 function mostrarSecaoAdmin(secao) {
@@ -114,7 +148,7 @@ async function carregarPagamentos() {
 
   lista.innerHTML = `
     <tr>
-      <td colspan="8">Carregando...</td>
+      <td colspan="5">Carregando...</td>
     </tr>
   `;
 
@@ -141,7 +175,7 @@ async function carregarPagamentos() {
     if (dados.length === 0) {
       lista.innerHTML = `
         <tr>
-          <td colspan="8">Nenhum pagamento encontrado.</td>
+          <td colspan="5">Nenhum pagamento encontrado.</td>
         </tr>
       `;
       return;
@@ -152,11 +186,7 @@ async function carregarPagamentos() {
     dados.forEach(pagamento => {
       const telefone = pagamento.telefone || "Nao informado";
       const telefoneLink = String(pagamento.telefone || "").replace(/\D/g, "");
-      const statusClass = pagamento.status === "confirmado"
-        ? "status-confirmado"
-        : pagamento.status === "cancelado"
-        ? "status-cancelado"
-        : "status-pendente";
+      const statusClass = statusClassPagamento(pagamento.status);
       const acoesPagamento = pagamento.status === "pendente"
         ? `
           <button onclick="confirmarPagamento(${pagamento.id})">Confirmar</button>
@@ -166,25 +196,65 @@ async function carregarPagamentos() {
 
       lista.innerHTML += `
         <tr>
-          <td>${escaparHtml(pagamento.id)}</td>
           <td>${escaparHtml(pagamento.email || "-")}</td>
           <td>${escaparHtml(telefone)}</td>
-          <td>${escaparHtml(pagamento.plano || "-")}</td>
-          <td>R$ ${escaparHtml(pagamento.valor)}</td>
-          <td class="${statusClass}">${escaparHtml(pagamento.status)}</td>
-          <td>${escaparHtml(textoPrazoPagamento(pagamento))}</td>
+          <td>${escaparHtml(pagamento.email || "-")}</td>
+          <td>${escaparHtml(telefone)}</td>
           <td>
-            ${acoesPagamento}
-
-            <a
-              class="whatsapp-btn"
-              href="https://wa.me/55${telefoneLink}?text=${encodeURIComponent(
-                `Ola! Identificamos seu pagamento na SG IPTV.\n\nEmail: ${pagamento.email}\nPlano: ${pagamento.plano}\nValor: R$ ${pagamento.valor}\nStatus: ${pagamento.status}`
-              )}"
-              target="_blank"
-            >
-              WhatsApp
-            </a>
+            <button id="toggle-pagamento-${escaparHtml(pagamento.id)}" class="detalhe-btn" onclick="alternarDetalhesPagamento(${pagamento.id})">+</button>
+          </td>
+        </tr>
+        <tr id="detalhes-pagamento-${escaparHtml(pagamento.id)}" class="detalhes-row admin-hidden">
+          <td colspan="5">
+            <div class="detalhes-grid">
+              <div>
+                <strong>Status</strong>
+                <p class="${statusClass}">${escaparHtml(pagamento.status)}</p>
+              </div>
+              <div>
+                <strong>Tipo de plano</strong>
+                <p>${escaparHtml(pagamento.plano || "-")}</p>
+              </div>
+              <div>
+                <strong>Valor</strong>
+                <p>R$ ${escaparHtml(pagamento.valor)}</p>
+              </div>
+              <div>
+                <strong>Quantidade de telas</strong>
+                <p>${escaparHtml(quantidadeTelas(pagamento.plano))}</p>
+              </div>
+              <div>
+                <strong>Data de criacao</strong>
+                <p>${escaparHtml(formatarData(pagamento.criado_em))}</p>
+              </div>
+              <div>
+                <strong>Data de expiracao</strong>
+                <p>${escaparHtml(textoExpiracao(pagamento))}</p>
+              </div>
+              <div>
+                <strong>Prazo do Pix</strong>
+                <p>${escaparHtml(textoPrazoPagamento(pagamento))}</p>
+              </div>
+              <div>
+                <strong>ID pagamento</strong>
+                <p>${escaparHtml(pagamento.payment_id || pagamento.id || "-")}</p>
+              </div>
+              <div class="detalhes-acoes">
+                <strong>Acoes</strong>
+                <div>
+                  ${acoesPagamento}
+                  <a
+                    class="whatsapp-btn"
+                    href="https://wa.me/55${telefoneLink}?text=${encodeURIComponent(
+                      `Ola! Identificamos seu pagamento na SG IPTV.\n\nEmail: ${pagamento.email}\nPlano: ${pagamento.plano}\nValor: R$ ${pagamento.valor}\nStatus: ${pagamento.status}`
+                    )}"
+                    target="_blank"
+                  >
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
           </td>
         </tr>
       `;
