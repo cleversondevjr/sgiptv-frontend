@@ -1,5 +1,6 @@
 const API = "https://sgiptv-backend.onrender.com";
 let pixStatusTimer = null;
+let pixCountdownTimer = null;
 
 window.addEventListener("load", () => {
   const loader = document.getElementById("loader");
@@ -9,6 +10,9 @@ window.addEventListener("load", () => {
       loader.style.display = "none";
     }, 700);
   }
+
+  aplicarMascaraTelefone("telefone");
+  aplicarMascaraTelefone("testeTelefone");
 });
 
 function selecionarPlano(valor) {
@@ -29,6 +33,34 @@ function normalizarTelefone(numero) {
   return String(numero || "").replace(/\D/g, "");
 }
 
+function formatarTelefone(numero) {
+  const digitos = normalizarTelefone(numero).slice(0, 11);
+
+  if (digitos.length <= 2) return digitos;
+  if (digitos.length <= 7) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+
+  return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+}
+
+function aplicarMascaraTelefone(id) {
+  const campo = document.getElementById(id);
+  if (!campo) return;
+
+  campo.addEventListener("input", () => {
+    campo.value = formatarTelefone(campo.value);
+    limparErroCampo(id);
+  });
+}
+
+function emailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email || ""));
+}
+
+function telefoneValido(telefone) {
+  const digitos = normalizarTelefone(telefone);
+  return digitos.length >= 10 && digitos.length <= 13;
+}
+
 function escaparHtml(valor) {
   return String(valor || "")
     .replace(/&/g, "&amp;")
@@ -38,11 +70,107 @@ function escaparHtml(valor) {
     .replace(/'/g, "&#39;");
 }
 
+function mostrarErroCampo(id, mensagem) {
+  const campo = document.getElementById(id);
+  if (!campo) return;
+
+  campo.classList.add("input-error");
+
+  let aviso = campo.parentElement.querySelector(`[data-field-error="${id}"]`);
+  if (!aviso) {
+    aviso = document.createElement("p");
+    aviso.className = "field-message";
+    aviso.dataset.fieldError = id;
+    campo.insertAdjacentElement("afterend", aviso);
+  }
+
+  aviso.textContent = mensagem;
+}
+
+function limparErroCampo(id) {
+  const campo = document.getElementById(id);
+  if (!campo) return;
+
+  campo.classList.remove("input-error");
+
+  const aviso = campo.parentElement.querySelector(`[data-field-error="${id}"]`);
+  if (aviso) aviso.remove();
+}
+
+function validarContatoFormulario({ emailId, telefoneId, destino }) {
+  const email = document.getElementById(emailId).value.trim().toLowerCase();
+  const telefone = normalizarTelefone(document.getElementById(telefoneId).value);
+  let valido = true;
+
+  limparErroCampo(emailId);
+  limparErroCampo(telefoneId);
+
+  if (!emailValido(email)) {
+    mostrarErroCampo(emailId, "Digite um email valido.");
+    valido = false;
+  }
+
+  if (!telefoneValido(telefone)) {
+    mostrarErroCampo(telefoneId, "Digite um WhatsApp com DDD.");
+    valido = false;
+  }
+
+  if (!valido && destino) {
+    destino.innerHTML = `
+      <h3 style="color:#ef4444;">Revise seus dados</h3>
+      <p>Corrija os campos destacados para continuar.</p>
+    `;
+  }
+
+  return { valido, email, telefone };
+}
+
+function pararContadorPix() {
+  if (pixCountdownTimer) {
+    clearInterval(pixCountdownTimer);
+    pixCountdownTimer = null;
+  }
+}
+
 function pararMonitoramentoPix() {
   if (pixStatusTimer) {
     clearInterval(pixStatusTimer);
     pixStatusTimer = null;
   }
+
+  pararContadorPix();
+}
+
+function formatarTempoRestante(ms) {
+  const totalSegundos = Math.max(0, Math.floor(ms / 1000));
+  const minutos = String(Math.floor(totalSegundos / 60)).padStart(2, "0");
+  const segundos = String(totalSegundos % 60).padStart(2, "0");
+  return `${minutos}:${segundos}`;
+}
+
+function iniciarContadorPix(expiraEm, idElemento, aoExpirar) {
+  pararContadorPix();
+
+  const elemento = document.getElementById(idElemento);
+  const dataExpiracao = new Date(expiraEm);
+
+  if (!elemento || Number.isNaN(dataExpiracao.getTime())) return;
+
+  function atualizar() {
+    const restante = dataExpiracao.getTime() - Date.now();
+
+    if (restante <= 0) {
+      elemento.textContent = "Pix expirado. Gere um novo codigo para continuar.";
+      pararMonitoramentoPix();
+      if (typeof aoExpirar === "function") aoExpirar();
+      return;
+    }
+
+    elemento.textContent = `Este Pix expira em ${formatarTempoRestante(restante)}.`;
+  }
+
+  atualizar();
+  pixCountdownTimer = setInterval(atualizar, 1000);
 }
 
 function criarLinkComprovante({ plano, email, telefone }) {
@@ -67,9 +195,15 @@ async function consultarStatusPix({ paymentId, email, telefone }) {
   return data.pagamento;
 }
 
-function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, pixBox }) {
-  pararMonitoramentoPix();
+function renderizarPixExpirado(pixBox, acaoNovoPix) {
+  pixBox.innerHTML = `
+    <h3 style="color:#ef4444;">Pix expirado</h3>
+    <p>O prazo de pagamento terminou. Gere um novo Pix para continuar com a assinatura.</p>
+    <button class="generate-btn" onclick="${acaoNovoPix}">Gerar novo Pix</button>
+  `;
+}
 
+function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, pixBox }) {
   const linkComprovante = criarLinkComprovante({ plano, email, telefone });
 
   async function verificar() {
@@ -78,11 +212,7 @@ function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, pixBox }) 
 
       if (pagamento.status === "cancelado") {
         pararMonitoramentoPix();
-
-        pixBox.innerHTML = `
-          <h3 style="color:#ef4444;">Pix cancelado</h3>
-          <p>O prazo de 15 minutos expirou. Gere um novo Pix para continuar.</p>
-        `;
+        renderizarPixExpirado(pixBox, "gerarPix()");
         return;
       }
 
@@ -94,12 +224,12 @@ function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, pixBox }) 
 
       pixBox.innerHTML = `
         <h3 style="color:#22c55e;">Pix recebido!</h3>
-        <p>Pagamento confirmado. Você será enviado para a Área do Cliente.</p>
-        <a class="whatsapp-btn" href="${linkComprovante}" target="_blank">
+        <p>Pagamento confirmado. Voce sera enviado para a Area do Cliente.</p>
+        <a class="whatsapp-btn" href="${linkComprovante}" target="_blank" rel="noopener noreferrer">
           Enviar comprovante no WhatsApp
         </a>
         <button class="generate-btn" onclick="window.location.href='cliente.html'">
-          Ir para Área do Cliente
+          Ir para Area do Cliente
         </button>
       `;
 
@@ -118,14 +248,16 @@ function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, pixBox }) 
 async function gerarPix() {
   const planoId = document.getElementById("plano").value;
   const plano = document.getElementById("plano").selectedOptions[0].text;
-  const email = document.getElementById("email").value.trim().toLowerCase();
-  const telefone = normalizarTelefone(document.getElementById("telefone").value);
   const pixBox = document.getElementById("pix");
+  const contato = validarContatoFormulario({
+    emailId: "email",
+    telefoneId: "telefone",
+    destino: pixBox
+  });
 
-  if (!email || !telefone) {
-    pixBox.innerHTML = `<h3 style="color:#ef4444;">Preencha todos os campos</h3>`;
-    return;
-  }
+  if (!contato.valido) return;
+
+  const { email, telefone } = contato;
 
   pixBox.innerHTML = `<h3 style="color:#facc15;">Gerando Pix...</h3>`;
   pararMonitoramentoPix();
@@ -146,15 +278,20 @@ async function gerarPix() {
     );
 
     pixBox.innerHTML = `
-      <h3 style="color:#facc15;">ESCANEIE O QR CODE</h3>
+      <h3 style="color:#facc15;">Escaneie o QR Code</h3>
       <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
+      <p id="pixCountdown" class="pix-countdown">Calculando validade do Pix...</p>
       <textarea id="codigoPix" readonly>${escaparHtml(data.qr_code)}</textarea>
-      <button class="generate-btn" onclick="copiarPix()">Copiar Pix</button>
-      <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagemWhatsApp}" target="_blank">
+      <button class="generate-btn" onclick="copiarPix(this)">Copiar Pix</button>
+      <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagemWhatsApp}" target="_blank" rel="noopener noreferrer">
         Enviar comprovante no WhatsApp
       </a>
-      <p style="color:#facc15;margin-top:15px;">Aguardando confirmação automática do Pix...</p>
+      <p style="color:#facc15;margin-top:15px;">Aguardando confirmacao automatica do Pix...</p>
     `;
+
+    iniciarContadorPix(data.pix_expira_em, "pixCountdown", () => {
+      renderizarPixExpirado(pixBox, "gerarPix()");
+    });
 
     iniciarMonitoramentoPix({
       paymentId: data.payment_id,
@@ -168,24 +305,45 @@ async function gerarPix() {
   }
 }
 
-function copiarPix() {
-  const codigo = document.getElementById("codigoPix");
+async function copiarCodigo(id, botao) {
+  const codigo = document.getElementById(id);
   if (!codigo) return;
 
-  navigator.clipboard.writeText(codigo.value);
-  alert("Pix copiado com sucesso!");
+  try {
+    await navigator.clipboard.writeText(codigo.value);
+  } catch {
+    codigo.select();
+    document.execCommand("copy");
+  }
+
+  if (botao) {
+    const textoOriginal = botao.textContent;
+    botao.textContent = "Pix copiado";
+    botao.classList.add("copy-success");
+
+    setTimeout(() => {
+      botao.textContent = textoOriginal;
+      botao.classList.remove("copy-success");
+    }, 2200);
+  }
+}
+
+function copiarPix(botao) {
+  copiarCodigo("codigoPix", botao);
 }
 
 async function gerarTesteGratis() {
   const tipoTeste = document.getElementById("tipoTeste").value;
-  const email = document.getElementById("testeEmail").value.trim().toLowerCase();
-  const telefone = normalizarTelefone(document.getElementById("testeTelefone").value);
   const resultado = document.getElementById("resultadoTeste");
+  const contato = validarContatoFormulario({
+    emailId: "testeEmail",
+    telefoneId: "testeTelefone",
+    destino: resultado
+  });
 
-  if (!email || !telefone) {
-    resultado.innerHTML = `<h3 style="color:#facc15;">Preencha todos os campos</h3>`;
-    return;
-  }
+  if (!contato.valido) return;
+
+  const { email, telefone } = contato;
 
   resultado.innerHTML = `<h3 style="color:#facc15;">Gerando teste...</h3>`;
 
@@ -208,7 +366,7 @@ async function gerarTesteGratis() {
 
     resultado.innerHTML = `
       <h3 style="color:#22c55e;">Teste gerado com sucesso!</h3>
-      <p>Redirecionando para a Área do Cliente...</p>
+      <p>Redirecionando para a Area do Cliente...</p>
     `;
 
     setTimeout(() => {

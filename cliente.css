@@ -81,6 +81,19 @@ input, select, textarea {
   color: #fff;
 }
 
+.input-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16);
+}
+
+.field-message {
+  margin: 8px 0 0;
+  color: #fca5a5;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+}
+
 button {
   width: 100%;
   margin-top: 18px;
@@ -125,6 +138,30 @@ button:hover {
 }
 
 .info strong {
+  color: #facc15;
+}
+
+.secure-info {
+  grid-column: span 1;
+}
+
+.secure-value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.secure-value input {
+  min-width: 0;
+}
+
+.secure-value button {
+  width: auto;
+  margin-top: 0;
+  padding: 0 12px;
+  border: 1px solid #7e22ce;
+  background: #0b0018;
   color: #facc15;
 }
 
@@ -211,6 +248,12 @@ button:hover {
   border-radius: 12px;
 }
 
+.pix-countdown {
+  color: #facc15;
+  font-weight: bold;
+  margin: 16px 0 8px;
+}
+
 .whatsapp-btn {
   display: block;
   margin-top: 15px;
@@ -238,6 +281,15 @@ button:hover {
 @media (max-width: 700px) {
   .info-grid {
     grid-template-columns: 1fr;
+  }
+
+  .secure-value {
+    grid-template-columns: 1fr;
+  }
+
+  .secure-value button {
+    width: 100%;
+    min-height: 42px;
   }
 }
 .tabela-area {

@@ -1,9 +1,38 @@
 const API = "https://sgiptv-backend.onrender.com";
 let clienteAtual = null;
 let pixStatusTimer = null;
+let pixCountdownTimer = null;
 
 function normalizarTelefone(numero) {
   return String(numero || "").replace(/\D/g, "");
+}
+
+function formatarTelefone(numero) {
+  const digitos = normalizarTelefone(numero).slice(0, 11);
+
+  if (digitos.length <= 2) return digitos;
+  if (digitos.length <= 7) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+
+  return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+}
+
+function aplicarMascaraTelefone(id) {
+  const campo = document.getElementById(id);
+  if (!campo) return;
+
+  campo.addEventListener("input", () => {
+    campo.value = formatarTelefone(campo.value);
+    limparErroCampo(id);
+  });
+}
+
+function emailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email || ""));
+}
+
+function telefoneValido(telefone) {
+  const digitos = normalizarTelefone(telefone);
+  return digitos.length >= 10 && digitos.length <= 13;
 }
 
 function nomePlano(valor) {
@@ -45,6 +74,54 @@ function escaparHtml(valor) {
     .replace(/'/g, "&#39;");
 }
 
+function mostrarErroCampo(id, mensagem) {
+  const campo = document.getElementById(id);
+  if (!campo) return;
+
+  campo.classList.add("input-error");
+
+  let aviso = campo.parentElement.querySelector(`[data-field-error="${id}"]`);
+  if (!aviso) {
+    aviso = document.createElement("p");
+    aviso.className = "field-message";
+    aviso.dataset.fieldError = id;
+    campo.insertAdjacentElement("afterend", aviso);
+  }
+
+  aviso.textContent = mensagem;
+}
+
+function limparErroCampo(id) {
+  const campo = document.getElementById(id);
+  if (!campo) return;
+
+  campo.classList.remove("input-error");
+
+  const aviso = campo.parentElement.querySelector(`[data-field-error="${id}"]`);
+  if (aviso) aviso.remove();
+}
+
+function validarLoginCliente() {
+  const email = document.getElementById("clienteEmail").value.trim().toLowerCase();
+  const telefone = normalizarTelefone(document.getElementById("clienteTelefone").value);
+  let valido = true;
+
+  limparErroCampo("clienteEmail");
+  limparErroCampo("clienteTelefone");
+
+  if (!emailValido(email)) {
+    mostrarErroCampo("clienteEmail", "Digite um email valido.");
+    valido = false;
+  }
+
+  if (!telefoneValido(telefone)) {
+    mostrarErroCampo("clienteTelefone", "Digite um WhatsApp com DDD.");
+    valido = false;
+  }
+
+  return { valido, email, telefone };
+}
+
 function formatarData(data) {
   if (!data) return "Não informado";
 
@@ -63,11 +140,52 @@ function textoExpiracao(item) {
     : formatarData(item.data_expiracao);
 }
 
+function pararContadorPix() {
+  if (pixCountdownTimer) {
+    clearInterval(pixCountdownTimer);
+    pixCountdownTimer = null;
+  }
+}
+
 function pararMonitoramentoPix() {
   if (pixStatusTimer) {
     clearInterval(pixStatusTimer);
     pixStatusTimer = null;
   }
+
+  pararContadorPix();
+}
+
+function formatarTempoRestante(ms) {
+  const totalSegundos = Math.max(0, Math.floor(ms / 1000));
+  const minutos = String(Math.floor(totalSegundos / 60)).padStart(2, "0");
+  const segundos = String(totalSegundos % 60).padStart(2, "0");
+  return `${minutos}:${segundos}`;
+}
+
+function iniciarContadorPix(expiraEm, idElemento, aoExpirar) {
+  pararContadorPix();
+
+  const elemento = document.getElementById(idElemento);
+  const dataExpiracao = new Date(expiraEm);
+
+  if (!elemento || Number.isNaN(dataExpiracao.getTime())) return;
+
+  function atualizar() {
+    const restante = dataExpiracao.getTime() - Date.now();
+
+    if (restante <= 0) {
+      elemento.textContent = "Pix expirado. Gere um novo codigo para continuar.";
+      pararMonitoramentoPix();
+      if (typeof aoExpirar === "function") aoExpirar();
+      return;
+    }
+
+    elemento.textContent = `Este Pix expira em ${formatarTempoRestante(restante)}.`;
+  }
+
+  atualizar();
+  pixCountdownTimer = setInterval(atualizar, 1000);
 }
 
 function criarLinkComprovante({ plano, valor, email, telefone }) {
@@ -98,9 +216,15 @@ async function consultarStatusPix({ paymentId, email, telefone }) {
   return data.pagamento;
 }
 
-function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, valor, box }) {
-  pararMonitoramentoPix();
+function renderizarPixExpirado(box) {
+  box.innerHTML = `
+    <h3 style="color:#ef4444;">Pix expirado</h3>
+    <p>O prazo de pagamento terminou. Gere um novo Pix para continuar.</p>
+    <button onclick="gerarPixRenovacao()">Gerar novo Pix</button>
+  `;
+}
 
+function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, valor, box }) {
   const linkComprovante = criarLinkComprovante({ plano, valor, email, telefone });
 
   async function verificar() {
@@ -109,11 +233,7 @@ function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, valor, box
 
       if (pagamento.status === "cancelado") {
         pararMonitoramentoPix();
-
-        box.innerHTML = `
-          <h3 style="color:#ef4444;">Pix cancelado</h3>
-          <p>O prazo de 15 minutos expirou. Gere um novo Pix para continuar.</p>
-        `;
+        renderizarPixExpirado(box);
         return;
       }
 
@@ -125,8 +245,8 @@ function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, valor, box
 
       box.innerHTML = `
         <h3 style="color:#22c55e;">Pix recebido!</h3>
-        <p>Pagamento confirmado. Atualizando sua Área do Cliente...</p>
-        <a class="whatsapp-btn" href="${linkComprovante}" target="_blank">
+        <p>Pagamento confirmado. Atualizando sua Area do Cliente...</p>
+        <a class="whatsapp-btn" href="${linkComprovante}" target="_blank" rel="noopener noreferrer">
           Enviar comprovante no WhatsApp
         </a>
         <button onclick="consultarCliente()">Atualizar meu plano</button>
@@ -145,14 +265,15 @@ function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, valor, box
 }
 
 async function consultarCliente() {
-  const email = document.getElementById("clienteEmail").value.trim().toLowerCase();
-  const telefone = normalizarTelefone(document.getElementById("clienteTelefone").value);
   const msg = document.getElementById("loginMensagem");
+  const contato = validarLoginCliente();
 
-  if (!email || !telefone) {
-    msg.innerHTML = `<p class="erro">Informe email e WhatsApp.</p>`;
+  if (!contato.valido) {
+    msg.innerHTML = `<p class="erro">Revise email e WhatsApp para entrar.</p>`;
     return;
   }
+
+  const { email, telefone } = contato;
 
   msg.innerHTML = `<p class="sucesso">Consultando...</p>`;
 
@@ -188,14 +309,67 @@ async function consultarCliente() {
   }
 }
 
+function renderizarCredencial(label, valor, id) {
+  return `
+    <div class="info secure-info">
+      <strong>${escaparHtml(label)}</strong>
+      <div class="secure-value">
+        <input id="${id}" type="password" value="${escaparHtml(valor)}" readonly>
+        <button type="button" onclick="alternarCredencial('${id}', this)">Mostrar</button>
+        <button type="button" onclick="copiarValor('${id}', this)">Copiar</button>
+      </div>
+    </div>
+  `;
+}
+
+function alternarCredencial(id, botao) {
+  const campo = document.getElementById(id);
+  if (!campo) return;
+
+  const mostrando = campo.type === "text";
+  campo.type = mostrando ? "password" : "text";
+  botao.textContent = mostrando ? "Mostrar" : "Ocultar";
+}
+
+async function copiarValor(id, botao) {
+  const campo = document.getElementById(id);
+  if (!campo) return;
+
+  try {
+    await navigator.clipboard.writeText(campo.value);
+  } catch {
+    campo.select();
+    document.execCommand("copy");
+  }
+
+  const textoOriginal = botao.textContent;
+  botao.textContent = "Copiado";
+
+  setTimeout(() => {
+    botao.textContent = textoOriginal;
+  }, 1800);
+}
+
+function configurarRenovacao(titulo) {
+  const renovarBox = document.getElementById("renovarBox");
+  const renovarTitulo = document.getElementById("renovarTitulo");
+  const pixRenovacao = document.getElementById("pixRenovacao");
+
+  if (renovarBox) renovarBox.style.display = "block";
+  if (renovarTitulo) renovarTitulo.textContent = titulo;
+  if (pixRenovacao) pixRenovacao.innerHTML = "";
+}
+
 function montarPainel(cliente) {
   const box = document.getElementById("dadosCliente");
 
   if (cliente.tipoCliente === "teste") {
     const teste = cliente.ultimoTeste;
 
+    configurarRenovacao("Ativar Plano");
+
     box.innerHTML = `
-      <h3 style="color:#facc15;">🎁 Teste Gratuito Ativo</h3>
+      <h3 style="color:#facc15;">Teste Gratuito Ativo</h3>
 
       <div class="info-grid">
         <div class="info">
@@ -205,18 +379,11 @@ function montarPainel(cliente) {
 
         <div class="info">
           <strong>WhatsApp</strong>
-          <p>${escaparHtml(cliente.telefone)}</p>
+          <p>${escaparHtml(formatarTelefone(cliente.telefone))}</p>
         </div>
 
-        <div class="info">
-          <strong>Login IPTV</strong>
-          <p>${escaparHtml(teste.login)}</p>
-        </div>
-
-        <div class="info">
-          <strong>Senha IPTV</strong>
-          <p>${escaparHtml(teste.senha)}</p>
-        </div>
+        ${renderizarCredencial("Login IPTV", teste.login, "credTesteLogin")}
+        ${renderizarCredencial("Senha IPTV", teste.senha, "credTesteSenha")}
 
         <div class="info">
           <strong>Teste gerado em</strong>
@@ -230,39 +397,24 @@ function montarPainel(cliente) {
       </div>
 
       <div style="margin-top:30px;">
-        <h3 style="color:#facc15;">📺 Tipo de Acesso</h3>
+        <h3 style="color:#facc15;">Tipo de Acesso</h3>
 
         <select id="tipoTesteCliente">
-          <option value="iptv_com_adulto">⚡ IPTV COMPLETO C/ ADULTO</option>
-          <option value="iptv_sem_adulto">⚡ IPTV COMPLETO S/ ADULTO</option>
-          <option value="p2p">🔥 P2P COMPLETO (CELULAR)</option>
+          <option value="iptv_com_adulto">IPTV completo com adulto</option>
+          <option value="iptv_sem_adulto">IPTV completo sem adulto</option>
+          <option value="p2p">P2P completo para celular</option>
         </select>
 
         <p style="margin-top:10px; color:#aaa;">
-          Escolha o tipo de conteúdo desejado para sua ativação.
+          Escolha o tipo de conteudo desejado para sua ativacao.
         </p>
-      </div>
-
-      <div style="margin-top:30px;">
-        <h3 style="color:#facc15;">💳 Ativar Plano</h3>
-
-        <select id="planoRenovacao">
-          <option value="mensal_1_tela">Mensal 1 Tela - R$30</option>
-          <option value="mensal_2_telas">Mensal 2 Telas - R$50</option>
-          <option value="trimestral_1_tela">Trimestral 1 Tela - R$80</option>
-          <option value="trimestral_2_telas">Trimestral 2 Telas - R$140</option>
-        </select>
-
-        <button onclick="gerarPixRenovacao()" style="margin-top:10px;">
-          Gerar Pix
-        </button>
-
-        <div id="pixRenovacao" style="margin-top:20px;"></div>
       </div>
     `;
 
     return;
   }
+
+  configurarRenovacao("Renovar Plano");
 
   const pagamento = cliente.ultimoPagamento;
 
@@ -292,7 +444,7 @@ function montarPainel(cliente) {
 
       <div class="info">
         <strong>WhatsApp</strong>
-        <p>${escaparHtml(cliente.telefone)}</p>
+        <p>${escaparHtml(formatarTelefone(cliente.telefone))}</p>
       </div>
 
       <div class="info">
@@ -326,21 +478,21 @@ function montarPainel(cliente) {
       </div>
     </div>
 
-    <a class="whatsapp-btn" href="${linkComprovante}" target="_blank">
+    <a class="whatsapp-btn" href="${linkComprovante}" target="_blank" rel="noopener noreferrer">
       Enviar comprovante no WhatsApp
     </a>
 
     <div style="margin-top:30px;">
-      <h3 style="color:#facc15;">📺 Alterar Tipo de Acesso</h3>
+      <h3 style="color:#facc15;">Alterar Tipo de Acesso</h3>
 
       <select id="tipoTesteCliente">
-        <option value="iptv_com_adulto">⚡ IPTV COMPLETO C/ ADULTO</option>
-        <option value="iptv_sem_adulto">⚡ IPTV COMPLETO S/ ADULTO</option>
-        <option value="p2p">🔥 P2P COMPLETO (CELULAR)</option>
+        <option value="iptv_com_adulto">IPTV completo com adulto</option>
+        <option value="iptv_sem_adulto">IPTV completo sem adulto</option>
+        <option value="p2p">P2P completo para celular</option>
       </select>
 
       <p style="margin-top:10px; color:#aaa;">
-        Escolha o tipo de conteúdo desejado.
+        Escolha o tipo de conteudo desejado.
       </p>
     </div>
   `;
@@ -380,10 +532,10 @@ async function gerarPixRenovacao() {
 
     const mensagem = encodeURIComponent(
       `Olá, segue comprovante de pagamento.\n\n` +
-      `📦 Plano: ${plano}\n` +
-      `💰 Valor: R$ ${valor},00\n` +
-      `📧 Email: ${email}\n` +
-      `📱 WhatsApp: ${telefone}`
+      `Plano: ${plano}\n` +
+      `Valor: R$ ${valor},00\n` +
+      `Email: ${email}\n` +
+      `WhatsApp: ${telefone}`
     );
 
     box.innerHTML = `
@@ -391,17 +543,23 @@ async function gerarPixRenovacao() {
 
       <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
 
-      <p>Copie o código Pix:</p>
+      <p id="pixCountdownRenovacao" class="pix-countdown">Calculando validade do Pix...</p>
+
+      <p>Copie o codigo Pix:</p>
 
       <textarea id="codigoPixRenovacao" readonly>${escaparHtml(data.qr_code)}</textarea>
 
-      <button onclick="copiarPixRenovacao()">Copiar Pix</button>
+      <button onclick="copiarPixRenovacao(this)">Copiar Pix</button>
 
-      <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagem}" target="_blank">
+      <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagem}" target="_blank" rel="noopener noreferrer">
         Enviar comprovante no WhatsApp
       </a>
-      <p style="color:#facc15;margin-top:15px;">Aguardando confirmação automática do Pix...</p>
+      <p style="color:#facc15;margin-top:15px;">Aguardando confirmacao automatica do Pix...</p>
     `;
+
+    iniciarContadorPix(data.pix_expira_em, "pixCountdownRenovacao", () => {
+      renderizarPixExpirado(box);
+    });
 
     iniciarMonitoramentoPix({
       paymentId: data.payment_id,
@@ -418,13 +576,8 @@ async function gerarPixRenovacao() {
   }
 }
 
-function copiarPixRenovacao() {
-  const codigo = document.getElementById("codigoPixRenovacao");
-
-  if (!codigo) return;
-
-  navigator.clipboard.writeText(codigo.value);
-  alert("Pix copiado com sucesso!");
+function copiarPixRenovacao(botao) {
+  copiarValor("codigoPixRenovacao", botao);
 }
 
 function sairCliente() {
@@ -434,12 +587,14 @@ function sairCliente() {
 }
 
 window.addEventListener("load", () => {
+  aplicarMascaraTelefone("clienteTelefone");
+
   const email = localStorage.getItem("cliente_email");
   const telefone = localStorage.getItem("cliente_telefone");
 
   if (email && telefone) {
     document.getElementById("clienteEmail").value = email;
-    document.getElementById("clienteTelefone").value = telefone;
+    document.getElementById("clienteTelefone").value = formatarTelefone(telefone);
 
     consultarCliente();
   }
