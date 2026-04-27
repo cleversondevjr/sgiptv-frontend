@@ -104,10 +104,10 @@ function montarPainel(cliente) {
       <div style="margin-top:30px;">
         <h3 style="color:#facc15;">📺 Tipo de Acesso</h3>
 
-        <select>
-          <option>IPTV COM ADULTO</option>
-          <option>IPTV SEM ADULTO</option>
-          <option>P2P</option>
+        <select id="tipoTesteCliente">
+          <option value="iptv_com_adulto">⚡ IPTV COMPLETO C/ ADULTO</option>
+          <option value="iptv_sem_adulto">⚡ IPTV COMPLETO S/ ADULTO</option>
+          <option value="p2p">🔥 P2P COMPLETO (CELULAR)</option>
         </select>
 
         <p style="margin-top:10px; color:#aaa;">
@@ -183,20 +183,17 @@ function montarPainel(cliente) {
     </div>
 
     <div style="margin-top:30px;">
-      <h3 style="color:#facc15;">🔄 Renovar Plano</h3>
+      <h3 style="color:#facc15;">📺 Alterar Tipo de Acesso</h3>
 
-      <select id="planoRenovacao">
-        <option value="30">Mensal 1 Tela - R$30</option>
-        <option value="50">Mensal 2 Telas - R$50</option>
-        <option value="80">Trimestral 1 Tela - R$80</option>
-        <option value="140">Trimestral 2 Telas - R$140</option>
+      <select id="tipoTesteCliente">
+        <option value="iptv_com_adulto">⚡ IPTV COMPLETO C/ ADULTO</option>
+        <option value="iptv_sem_adulto">⚡ IPTV COMPLETO S/ ADULTO</option>
+        <option value="p2p">🔥 P2P COMPLETO (CELULAR)</option>
       </select>
 
-      <button onclick="gerarPixRenovacao()" style="margin-top:10px;">
-        Gerar Pix
-      </button>
-
-      <div id="pixRenovacao" style="margin-top:20px;"></div>
+      <p style="margin-top:10px; color:#aaa;">
+        Escolha o tipo de conteúdo desejado.
+      </p>
     </div>
   `;
 }
@@ -204,11 +201,15 @@ function montarPainel(cliente) {
 async function gerarPixRenovacao() {
   if (!clienteAtual) return;
 
-  const valor = document.getElementById("planoRenovacao").value;
+  const planoSelect = document.getElementById("planoRenovacao");
+  const box = document.getElementById("pixRenovacao");
+
+  if (!planoSelect || !box) return;
+
+  const valor = planoSelect.value;
   const plano = nomePlano(valor);
   const email = clienteAtual.email;
   const telefone = clienteAtual.telefone;
-  const box = document.getElementById("pixRenovacao");
 
   box.innerHTML = `<p style="color:#facc15;">Gerando Pix...</p>`;
 
