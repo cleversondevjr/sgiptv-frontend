@@ -22,8 +22,8 @@
     <p>Gerencie pagamentos, clientes e renovações.</p>
 
     <div class="admin-nav">
-      <a href="#pagamentos">Pagamentos</a>
-      <a href="#testes">Testes IPTV</a>
+      <button id="btnPagamentos" class="nav-active" onclick="mostrarSecaoAdmin('pagamentos')">Pagamentos</button>
+      <button id="btnTestes" onclick="mostrarSecaoAdmin('testes')">Testes IPTV</button>
       <button onclick="carregarPagamentos(); carregarTestes();">Atualizar Dados</button>
     </div>
 
@@ -51,7 +51,7 @@
       </div>
     </section>
 
-    <section id="testes" class="renovar-box admin-section">
+    <section id="testes" class="renovar-box admin-section admin-hidden">
       <h2>Testes IPTV</h2>
 
       <div class="tabela-area">

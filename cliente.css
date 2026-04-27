@@ -40,7 +40,7 @@ html {
 }
 
 .admin-card {
-  max-width: 1180px;
+  max-width: 1360px;
 }
 
 .login-card {
@@ -138,6 +138,11 @@ button:hover {
   font-weight: bold;
 }
 
+.status-cancelado {
+  color: #ef4444;
+  font-weight: bold;
+}
+
 .renovar-box {
   margin-top: 30px;
   padding-top: 20px;
@@ -152,7 +157,6 @@ button:hover {
   margin-top: 22px;
 }
 
-.admin-nav a,
 .admin-nav button {
   width: auto;
   margin-top: 0;
@@ -167,10 +171,20 @@ button:hover {
   cursor: pointer;
 }
 
-.admin-nav button {
+.admin-nav button.nav-active,
+.admin-nav button:last-child {
   background: #facc15;
   color: #000;
   border-color: #facc15;
+}
+
+.admin-nav button:not(.nav-active):not(:last-child) {
+  background: #020617;
+  color: #facc15;
+}
+
+.admin-hidden {
+  display: none;
 }
 
 .admin-section {
@@ -236,7 +250,7 @@ button:hover {
 
 table {
   width: 100%;
-  min-width: 980px;
+  min-width: 1080px;
   border-collapse: collapse;
   background: #020617;
   overflow: hidden;
@@ -263,6 +277,12 @@ td button {
   margin: 4px 0;
 }
 
+td .cancelar-btn,
+.cancelar-btn {
+  background: #ef4444;
+  color: #fff;
+}
+
 td .whatsapp-btn {
   display: inline-block;
   margin-top: 6px;
@@ -279,7 +299,6 @@ td .whatsapp-btn {
     padding: 20px;
   }
 
-  .admin-nav a,
   .admin-nav button {
     width: 100%;
     text-align: center;

@@ -10,21 +10,51 @@ function escaparHtml(valor) {
 }
 
 function formatarData(data) {
-  if (!data) return "Aguardando confirmação";
+  if (!data) return "Aguardando confirmacao";
 
   try {
     return new Date(data).toLocaleString("pt-BR");
   } catch {
-    return "Não informado";
+    return "Nao informado";
   }
 }
 
 function textoExpiracao(item) {
-  if (!item?.data_expiracao) return "Aguardando confirmação";
+  if (!item?.data_expiracao) return "Aguardando confirmacao";
 
   return item.expirado
     ? `${formatarData(item.data_expiracao)} (vencido)`
     : formatarData(item.data_expiracao);
+}
+
+function textoPrazoPagamento(pagamento) {
+  if (pagamento.status === "cancelado") return "Cancelado";
+  if (pagamento.status === "confirmado") return textoExpiracao(pagamento);
+  if (!pagamento.pix_expira_em) return "15 min apos gerar";
+
+  const expiraEm = new Date(pagamento.pix_expira_em);
+
+  if (Number.isNaN(expiraEm.getTime())) return "15 min apos gerar";
+
+  return expiraEm < new Date()
+    ? `${formatarData(pagamento.pix_expira_em)} (vencido)`
+    : formatarData(pagamento.pix_expira_em);
+}
+
+function mostrarSecaoAdmin(secao) {
+  const pagamentos = document.getElementById("pagamentos");
+  const testes = document.getElementById("testes");
+  const btnPagamentos = document.getElementById("btnPagamentos");
+  const btnTestes = document.getElementById("btnTestes");
+
+  if (!pagamentos || !testes || !btnPagamentos || !btnTestes) return;
+
+  const mostrarPagamentos = secao === "pagamentos";
+
+  pagamentos.classList.toggle("admin-hidden", !mostrarPagamentos);
+  testes.classList.toggle("admin-hidden", mostrarPagamentos);
+  btnPagamentos.classList.toggle("nav-active", mostrarPagamentos);
+  btnTestes.classList.toggle("nav-active", !mostrarPagamentos);
 }
 
 async function loginAdmin() {
@@ -33,7 +63,7 @@ async function loginAdmin() {
   const msg = document.getElementById("loginMsg");
 
   if (!usuario || !senha) {
-    msg.innerHTML = `<p class="erro">Preencha usuário e senha.</p>`;
+    msg.innerHTML = `<p class="erro">Preencha usuario e senha.</p>`;
     return;
   }
 
@@ -51,7 +81,7 @@ async function loginAdmin() {
     const data = await res.json();
 
     if (!res.ok) {
-      msg.innerHTML = `<p class="erro">${escaparHtml(data.error || "Usuário ou senha inválidos.")}</p>`;
+      msg.innerHTML = `<p class="erro">${escaparHtml(data.error || "Usuario ou senha invalidos.")}</p>`;
       return;
     }
 
@@ -82,11 +112,11 @@ async function carregarPagamentos() {
 
   if (!lista || !token) return;
 
-      lista.innerHTML = `
-        <tr>
-          <td colspan="8">Carregando...</td>
-        </tr>
-      `;
+  lista.innerHTML = `
+    <tr>
+      <td colspan="8">Carregando...</td>
+    </tr>
+  `;
 
   try {
     const res = await fetch(`${API}/pagamentos`, {
@@ -120,11 +150,19 @@ async function carregarPagamentos() {
     lista.innerHTML = "";
 
     dados.forEach(pagamento => {
-      const telefone = pagamento.telefone || "Não informado";
+      const telefone = pagamento.telefone || "Nao informado";
       const telefoneLink = String(pagamento.telefone || "").replace(/\D/g, "");
       const statusClass = pagamento.status === "confirmado"
         ? "status-confirmado"
+        : pagamento.status === "cancelado"
+        ? "status-cancelado"
         : "status-pendente";
+      const acoesPagamento = pagamento.status === "pendente"
+        ? `
+          <button onclick="confirmarPagamento(${pagamento.id})">Confirmar</button>
+          <button class="cancelar-btn" onclick="cancelarPagamento(${pagamento.id})">Cancelar</button>
+        `
+        : `<span class="${statusClass}">${escaparHtml(pagamento.status)}</span>`;
 
       lista.innerHTML += `
         <tr>
@@ -134,18 +172,14 @@ async function carregarPagamentos() {
           <td>${escaparHtml(pagamento.plano || "-")}</td>
           <td>R$ ${escaparHtml(pagamento.valor)}</td>
           <td class="${statusClass}">${escaparHtml(pagamento.status)}</td>
-          <td>${escaparHtml(textoExpiracao(pagamento))}</td>
+          <td>${escaparHtml(textoPrazoPagamento(pagamento))}</td>
           <td>
-            ${
-              pagamento.status === "confirmado"
-              ? `<span class="status-confirmado">Confirmado</span>`
-              : `<button onclick="confirmarPagamento(${pagamento.id})">Confirmar</button>`
-            }
+            ${acoesPagamento}
 
             <a
               class="whatsapp-btn"
               href="https://wa.me/55${telefoneLink}?text=${encodeURIComponent(
-                `Olá! Identificamos seu pagamento na SG IPTV.\n\nEmail: ${pagamento.email}\nPlano: ${pagamento.plano}\nValor: R$ ${pagamento.valor}\nStatus: ${pagamento.status}`
+                `Ola! Identificamos seu pagamento na SG IPTV.\n\nEmail: ${pagamento.email}\nPlano: ${pagamento.plano}\nValor: R$ ${pagamento.valor}\nStatus: ${pagamento.status}`
               )}"
               target="_blank"
             >
@@ -251,6 +285,39 @@ async function confirmarPagamento(id) {
   }
 }
 
+async function cancelarPagamento(id) {
+  const token = verificarAdminLogado();
+
+  if (!token) return;
+
+  if (!confirm("Cancelar este Pix pendente?")) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/pagamentos/${id}/cancelar`, {
+      method: "PUT",
+      headers: {
+        Authorization: token
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Erro ao cancelar pagamento.");
+      return;
+    }
+
+    alert("Pagamento cancelado com sucesso!");
+    carregarPagamentos();
+
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao cancelar pagamento.");
+  }
+}
+
 function sairAdmin() {
   localStorage.removeItem("admin_token");
   window.location.href = "login.html";
@@ -259,6 +326,7 @@ function sairAdmin() {
 window.addEventListener("load", () => {
   if (window.location.pathname.includes("admin.html")) {
     verificarAdminLogado();
+    mostrarSecaoAdmin("pagamentos");
     carregarPagamentos();
     carregarTestes();
   }

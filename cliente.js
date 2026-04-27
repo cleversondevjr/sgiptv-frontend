@@ -107,6 +107,16 @@ function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, valor, box
     try {
       const pagamento = await consultarStatusPix({ paymentId, email, telefone });
 
+      if (pagamento.status === "cancelado") {
+        pararMonitoramentoPix();
+
+        box.innerHTML = `
+          <h3 style="color:#ef4444;">Pix cancelado</h3>
+          <p>O prazo de 15 minutos expirou. Gere um novo Pix para continuar.</p>
+        `;
+        return;
+      }
+
       if (pagamento.status !== "confirmado") return;
 
       pararMonitoramentoPix();
