@@ -9,6 +9,8 @@ window.addEventListener("load", () => {
       loader.style.display = "none";
     }, 700);
   }
+
+  carregarAtualizacoesConteudo();
 });
 
 function selecionarPlano(valor) {
@@ -36,6 +38,75 @@ function escaparHtml(valor) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function formatarDataAtualizacao(data) {
+  if (!data) return "Agora";
+
+  try {
+    return new Date(data).toLocaleString("pt-BR");
+  } catch (error) {
+    return "Agora";
+  }
+}
+
+async function carregarAtualizacoesConteudo() {
+  const lista = document.getElementById("listaAtualizacoesConteudo");
+
+  if (!lista) return;
+
+  lista.innerHTML = `
+    <article class="update-card">
+      <span>Carregando</span>
+      <h3>Buscando atualizações...</h3>
+      <p>Aguarde um instante enquanto consultamos as novidades.</p>
+    </article>
+  `;
+
+  try {
+    const res = await fetch(`${API}/conteudo/atualizacoes`);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Erro ao carregar atualizacoes.");
+
+    if (!data.configurado) {
+      lista.innerHTML = `
+        <article class="update-card">
+          <span>Telegram</span>
+          <h3>Bot ainda nao configurado</h3>
+          <p>Configure TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID no backend para mostrar as atualizações automaticamente.</p>
+        </article>
+      `;
+      return;
+    }
+
+    if (!data.atualizacoes || data.atualizacoes.length === 0) {
+      lista.innerHTML = `
+        <article class="update-card">
+          <span>Sem novidades</span>
+          <h3>Nenhuma atualização recente</h3>
+          <p>Quando o grupo ou canal receber novas mensagens, elas aparecerão aqui.</p>
+        </article>
+      `;
+      return;
+    }
+
+    lista.innerHTML = data.atualizacoes.map(item => `
+      <article class="update-card">
+        <span>${escaparHtml(item.categoria || "Atualização")}</span>
+        <h3>${escaparHtml(formatarDataAtualizacao(item.data))}</h3>
+        <p>${escaparHtml(item.texto || "")}</p>
+      </article>
+    `).join("");
+  } catch (error) {
+    lista.innerHTML = `
+      <article class="update-card">
+        <span>Erro</span>
+        <h3>Não foi possível carregar</h3>
+        <p>${escaparHtml(error.message)}</p>
+      </article>
+    `;
+  }
 }
 
 function pararMonitoramentoPix() {
