@@ -12,12 +12,21 @@ body {
   color: #fff;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 30px;
+}
+
+.admin-container {
+  align-items: flex-start;
+  padding: 32px;
 }
 
 .card {
@@ -28,6 +37,10 @@ body {
   border-radius: 18px;
   padding: 30px;
   box-shadow: 0 0 35px rgba(185, 54, 255, .28);
+}
+
+.admin-card {
+  max-width: 1180px;
 }
 
 .login-card {
@@ -131,6 +144,47 @@ button:hover {
   border-top: 1px solid #7e22ce;
 }
 
+.admin-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.admin-nav a,
+.admin-nav button {
+  width: auto;
+  margin-top: 0;
+  min-height: 42px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #7e22ce;
+  background: #020617;
+  color: #facc15;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.admin-nav button {
+  background: #facc15;
+  color: #000;
+  border-color: #facc15;
+}
+
+.admin-section {
+  scroll-margin-top: 24px;
+  padding: 22px;
+  border: 1px solid #7e22ce;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, .72);
+}
+
+.admin-section h2 {
+  margin-top: 0;
+}
+
 #pixRenovacao {
   margin-top: 20px;
   text-align: center;
@@ -176,13 +230,15 @@ button:hover {
   width: 100%;
   overflow-x: auto;
   margin-top: 20px;
+  border: 1px solid #334155;
+  border-radius: 12px;
 }
 
 table {
   width: 100%;
+  min-width: 980px;
   border-collapse: collapse;
   background: #020617;
-  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -192,6 +248,8 @@ td {
   border-bottom: 1px solid #334155;
   text-align: left;
   font-size: 14px;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 th {
@@ -210,4 +268,20 @@ td .whatsapp-btn {
   margin-top: 6px;
   padding: 8px 12px;
   font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .admin-container {
+    padding: 18px;
+  }
+
+  .admin-card {
+    padding: 20px;
+  }
+
+  .admin-nav a,
+  .admin-nav button {
+    width: 100%;
+    text-align: center;
+  }
 }

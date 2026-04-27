@@ -10,10 +10,8 @@
 </head>
 <body>
 
-
-  
-<div class="container">
-  <div class="card painel-card">
+<div class="container admin-container">
+  <div class="card painel-card admin-card">
 
     <div class="topo">
       <img src="assets/logo.png" alt="SG IPTV" class="logo-small">
@@ -23,11 +21,15 @@
     <h1>Painel Admin</h1>
     <p>Gerencie pagamentos, clientes e renovações.</p>
 
-    <button onclick="carregarPagamentos()">Atualizar Pagamentos</button>
+    <div class="admin-nav">
+      <a href="#pagamentos">Pagamentos</a>
+      <a href="#testes">Testes IPTV</a>
+      <button onclick="carregarPagamentos(); carregarTestes();">Atualizar Dados</button>
+    </div>
 
     <div id="adminMensagem"></div>
 
-    <div class="renovar-box">
+    <section id="pagamentos" class="renovar-box admin-section">
       <h2>Pagamentos</h2>
 
       <div class="tabela-area">
@@ -47,29 +49,29 @@
           <tbody id="listaPagamentos"></tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-  </div>
-</div>
+    <section id="testes" class="renovar-box admin-section">
+      <h2>Testes IPTV</h2>
 
-<div class="renovar-box">
-  <h2>Testes IPTV</h2>
+      <div class="tabela-area">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>WhatsApp</th>
+              <th>Login</th>
+              <th>Senha</th>
+              <th>Criado em</th>
+              <th>Expira em</th>
+            </tr>
+          </thead>
+          <tbody id="listaTestes"></tbody>
+        </table>
+      </div>
+    </section>
 
-  <div class="tabela-area">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Email</th>
-          <th>WhatsApp</th>
-          <th>Login</th>
-          <th>Senha</th>
-          <th>Criado em</th>
-          <th>Expira em</th>
-        </tr>
-      </thead>
-      <tbody id="listaTestes"></tbody>
-    </table>
   </div>
 </div>
 
