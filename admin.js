@@ -1,5 +1,32 @@
 const API = "https://sgiptv-backend.onrender.com";
 
+function escaparHtml(valor) {
+  return String(valor || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatarData(data) {
+  if (!data) return "Aguardando confirmação";
+
+  try {
+    return new Date(data).toLocaleString("pt-BR");
+  } catch {
+    return "Não informado";
+  }
+}
+
+function textoExpiracao(item) {
+  if (!item?.data_expiracao) return "Aguardando confirmação";
+
+  return item.expirado
+    ? `${formatarData(item.data_expiracao)} (vencido)`
+    : formatarData(item.data_expiracao);
+}
+
 async function loginAdmin() {
   const usuario = document.getElementById("adminUser").value.trim();
   const senha = document.getElementById("adminPass").value.trim();
@@ -24,7 +51,7 @@ async function loginAdmin() {
     const data = await res.json();
 
     if (!res.ok) {
-      msg.innerHTML = `<p class="erro">${data.error || "Usuário ou senha inválidos."}</p>`;
+      msg.innerHTML = `<p class="erro">${escaparHtml(data.error || "Usuário ou senha inválidos.")}</p>`;
       return;
     }
 
@@ -55,11 +82,11 @@ async function carregarPagamentos() {
 
   if (!lista || !token) return;
 
-  lista.innerHTML = `
-    <tr>
-      <td colspan="7">Carregando...</td>
-    </tr>
-  `;
+      lista.innerHTML = `
+        <tr>
+          <td colspan="8">Carregando...</td>
+        </tr>
+      `;
 
   try {
     const res = await fetch(`${API}/pagamentos`, {
@@ -77,14 +104,14 @@ async function carregarPagamentos() {
     }
 
     if (!res.ok) {
-      msg.innerHTML = `<p class="erro">${dados.error || "Erro ao buscar pagamentos."}</p>`;
+      msg.innerHTML = `<p class="erro">${escaparHtml(dados.error || "Erro ao buscar pagamentos.")}</p>`;
       return;
     }
 
     if (dados.length === 0) {
       lista.innerHTML = `
         <tr>
-          <td colspan="7">Nenhum pagamento encontrado.</td>
+          <td colspan="8">Nenhum pagamento encontrado.</td>
         </tr>
       `;
       return;
@@ -94,18 +121,20 @@ async function carregarPagamentos() {
 
     dados.forEach(pagamento => {
       const telefone = pagamento.telefone || "Não informado";
+      const telefoneLink = String(pagamento.telefone || "").replace(/\D/g, "");
       const statusClass = pagamento.status === "confirmado"
         ? "status-confirmado"
         : "status-pendente";
 
       lista.innerHTML += `
         <tr>
-          <td>${pagamento.id}</td>
-          <td>${pagamento.email || "-"}</td>
-          <td>${telefone}</td>
-          <td>${pagamento.plano || "-"}</td>
-          <td>R$ ${pagamento.valor}</td>
-          <td class="${statusClass}">${pagamento.status}</td>
+          <td>${escaparHtml(pagamento.id)}</td>
+          <td>${escaparHtml(pagamento.email || "-")}</td>
+          <td>${escaparHtml(telefone)}</td>
+          <td>${escaparHtml(pagamento.plano || "-")}</td>
+          <td>R$ ${escaparHtml(pagamento.valor)}</td>
+          <td class="${statusClass}">${escaparHtml(pagamento.status)}</td>
+          <td>${escaparHtml(textoExpiracao(pagamento))}</td>
           <td>
             ${
               pagamento.status === "confirmado"
@@ -115,7 +144,7 @@ async function carregarPagamentos() {
 
             <a
               class="whatsapp-btn"
-              href="https://wa.me/55${telefone}?text=${encodeURIComponent(
+              href="https://wa.me/55${telefoneLink}?text=${encodeURIComponent(
                 `Olá! Identificamos seu pagamento na SG IPTV.\n\nEmail: ${pagamento.email}\nPlano: ${pagamento.plano}\nValor: R$ ${pagamento.valor}\nStatus: ${pagamento.status}`
               )}"
               target="_blank"
@@ -140,7 +169,7 @@ async function carregarTestes() {
   if (!token) return;
   if (!lista) return;
 
-  lista.innerHTML = `<tr><td colspan="5">Carregando...</td></tr>`;
+  lista.innerHTML = `<tr><td colspan="7">Carregando...</td></tr>`;
 
   try {
     const res = await fetch(`${API}/testes-iptv`, {
@@ -158,12 +187,12 @@ async function carregarTestes() {
     }
 
     if (!res.ok) {
-      lista.innerHTML = `<tr><td colspan="5">Erro ao carregar testes.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="7">Erro ao carregar testes.</td></tr>`;
       return;
     }
 
     if (dados.length === 0) {
-      lista.innerHTML = `<tr><td colspan="5">Nenhum teste encontrado.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="7">Nenhum teste encontrado.</td></tr>`;
       return;
     }
 
@@ -172,18 +201,20 @@ async function carregarTestes() {
     dados.forEach(t => {
       lista.innerHTML += `
         <tr>
-          <td>${t.id}</td>
-          <td>${t.email || "-"}</td>
-          <td>${t.telefone || "-"}</td>
-          <td>${t.login || "-"}</td>
-          <td>${t.senha || "-"}</td>
+          <td>${escaparHtml(t.id)}</td>
+          <td>${escaparHtml(t.email || "-")}</td>
+          <td>${escaparHtml(t.telefone || "-")}</td>
+          <td>${escaparHtml(t.login || "-")}</td>
+          <td>${escaparHtml(t.senha || "-")}</td>
+          <td>${escaparHtml(formatarData(t.criado_em))}</td>
+          <td>${escaparHtml(textoExpiracao(t))}</td>
         </tr>
       `;
     });
 
   } catch (error) {
     console.error(error);
-    lista.innerHTML = `<tr><td colspan="5">Erro ao carregar testes.</td></tr>`;
+    lista.innerHTML = `<tr><td colspan="7">Erro ao carregar testes.</td></tr>`;
   }
 }
 

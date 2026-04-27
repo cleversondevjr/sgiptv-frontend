@@ -1,5 +1,6 @@
 const API = "https://sgiptv-backend.onrender.com";
 let clienteAtual = null;
+let pixStatusTimer = null;
 
 function normalizarTelefone(numero) {
   return String(numero || "").replace(/\D/g, "");
@@ -7,6 +8,10 @@ function normalizarTelefone(numero) {
 
 function nomePlano(valor) {
   const planos = {
+    mensal_1_tela: "Mensal - 1 Tela",
+    mensal_2_telas: "Mensal - 2 Telas",
+    trimestral_1_tela: "Trimestral - 1 Tela",
+    trimestral_2_telas: "Trimestral - 2 Telas",
     "30": "Mensal - 1 Tela",
     "50": "Mensal - 2 Telas",
     "80": "Trimestral - 1 Tela",
@@ -14,6 +19,30 @@ function nomePlano(valor) {
   };
 
   return planos[String(valor)] || "Plano SG IPTV";
+}
+
+function valorPlano(planoId) {
+  const valores = {
+    mensal_1_tela: 30,
+    mensal_2_telas: 50,
+    trimestral_1_tela: 80,
+    trimestral_2_telas: 140,
+    "30": 30,
+    "50": 50,
+    "80": 80,
+    "140": 140
+  };
+
+  return valores[String(planoId)] || "";
+}
+
+function escaparHtml(valor) {
+  return String(valor || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function formatarData(data) {
@@ -24,6 +53,85 @@ function formatarData(data) {
   } catch {
     return "Não informado";
   }
+}
+
+function textoExpiracao(item) {
+  if (!item?.data_expiracao) return "Aguardando confirmação";
+
+  return item.expirado
+    ? `${formatarData(item.data_expiracao)} (vencido)`
+    : formatarData(item.data_expiracao);
+}
+
+function pararMonitoramentoPix() {
+  if (pixStatusTimer) {
+    clearInterval(pixStatusTimer);
+    pixStatusTimer = null;
+  }
+}
+
+function criarLinkComprovante({ plano, valor, email, telefone }) {
+  const mensagem = encodeURIComponent(
+    `Olá, segue comprovante de pagamento.\n\n` +
+    `Plano: ${plano}\n` +
+    `Valor: R$ ${valor},00\n` +
+    `Email: ${email}\n` +
+    `WhatsApp: ${telefone}`
+  );
+
+  return `https://wa.me/5511951623333?text=${mensagem}`;
+}
+
+async function consultarStatusPix({ paymentId, email, telefone }) {
+  const res = await fetch(`${API}/pix/status`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ payment_id: paymentId, email, telefone })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) throw new Error(data.error || "Erro ao consultar Pix.");
+
+  return data.pagamento;
+}
+
+function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, valor, box }) {
+  pararMonitoramentoPix();
+
+  const linkComprovante = criarLinkComprovante({ plano, valor, email, telefone });
+
+  async function verificar() {
+    try {
+      const pagamento = await consultarStatusPix({ paymentId, email, telefone });
+
+      if (pagamento.status !== "confirmado") return;
+
+      pararMonitoramentoPix();
+      localStorage.setItem("cliente_email", email);
+      localStorage.setItem("cliente_telefone", telefone);
+
+      box.innerHTML = `
+        <h3 style="color:#22c55e;">Pix recebido!</h3>
+        <p>Pagamento confirmado. Atualizando sua Área do Cliente...</p>
+        <a class="whatsapp-btn" href="${linkComprovante}" target="_blank">
+          Enviar comprovante no WhatsApp
+        </a>
+        <button onclick="consultarCliente()">Atualizar meu plano</button>
+      `;
+
+      setTimeout(() => {
+        consultarCliente();
+      }, 3000);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  verificar();
+  pixStatusTimer = setInterval(verificar, 6000);
 }
 
 async function consultarCliente() {
@@ -50,7 +158,7 @@ async function consultarCliente() {
     const data = await res.json();
 
     if (!res.ok) {
-      msg.innerHTML = `<p class="erro">${data.error || "Cliente não encontrado."}</p>`;
+      msg.innerHTML = `<p class="erro">${escaparHtml(data.error || "Cliente não encontrado.")}</p>`;
       return;
     }
 
@@ -82,22 +190,32 @@ function montarPainel(cliente) {
       <div class="info-grid">
         <div class="info">
           <strong>Email</strong>
-          <p>${cliente.email}</p>
+          <p>${escaparHtml(cliente.email)}</p>
         </div>
 
         <div class="info">
           <strong>WhatsApp</strong>
-          <p>${cliente.telefone}</p>
+          <p>${escaparHtml(cliente.telefone)}</p>
         </div>
 
         <div class="info">
           <strong>Login IPTV</strong>
-          <p>${teste.login}</p>
+          <p>${escaparHtml(teste.login)}</p>
         </div>
 
         <div class="info">
           <strong>Senha IPTV</strong>
-          <p>${teste.senha}</p>
+          <p>${escaparHtml(teste.senha)}</p>
+        </div>
+
+        <div class="info">
+          <strong>Teste gerado em</strong>
+          <p>${escaparHtml(formatarData(teste.criado_em))}</p>
+        </div>
+
+        <div class="info">
+          <strong>Expira em</strong>
+          <p class="${teste.expirado ? "status-pendente" : "status-confirmado"}">${escaparHtml(textoExpiracao(teste))}</p>
         </div>
       </div>
 
@@ -119,10 +237,10 @@ function montarPainel(cliente) {
         <h3 style="color:#facc15;">💳 Ativar Plano</h3>
 
         <select id="planoRenovacao">
-          <option value="30">Mensal 1 Tela - R$30</option>
-          <option value="50">Mensal 2 Telas - R$50</option>
-          <option value="80">Trimestral 1 Tela - R$80</option>
-          <option value="140">Trimestral 2 Telas - R$140</option>
+          <option value="mensal_1_tela">Mensal 1 Tela - R$30</option>
+          <option value="mensal_2_telas">Mensal 2 Telas - R$50</option>
+          <option value="trimestral_1_tela">Trimestral 1 Tela - R$80</option>
+          <option value="trimestral_2_telas">Trimestral 2 Telas - R$140</option>
         </select>
 
         <button onclick="gerarPixRenovacao()" style="margin-top:10px;">
@@ -148,39 +266,59 @@ function montarPainel(cliente) {
   const statusClass = pagamento.status === "confirmado"
     ? "status-confirmado"
     : "status-pendente";
+  const linkComprovante = criarLinkComprovante({
+    plano: pagamento.plano || nomePlano(pagamento.valor),
+    valor: pagamento.valor,
+    email: cliente.email,
+    telefone: cliente.telefone
+  });
 
   box.innerHTML = `
     <div class="info-grid">
       <div class="info">
         <strong>Email</strong>
-        <p>${cliente.email}</p>
+        <p>${escaparHtml(cliente.email)}</p>
       </div>
 
       <div class="info">
         <strong>WhatsApp</strong>
-        <p>${cliente.telefone}</p>
+        <p>${escaparHtml(cliente.telefone)}</p>
       </div>
 
       <div class="info">
         <strong>Plano atual</strong>
-        <p>${pagamento.plano || nomePlano(pagamento.valor)}</p>
+        <p>${escaparHtml(pagamento.plano || nomePlano(pagamento.valor))}</p>
       </div>
 
       <div class="info">
         <strong>Valor</strong>
-        <p>R$ ${pagamento.valor}</p>
+        <p>R$ ${escaparHtml(pagamento.valor)}</p>
       </div>
 
       <div class="info">
         <strong>Status</strong>
-        <p class="${statusClass}">${pagamento.status}</p>
+        <p class="${statusClass}">${escaparHtml(pagamento.status)}</p>
       </div>
 
       <div class="info">
-        <strong>Data</strong>
-        <p>${formatarData(pagamento.criado_em)}</p>
+        <strong>Pagamento gerado em</strong>
+        <p>${escaparHtml(formatarData(pagamento.criado_em))}</p>
+      </div>
+
+      <div class="info">
+        <strong>Duração</strong>
+        <p>${escaparHtml(pagamento.dias_plano ? `${pagamento.dias_plano} dias` : "Não informado")}</p>
+      </div>
+
+      <div class="info">
+        <strong>Expira em</strong>
+        <p class="${pagamento.expirado ? "status-pendente" : "status-confirmado"}">${escaparHtml(textoExpiracao(pagamento))}</p>
       </div>
     </div>
+
+    <a class="whatsapp-btn" href="${linkComprovante}" target="_blank">
+      Enviar comprovante no WhatsApp
+    </a>
 
     <div style="margin-top:30px;">
       <h3 style="color:#facc15;">📺 Alterar Tipo de Acesso</h3>
@@ -206,12 +344,14 @@ async function gerarPixRenovacao() {
 
   if (!planoSelect || !box) return;
 
-  const valor = planoSelect.value;
-  const plano = nomePlano(valor);
+  const planoId = planoSelect.value;
+  const valor = valorPlano(planoId);
+  const plano = nomePlano(planoId);
   const email = clienteAtual.email;
   const telefone = clienteAtual.telefone;
 
   box.innerHTML = `<p style="color:#facc15;">Gerando Pix...</p>`;
+  pararMonitoramentoPix();
 
   try {
     const res = await fetch(`${API}/pix`, {
@@ -219,7 +359,7 @@ async function gerarPixRenovacao() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ plano, valor, email, telefone })
+      body: JSON.stringify({ planoId, email, telefone })
     });
 
     const data = await res.json();
@@ -243,18 +383,28 @@ async function gerarPixRenovacao() {
 
       <p>Copie o código Pix:</p>
 
-      <textarea id="codigoPixRenovacao" readonly>${data.qr_code}</textarea>
+      <textarea id="codigoPixRenovacao" readonly>${escaparHtml(data.qr_code)}</textarea>
 
       <button onclick="copiarPixRenovacao()">Copiar Pix</button>
 
       <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagem}" target="_blank">
         Enviar comprovante no WhatsApp
       </a>
+      <p style="color:#facc15;margin-top:15px;">Aguardando confirmação automática do Pix...</p>
     `;
+
+    iniciarMonitoramentoPix({
+      paymentId: data.payment_id,
+      email,
+      telefone,
+      plano,
+      valor,
+      box
+    });
 
   } catch (error) {
     console.error(error);
-    box.innerHTML = `<p class="erro">${error.message}</p>`;
+    box.innerHTML = `<p class="erro">${escaparHtml(error.message)}</p>`;
   }
 }
 
