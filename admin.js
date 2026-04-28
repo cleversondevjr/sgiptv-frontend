@@ -444,6 +444,15 @@ async function carregarClientes() {
         c.email ? escaparHtml(c.email) : null,
         c.telefone ? escaparHtml(c.telefone) : null
       ].filter(Boolean).join("<br>");
+      const lembreteMsg = encodeURIComponent(
+        `Ola! Aqui e a equipe SG IPTV.\n\n` +
+        `Seu plano esta proximo de expirar.\n` +
+        `Vencimento: ${vencimento}\n\n` +
+        `Para renovar, acesse a Area do Cliente: https://sgiptv.com.br/cliente.html`
+      );
+      const linkLembrete = contato !== "-"
+        ? `https://wa.me/${contato}?text=${lembreteMsg}`
+        : "";
 
       lista.innerHTML += `
         <tr>
@@ -458,6 +467,7 @@ async function carregarClientes() {
               <div class="cliente-contato-acoes">
                 <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}')">Editar</button>
                 ${contato !== "-" ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/${contato}?text=${encodeURIComponent("Ola! Aqui e a equipe SG IPTV.")}">WhatsApp</a>` : ""}
+                ${contato !== "-" ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkLembrete}">Lembrar</a>` : ""}
               </div>
             </div>
           </td>

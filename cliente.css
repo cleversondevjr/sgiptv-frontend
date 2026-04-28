@@ -466,6 +466,10 @@ td .whatsapp-btn {
   padding: 18px;
 }
 
+.modal-overlay.admin-hidden {
+  display: none;
+}
+
 .modal-card {
   width: 100%;
   max-width: 520px;
