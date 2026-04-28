@@ -36,7 +36,7 @@
     <a href="#teste-gratis">Teste</a>
     <a href="#planos">Planos</a>
     <a href="#beneficios">Benefícios</a>
-    <a href="#checkout">Pagamento</a>
+    <a href="#planos">Pagamento</a>
     <a href="#faq">FAQ</a>
   </nav>
 
@@ -58,7 +58,7 @@
     <p>Canais ao vivo, filmes, séries e muito mais em alta qualidade e sem travamentos.</p>
 
     <div class="hero-buttons">
-      <a href="#checkout" class="btn primary">🚀 ASSINAR AGORA</a>
+      <a href="#planos" class="btn primary">🚀 ASSINAR AGORA</a>
       <a href="#teste-gratis" class="btn secondary">🎁 TESTE GRÁTIS</a>
     </div>
 
@@ -115,7 +115,7 @@
 </section>
 
 <section class="netflix-section">
-  <h2>🎬 Catálogo Completo</h2>
+  <h2>🎞️ Catálogo Completo</h2>
   <p>Filmes, séries, desenhos, esportes e conteúdos para toda a família.</p>
 
   <div class="catalog-shell" aria-label="Catalogo de capas">
@@ -123,7 +123,7 @@
       ‹
     </button>
 
-    <div class="netflix-row" id="catalogRow">
+    <div class="netflix-row" id="catalogRow" data-carousel="1">
       <figure class="catalog-item">
         <img src="https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg" alt="Duna: Parte Dois" loading="lazy">
         <figcaption>Duna: Parte Dois</figcaption>
@@ -149,36 +149,91 @@
         <figcaption>Wandinha</figcaption>
       </figure>
 
-      <figure class="catalog-item sport">
-        <img src="https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=600&q=80" alt="Futebol ao vivo" loading="lazy">
-        <figcaption>Futebol ao vivo</figcaption>
+      <figure class="catalog-item channel sport">
+        <div class="channel-card">
+          <span class="channel-badge">AO VIVO</span>
+          <strong>SportTV</strong>
+          <small>Futebol e lutas</small>
+        </div>
+        <figcaption>SportTV</figcaption>
       </figure>
-      <figure class="catalog-item sport">
-        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80" alt="Basquete ao vivo" loading="lazy">
-        <figcaption>Basquete ao vivo</figcaption>
+      <figure class="catalog-item channel sport">
+        <div class="channel-card">
+          <span class="channel-badge">AO VIVO</span>
+          <strong>Premiere</strong>
+          <small>Brasileirao</small>
+        </div>
+        <figcaption>Premiere</figcaption>
       </figure>
-      <figure class="catalog-item sport">
-        <img src="https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=600&q=80" alt="Beisebol ao vivo" loading="lazy">
-        <figcaption>Beisebol ao vivo</figcaption>
+      <figure class="catalog-item channel sport">
+        <div class="channel-card">
+          <span class="channel-badge">AO VIVO</span>
+          <strong>BandSports</strong>
+          <small>Esportes 24h</small>
+        </div>
+        <figcaption>BandSports</figcaption>
       </figure>
-      <figure class="catalog-item sport">
-        <img src="https://images.unsplash.com/photo-1518544889284-23a7b13b2b9b?auto=format&fit=crop&w=600&q=80" alt="Esportes e lutas" loading="lazy">
-        <figcaption>Esportes e lutas</figcaption>
+      <figure class="catalog-item channel open">
+        <div class="channel-card">
+          <span class="channel-badge">ABERTO</span>
+          <strong>Globo</strong>
+          <small>Novelas e jornalismo</small>
+        </div>
+        <figcaption>Globo</figcaption>
       </figure>
-
-      <figure class="catalog-item game">
-        <img src="https://images.unsplash.com/photo-1542751110-97427bbecf23?auto=format&fit=crop&w=600&q=80" alt="Games" loading="lazy">
-        <figcaption>Jogos e campeonatos</figcaption>
+      <figure class="catalog-item channel open">
+        <div class="channel-card">
+          <span class="channel-badge">ABERTO</span>
+          <strong>SBT</strong>
+          <small>Programacao completa</small>
+        </div>
+        <figcaption>SBT</figcaption>
       </figure>
-      <figure class="catalog-item game">
-        <img src="https://images.unsplash.com/photo-1509191436522-d296cf87dcd9?auto=format&fit=crop&w=600&q=80" alt="Console e esportes" loading="lazy">
-        <figcaption>Esportes</figcaption>
+      <figure class="catalog-item channel open">
+        <div class="channel-card">
+          <span class="channel-badge">ABERTO</span>
+          <strong>Band</strong>
+          <small>Esportes e noticias</small>
+        </div>
+        <figcaption>Band</figcaption>
+      </figure>
+      <figure class="catalog-item channel series">
+        <div class="channel-card">
+          <span class="channel-badge">SERIES</span>
+          <strong>Series Atuais</strong>
+          <small>Lancamentos</small>
+        </div>
+        <figcaption>Series atuais</figcaption>
+      </figure>
+      <figure class="catalog-item channel novela">
+        <div class="channel-card">
+          <span class="channel-badge">NOVELAS</span>
+          <strong>Novelas</strong>
+          <small>Clássicos e atuais</small>
+        </div>
+        <figcaption>Novelas</figcaption>
+      </figure>
+      <figure class="catalog-item channel dorama">
+        <div class="channel-card">
+          <span class="channel-badge">DORAMAS</span>
+          <strong>Doramas</strong>
+          <small>Legendado</small>
+        </div>
+        <figcaption>Doramas</figcaption>
       </figure>
     </div>
 
     <button class="catalog-nav right" type="button" aria-label="Avancar" onclick="scrollCatalog(1)">
       ›
     </button>
+  </div>
+</section>
+
+<section class="notice" id="pagamento-info">
+  <div class="notice-box">
+    <strong>Pagamento via Pix</strong>
+    <span>O Pix é gerado na Área do Cliente após você entrar com seu usuário e senha do teste.</span>
+    <a class="notice-link" href="cliente.html">Ir para Área do Cliente</a>
   </div>
 </section>
 
@@ -244,33 +299,6 @@
   <div class="social-proof">
     <p>🔥 Mais de <strong>2.000 clientes ativos</strong> usando SG IPTV</p>
     <p>⚡ Ativação imediata após pagamento</p>
-  </div>
-</section>
-
-<section id="checkout" class="checkout">
-  <div class="checkout-box">
-    <div class="checkout-left">
-      <h2>PAGAMENTO VIA <span>PIX</span></h2>
-      <p>Para pagar, acesse a Área do Cliente com seu usuário e senha do teste.</p>
-
-      <a class="client-btn" href="cliente.html">
-        Ir para Área do Cliente
-      </a>
-    </div>
-
-    <div class="checkout-right">
-      <div class="steps">
-        <span class="active">1<br>LOGIN</span>
-        <span>2<br>PAGAMENTO</span>
-        <span>3<br>CONFIRMA</span>
-      </div>
-
-      <div class="pix-box">
-        <h3>Pagamento no painel</h3>
-        <p>Se ainda nao tiver login, gere primeiro o teste gratis.</p>
-        <a class="whatsapp-btn" href="#teste-gratis">Gerar teste gratis</a>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -357,7 +385,7 @@
 <a class="whatsapp" href="https://wa.me/5511919628194" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
   WA
 </a>
-<a class="mobile-cta" href="#checkout">Assinar agora</a>
+<a class="mobile-cta" href="#planos">Assinar agora</a>
 
 <script src="script.js"></script>
 </body>
