@@ -24,6 +24,7 @@
     <div class="admin-nav">
       <button id="btnPagamentos" class="nav-active" onclick="mostrarSecaoAdmin('pagamentos')">Pagamentos</button>
       <button id="btnTestes" onclick="mostrarSecaoAdmin('testes')">Testes IPTV</button>
+      <button id="btnClientes" onclick="mostrarSecaoAdmin('clientes')">Clientes</button>
       <button onclick="carregarPagamentos(); carregarTestes();">Atualizar Dados</button>
     </div>
 
@@ -65,6 +66,26 @@
             </tr>
           </thead>
           <tbody id="listaTestes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="clientes" class="renovar-box admin-section admin-hidden">
+      <h2>Clientes</h2>
+
+      <div class="tabela-area">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Senha</th>
+              <th>Plano</th>
+              <th>Conexoes</th>
+              <th>Vencimento</th>
+              <th>Contato</th>
+            </tr>
+          </thead>
+          <tbody id="listaClientes"></tbody>
         </table>
       </div>
     </section>

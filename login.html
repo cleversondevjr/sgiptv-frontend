@@ -18,13 +18,15 @@
     <h1>Painel Admin</h1>
     <p>Faça login para gerenciar pagamentos e clientes.</p>
 
-    <label>Usuário</label>
-    <input type="text" id="adminUser" placeholder="Digite o usuário">
+    <form id="adminLoginForm" autocomplete="on">
+      <label>Usuário</label>
+      <input type="text" id="adminUser" placeholder="Digite o usuário" autocomplete="username">
 
-    <label>Senha</label>
-    <input type="password" id="adminPass" placeholder="Digite a senha">
+      <label>Senha</label>
+      <input type="password" id="adminPass" placeholder="Digite a senha" autocomplete="current-password">
 
-    <button onclick="loginAdmin()">Entrar</button>
+      <button type="submit">Entrar</button>
+    </form>
 
     <div id="loginMsg"></div>
 

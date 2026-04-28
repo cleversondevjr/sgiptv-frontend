@@ -50,6 +50,63 @@ function textoPrazoPagamento(pagamento) {
     : formatarData(pagamento.pix_expira_em);
 }
 
+function tempoRestanteMs(data) {
+  if (!data) return null;
+  const alvo = new Date(data).getTime();
+  if (Number.isNaN(alvo)) return null;
+  return alvo - Date.now();
+}
+
+function tempoRestanteTexto(data) {
+  const diff = tempoRestanteMs(data);
+  if (diff === null) return "Nao informado";
+  if (diff <= 0) return "Expirado";
+
+  const totalHoras = Math.floor(diff / (60 * 60 * 1000));
+  const totalMin = Math.floor((diff % (60 * 60 * 1000)) / 60000);
+  const dias = Math.floor(totalHoras / 24);
+  const horas = totalHoras % 24;
+
+  if (dias > 0) return `${dias}d ${horas}h`;
+  return `${totalHoras}h ${totalMin}min`;
+}
+
+async function avisarClientePagamento(id, telefone, email, plano) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API}/pagamentos/${id}/avisar`, {
+      method: "POST",
+      headers: {
+        Authorization: token
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Erro ao enviar aviso.");
+      return;
+    }
+
+    const tel = String(telefone || "").replace(/\D/g, "");
+    const msg = encodeURIComponent(
+      `Ola! Seu plano da SG IPTV esta perto de expirar.\n\nEmail: ${email}\nPlano: ${plano}\n\nSe quiser renovar, acesse: https://sgiptv.com.br/cliente.html`
+    );
+
+    if (tel) {
+      window.open(`https://wa.me/55${tel}?text=${msg}`, "_blank");
+    }
+
+    alert("Aviso registrado e email enviado para o suporte.");
+    carregarPagamentos();
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao enviar aviso.");
+  }
+}
+
 function quantidadeTelas(plano) {
   const texto = String(plano || "").toLowerCase();
 
@@ -78,17 +135,27 @@ function alternarDetalhesPagamento(id) {
 function mostrarSecaoAdmin(secao) {
   const pagamentos = document.getElementById("pagamentos");
   const testes = document.getElementById("testes");
+  const clientes = document.getElementById("clientes");
   const btnPagamentos = document.getElementById("btnPagamentos");
   const btnTestes = document.getElementById("btnTestes");
+  const btnClientes = document.getElementById("btnClientes");
 
-  if (!pagamentos || !testes || !btnPagamentos || !btnTestes) return;
+  if (!pagamentos || !testes || !clientes || !btnPagamentos || !btnTestes || !btnClientes) return;
 
   const mostrarPagamentos = secao === "pagamentos";
+  const mostrarTestes = secao === "testes";
+  const mostrarClientes = secao === "clientes";
 
   pagamentos.classList.toggle("admin-hidden", !mostrarPagamentos);
-  testes.classList.toggle("admin-hidden", mostrarPagamentos);
+  testes.classList.toggle("admin-hidden", !mostrarTestes);
+  clientes.classList.toggle("admin-hidden", !mostrarClientes);
   btnPagamentos.classList.toggle("nav-active", mostrarPagamentos);
-  btnTestes.classList.toggle("nav-active", !mostrarPagamentos);
+  btnTestes.classList.toggle("nav-active", mostrarTestes);
+  btnClientes.classList.toggle("nav-active", mostrarClientes);
+
+  if (mostrarClientes) {
+    carregarClientes();
+  }
 }
 
 async function loginAdmin() {
@@ -187,6 +254,12 @@ async function carregarPagamentos() {
       const telefone = pagamento.telefone || "Nao informado";
       const telefoneLink = String(pagamento.telefone || "").replace(/\D/g, "");
       const statusClass = statusClassPagamento(pagamento.status);
+      const restanteMs = tempoRestanteMs(pagamento.data_expiracao);
+      const podeAvisar = pagamento.status === "confirmado" && restanteMs !== null && restanteMs > 0 && restanteMs <= 24 * 60 * 60 * 1000;
+      const avisoEnviado = Boolean(pagamento.aviso_24h_enviado_em);
+      const botaoAviso = podeAvisar
+        ? `<button onclick="avisarClientePagamento(${pagamento.id}, '${escaparHtml(telefoneLink)}', '${escaparHtml(pagamento.email || "")}', '${escaparHtml(pagamento.plano || "")}')">${avisoEnviado ? "Avisar novamente" : "Avisar cliente"}</button>`
+        : "";
       const acoesPagamento = pagamento.status === "pendente"
         ? `
           <button onclick="confirmarPagamento(${pagamento.id})">Confirmar</button>
@@ -232,6 +305,10 @@ async function carregarPagamentos() {
                 <p>${escaparHtml(textoExpiracao(pagamento))}</p>
               </div>
               <div>
+                <strong>Tempo restante</strong>
+                <p class="${statusClass}">${escaparHtml(tempoRestanteTexto(pagamento.data_expiracao))}</p>
+              </div>
+              <div>
                 <strong>Prazo do Pix</strong>
                 <p>${escaparHtml(textoPrazoPagamento(pagamento))}</p>
               </div>
@@ -243,6 +320,7 @@ async function carregarPagamentos() {
                 <strong>Acoes</strong>
                 <div>
                   ${acoesPagamento}
+                  ${botaoAviso}
                   <a
                     class="whatsapp-btn"
                     href="https://wa.me/55${telefoneLink}?text=${encodeURIComponent(
@@ -322,6 +400,105 @@ async function carregarTestes() {
   }
 }
 
+async function carregarClientes() {
+  const token = verificarAdminLogado();
+  const lista = document.getElementById("listaClientes");
+
+  if (!token) return;
+  if (!lista) return;
+
+  lista.innerHTML = `<tr><td colspan="6">Carregando...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API}/clientes`, {
+      headers: {
+        Authorization: token
+      }
+    });
+
+    const dados = await res.json();
+
+    if (res.status === 401) {
+      localStorage.removeItem("admin_token");
+      window.location.href = "login.html";
+      return;
+    }
+
+    if (!res.ok) {
+      lista.innerHTML = `<tr><td colspan="6">Erro ao carregar clientes.</td></tr>`;
+      return;
+    }
+
+    if (dados.length === 0) {
+      lista.innerHTML = `<tr><td colspan="6">Nenhum cliente encontrado.</td></tr>`;
+      return;
+    }
+
+    lista.innerHTML = "";
+
+    dados.forEach(c => {
+      const vencimento = c.vencimento ? formatarDataFimDoDia(c.vencimento) : "Nao informado";
+      const contato = c.telefone ? `+55${String(c.telefone).replace(/\D/g, "")}` : "-";
+
+      lista.innerHTML += `
+        <tr>
+          <td>${escaparHtml(c.usuario)}</td>
+          <td>${escaparHtml(c.senha)}</td>
+          <td>${escaparHtml(c.plano)}</td>
+          <td>${escaparHtml(c.conexoes)}</td>
+          <td>${escaparHtml(vencimento)}</td>
+          <td>
+            <div style="display:grid;gap:8px;min-width:220px;">
+              <input id="cliente-nome-${c.id}" type="text" placeholder="Nome" value="${escaparHtml(c.nome || "")}">
+              <input id="cliente-email-${c.id}" type="email" placeholder="Email" value="${escaparHtml(c.email || "")}">
+              <input id="cliente-tel-${c.id}" type="text" placeholder="WhatsApp (somente numeros)" value="${escaparHtml(c.telefone || "")}">
+              <button onclick="salvarCliente(${c.id})">Salvar</button>
+              ${contato !== "-" ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/${contato}?text=${encodeURIComponent("Ola! Aqui e a equipe SG IPTV.")}">WhatsApp</a>` : ""}
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    console.error(error);
+    lista.innerHTML = `<tr><td colspan="6">Erro ao carregar clientes.</td></tr>`;
+  }
+}
+
+async function salvarCliente(id) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const nome = document.getElementById(`cliente-nome-${id}`)?.value || "";
+  const email = document.getElementById(`cliente-email-${id}`)?.value || "";
+  const telefone = document.getElementById(`cliente-tel-${id}`)?.value || "";
+
+  try {
+    const res = await fetch(`${API}/clientes/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({ nome, email, telefone })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Erro ao salvar cliente.");
+      return;
+    }
+
+    alert("Cliente atualizado!");
+    carregarClientes();
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao salvar cliente.");
+  }
+}
+
 async function confirmarPagamento(id) {
   const token = verificarAdminLogado();
 
@@ -394,6 +571,27 @@ function sairAdmin() {
 }
 
 window.addEventListener("load", () => {
+  const loginForm = document.getElementById("adminLoginForm");
+  const userInput = document.getElementById("adminUser");
+  const passInput = document.getElementById("adminPass");
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      loginAdmin();
+    });
+  }
+
+  function tentarLoginPorEnter(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      loginAdmin();
+    }
+  }
+
+  if (userInput) userInput.addEventListener("keydown", tentarLoginPorEnter);
+  if (passInput) passInput.addEventListener("keydown", tentarLoginPorEnter);
+
   if (window.location.pathname.includes("admin.html")) {
     verificarAdminLogado();
     mostrarSecaoAdmin("pagamentos");

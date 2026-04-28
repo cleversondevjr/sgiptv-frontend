@@ -224,6 +224,31 @@ button:hover {
   display: none;
 }
 
+.login-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.login-tab {
+  width: 100%;
+  margin-top: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #7e22ce;
+  background: #020617;
+  color: #facc15;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.login-tab.tab-active {
+  background: #facc15;
+  color: #000;
+  border-color: #facc15;
+}
+
 .admin-section {
   scroll-margin-top: 24px;
   padding: 22px;

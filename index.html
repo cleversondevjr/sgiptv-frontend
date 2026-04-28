@@ -92,48 +92,6 @@
   </div>
 </section>
 
-<section id="teste-gratis" class="checkout">
-  <div class="checkout-box">
-    <div class="checkout-left">
-      <h2>TESTE GRÁTIS <span>IPTV</span></h2>
-      <p>Informe seus dados para receber seu teste automático.</p>
-
-      <label>TIPO DE TESTE</label>
-      <select id="tipoTeste">
-        <option value="iptv_com_adulto">⚡ TESTE COMPLETO C/ ADULTO</option>
-        <option value="iptv_sem_adulto">⚡ TESTE COMPLETO S/ ADULTO</option>
-        <option value="p2p">🔥 P2P COMPLETO (CELULAR)</option>
-      </select>
-
-      <label>SEU EMAIL</label>
-      <input type="email" id="testeEmail" placeholder="Digite seu email" autocomplete="email">
-
-      <label>SEU WHATSAPP</label>
-      <input type="tel" id="testeTelefone" placeholder="Ex: (11) 95162-3333" inputmode="tel" autocomplete="tel">
-
-      <button class="generate-btn" onclick="gerarTesteGratis()">GERAR TESTE GRÁTIS</button>
-    </div>
-
-    <div class="checkout-right">
-      <div id="resultadoTeste" class="pix-box">
-        <h3>Seu teste aparecerá aqui</h3>
-        <p>Você receberá também por email as informações completas de instalação e configuração.</p>
-
-        <div class="apps-box">
-          <h4>📱 Códigos dos Aplicativos Gratis</h4>
-          <p>✅ <strong>FUN PLAY</strong> - 🔢 Código: <strong>powerpixel</strong></p>
-          <p>✅ <strong>LAZER PLAY</strong> - 🔢 Código: <strong>powerpixel</strong></p>
-
-          <br>
-
-          <h4>📱 Aplicativo Pago - Recomendado para Smart TVs</h4>
-          <p>✅ <strong>IBO Player</strong> - 🔢 Código: <strong>Anuidade R$30,00</strong></p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="trust-strip" aria-label="Garantias SG IPTV">
   <div class="trust-item">
     <strong>Pagamento seguro</strong>
@@ -160,13 +118,67 @@
   <h2>🎬 Catálogo Completo</h2>
   <p>Filmes, séries, desenhos, esportes e conteúdos para toda a família.</p>
 
-  <div class="netflix-row">
-    <img src="https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg" alt="Filme">
-    <img src="https://image.tmdb.org/t/p/w500/8UlWHLMpgZm9bx6QYh0NFoq67TZ.jpg" alt="Filme">
-    <img src="https://image.tmdb.org/t/p/w500/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg" alt="Filme">
-    <img src="https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg" alt="Filme">
-    <img src="https://image.tmdb.org/t/p/w500/xDMIl84Qo5Tsu62c9DGWhmPI67A.jpg" alt="Filme">
-    <img src="https://image.tmdb.org/t/p/w500/6ELCZlTA5lGUops70hKdB83WJxH.jpg" alt="Série">
+  <div class="catalog-shell" aria-label="Catalogo de capas">
+    <button class="catalog-nav left" type="button" aria-label="Voltar" onclick="scrollCatalog(-1)">
+      ‹
+    </button>
+
+    <div class="netflix-row" id="catalogRow">
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg" alt="Duna: Parte Dois" loading="lazy">
+        <figcaption>Duna: Parte Dois</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/8UlWHLMpgZm9bx6QYh0NFoq67TZ.jpg" alt="Oppenheimer" loading="lazy">
+        <figcaption>Oppenheimer</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg" alt="Deadpool e Wolverine" loading="lazy">
+        <figcaption>Deadpool e Wolverine</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg" alt="Vingadores: Guerra Infinita" loading="lazy">
+        <figcaption>Vingadores: Guerra Infinita</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/xDMIl84Qo5Tsu62c9DGWhmPI67A.jpg" alt="Matrix" loading="lazy">
+        <figcaption>Matrix</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/6ELCZlTA5lGUops70hKdB83WJxH.jpg" alt="Wandinha" loading="lazy">
+        <figcaption>Wandinha</figcaption>
+      </figure>
+
+      <figure class="catalog-item sport">
+        <img src="https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=600&q=80" alt="Futebol ao vivo" loading="lazy">
+        <figcaption>Futebol ao vivo</figcaption>
+      </figure>
+      <figure class="catalog-item sport">
+        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80" alt="Basquete ao vivo" loading="lazy">
+        <figcaption>Basquete ao vivo</figcaption>
+      </figure>
+      <figure class="catalog-item sport">
+        <img src="https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=600&q=80" alt="Beisebol ao vivo" loading="lazy">
+        <figcaption>Beisebol ao vivo</figcaption>
+      </figure>
+      <figure class="catalog-item sport">
+        <img src="https://images.unsplash.com/photo-1518544889284-23a7b13b2b9b?auto=format&fit=crop&w=600&q=80" alt="Esportes e lutas" loading="lazy">
+        <figcaption>Esportes e lutas</figcaption>
+      </figure>
+
+      <figure class="catalog-item game">
+        <img src="https://images.unsplash.com/photo-1542751110-97427bbecf23?auto=format&fit=crop&w=600&q=80" alt="Games" loading="lazy">
+        <figcaption>Jogos e campeonatos</figcaption>
+      </figure>
+      <figure class="catalog-item game">
+        <img src="https://images.unsplash.com/photo-1509191436522-d296cf87dcd9?auto=format&fit=crop&w=600&q=80" alt="Console e esportes" loading="lazy">
+        <figcaption>Esportes</figcaption>
+      </figure>
+    </div>
+
+    <button class="catalog-nav right" type="button" aria-label="Avancar" onclick="scrollCatalog(1)">
+      ›
+    </button>
   </div>
 </section>
 
@@ -239,35 +251,24 @@
   <div class="checkout-box">
     <div class="checkout-left">
       <h2>PAGAMENTO VIA <span>PIX</span></h2>
-      <p>Rápido, seguro e com confirmação automática</p>
+      <p>Para pagar, acesse a Área do Cliente com seu usuário e senha do teste.</p>
 
-      <label>1. ESCOLHA SEU PLANO</label>
-      <select id="plano">
-        <option value="mensal_1_tela">Mensal - 1 Tela (R$ 30,00)</option>
-        <option value="mensal_2_telas">Mensal - 2 Telas (R$ 50,00)</option>
-        <option value="trimestral_1_tela">Trimestral - 1 Tela (R$ 80,00)</option>
-        <option value="trimestral_2_telas">Trimestral - 2 Telas (R$ 140,00)</option>
-      </select>
-
-      <label>2. SEU EMAIL</label>
-      <input type="email" id="email" placeholder="Digite seu melhor email" autocomplete="email">
-
-      <label>3. SEU WHATSAPP</label>
-      <input type="tel" id="telefone" placeholder="Ex: (11) 95162-3333" inputmode="tel" autocomplete="tel">
-
-      <button class="generate-btn" onclick="gerarPix()">⚡ GERAR PIX</button>
+      <a class="client-btn" href="cliente.html">
+        Ir para Área do Cliente
+      </a>
     </div>
 
     <div class="checkout-right">
       <div class="steps">
-        <span>1<br>DADOS</span>
-        <span class="active">2<br>PAGAMENTO</span>
-        <span>3<br>CONFIRMAÇÃO</span>
+        <span class="active">1<br>LOGIN</span>
+        <span>2<br>PAGAMENTO</span>
+        <span>3<br>CONFIRMA</span>
       </div>
 
-      <div id="pix" class="pix-box">
-        <h3>ESCANEIE O QR CODE</h3>
-        <p>O QR Code aparecerá aqui após gerar o Pix.</p>
+      <div class="pix-box">
+        <h3>Pagamento no painel</h3>
+        <p>Se ainda nao tiver login, gere primeiro o teste gratis.</p>
+        <a class="whatsapp-btn" href="#teste-gratis">Gerar teste gratis</a>
       </div>
     </div>
   </div>
@@ -283,6 +284,48 @@
     <div>🖥️ <strong>COMPATÍVEL</strong><br>COM TUDO</div>
     <div>🛡️ <strong>GARANTIA</strong><br>7 DIAS</div>
     <div>🎧 <strong>SUPORTE</strong><br>TODOS OS DIAS</div>
+  </div>
+</section>
+
+<section id="teste-gratis" class="checkout">
+  <div class="checkout-box">
+    <div class="checkout-left">
+      <h2>TESTE GRÁTIS <span>IPTV</span></h2>
+      <p>Informe seus dados para receber seu teste automático.</p>
+
+      <label>TIPO DE TESTE</label>
+      <select id="tipoTeste">
+        <option value="iptv_com_adulto">⚡ TESTE COMPLETO C/ ADULTO</option>
+        <option value="iptv_sem_adulto">⚡ TESTE COMPLETO S/ ADULTO</option>
+        <option value="p2p">🔥 P2P COMPLETO (CELULAR)</option>
+      </select>
+
+      <label>SEU EMAIL</label>
+      <input type="email" id="testeEmail" placeholder="Digite seu email" autocomplete="email">
+
+      <label>SEU WHATSAPP</label>
+      <input type="tel" id="testeTelefone" placeholder="Ex: 11912345678" inputmode="tel" autocomplete="tel">
+
+      <button class="generate-btn" onclick="gerarTesteGratis()">GERAR TESTE GRÁTIS</button>
+    </div>
+
+    <div class="checkout-right">
+      <div id="resultadoTeste" class="pix-box">
+        <h3>Seu teste aparecerá aqui</h3>
+        <p>Você receberá também por email as informações completas de instalação e configuração.</p>
+
+        <div class="apps-box">
+          <h4>📱 Códigos dos Aplicativos Gratis</h4>
+          <p>✅ <strong>FUN PLAY</strong> - 🔢 Código: <strong>powerpixel</strong></p>
+          <p>✅ <strong>LAZER PLAY</strong> - 🔢 Código: <strong>powerpixel</strong></p>
+
+          <br>
+
+          <h4>📱 Aplicativo Pago - Recomendado para Smart TVs</h4>
+          <p>✅ <strong>IBO Player</strong> - 🔢 Código: <strong>Anuidade R$30,00</strong></p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -308,10 +351,12 @@
 <footer>
   <img src="assets/logo.png" alt="SG IPTV">
   <p>SG IPTV © 2026 - Todos os direitos reservados</p>
-  <p>Atendimento: (11) 95162-3333</p>
+  <p>Atendimento: 11919628194</p>
 </footer>
 
-<a class="whatsapp" href="https://wa.me/5511951623333" target="_blank" rel="noopener noreferrer">💬</a>
+<a class="whatsapp" href="https://wa.me/5511919628194" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+  WA
+</a>
 <a class="mobile-cta" href="#checkout">Assinar agora</a>
 
 <script src="script.js"></script>

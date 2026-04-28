@@ -15,18 +15,25 @@ window.addEventListener("load", () => {
   aplicarMascaraTelefone("testeTelefone");
 });
 
+function scrollCatalog(direcao) {
+  const row = document.getElementById("catalogRow");
+  if (!row) return;
+
+  const base = Math.max(220, Math.floor(row.clientWidth * 0.8));
+  row.scrollBy({ left: direcao * base, behavior: "smooth" });
+}
+
 function selecionarPlano(valor) {
-  const plano = document.getElementById("plano");
-  const checkout = document.getElementById("checkout");
   const planoPorValor = {
     "30": "mensal_1_tela",
     "50": "mensal_2_telas",
     "80": "trimestral_1_tela",
     "140": "trimestral_2_telas"
   };
+  const planoId = planoPorValor[String(valor)] || valor;
 
-  if (plano) plano.value = planoPorValor[String(valor)] || valor;
-  if (checkout) checkout.scrollIntoView({ behavior: "smooth" });
+  localStorage.setItem("plano_selecionado", planoId);
+  window.location.href = "cliente.html";
 }
 
 function normalizarTelefone(numero) {
@@ -178,7 +185,7 @@ function criarLinkComprovante({ plano, email, telefone }) {
     `Olá, segue comprovante de pagamento.\n\nPlano: ${plano}\nEmail: ${email}\nWhatsApp: ${telefone}`
   );
 
-  return `https://wa.me/5511951623333?text=${mensagemWhatsApp}`;
+  return `https://wa.me/5511919628194?text=${mensagemWhatsApp}`;
 }
 
 async function consultarStatusPix({ paymentId, email, telefone }) {
@@ -283,7 +290,7 @@ async function gerarPix() {
       <p id="pixCountdown" class="pix-countdown">Calculando validade do Pix...</p>
       <textarea id="codigoPix" readonly>${escaparHtml(data.qr_code)}</textarea>
       <button class="generate-btn" onclick="copiarPix(this)">Copiar Pix</button>
-      <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagemWhatsApp}" target="_blank" rel="noopener noreferrer">
+      <a class="whatsapp-btn" href="https://wa.me/5511919628194?text=${mensagemWhatsApp}" target="_blank" rel="noopener noreferrer">
         Enviar comprovante no WhatsApp
       </a>
       <p style="color:#facc15;margin-top:15px;">Aguardando confirmacao automatica do Pix...</p>
