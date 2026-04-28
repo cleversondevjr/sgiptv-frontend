@@ -439,6 +439,11 @@ async function carregarClientes() {
     dados.forEach(c => {
       const vencimento = c.vencimento ? formatarDataFimDoDia(c.vencimento) : "Nao informado";
       const contato = c.telefone ? `+55${String(c.telefone).replace(/\D/g, "")}` : "-";
+      const resumoContato = [
+        c.nome ? escaparHtml(c.nome) : null,
+        c.email ? escaparHtml(c.email) : null,
+        c.telefone ? escaparHtml(c.telefone) : null
+      ].filter(Boolean).join("<br>");
 
       lista.innerHTML += `
         <tr>
@@ -448,12 +453,12 @@ async function carregarClientes() {
           <td>${escaparHtml(c.conexoes)}</td>
           <td>${escaparHtml(vencimento)}</td>
           <td>
-            <div style="display:grid;gap:8px;min-width:220px;">
-              <input id="cliente-nome-${c.id}" type="text" placeholder="Nome" value="${escaparHtml(c.nome || "")}">
-              <input id="cliente-email-${c.id}" type="email" placeholder="Email" value="${escaparHtml(c.email || "")}">
-              <input id="cliente-tel-${c.id}" type="text" placeholder="WhatsApp (somente numeros)" value="${escaparHtml(c.telefone || "")}">
-              <button onclick="salvarCliente(${c.id})">Salvar</button>
-              ${contato !== "-" ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/${contato}?text=${encodeURIComponent("Ola! Aqui e a equipe SG IPTV.")}">WhatsApp</a>` : ""}
+            <div class="cliente-contato">
+              <div class="cliente-contato-resumo">${resumoContato || "-"}</div>
+              <div class="cliente-contato-acoes">
+                <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}')">Editar</button>
+                ${contato !== "-" ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/${contato}?text=${encodeURIComponent("Ola! Aqui e a equipe SG IPTV.")}">WhatsApp</a>` : ""}
+              </div>
             </div>
           </td>
         </tr>
@@ -466,13 +471,73 @@ async function carregarClientes() {
   }
 }
 
-async function salvarCliente(id) {
+function garantirModalCliente() {
+  let modal = document.getElementById("clienteModal");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "clienteModal";
+  modal.className = "modal-overlay admin-hidden";
+  modal.innerHTML = `
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Editar cliente">
+      <div class="modal-header">
+        <strong>Editar cliente</strong>
+        <button type="button" class="modal-close" onclick="fecharModalCliente()">X</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="modal-cliente-id">
+
+        <label>Nome</label>
+        <input id="modal-cliente-nome" type="text" placeholder="Nome">
+
+        <label>Email</label>
+        <input id="modal-cliente-email" type="email" placeholder="Email">
+
+        <label>WhatsApp (somente numeros)</label>
+        <input id="modal-cliente-tel" type="text" placeholder="11912345678">
+
+        <div class="modal-actions">
+          <button type="button" onclick="salvarModalCliente()">Salvar</button>
+          <button type="button" class="cancelar-btn" onclick="fecharModalCliente()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) fecharModalCliente();
+  });
+
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function abrirModalCliente(id, nome, email, telefone) {
+  const modal = garantirModalCliente();
+
+  document.getElementById("modal-cliente-id").value = String(id);
+  document.getElementById("modal-cliente-nome").value = String(nome || "");
+  document.getElementById("modal-cliente-email").value = String(email || "");
+  document.getElementById("modal-cliente-tel").value = String(telefone || "");
+
+  modal.classList.remove("admin-hidden");
+}
+
+function fecharModalCliente() {
+  const modal = document.getElementById("clienteModal");
+  if (!modal) return;
+  modal.classList.add("admin-hidden");
+}
+
+async function salvarModalCliente() {
   const token = verificarAdminLogado();
   if (!token) return;
 
-  const nome = document.getElementById(`cliente-nome-${id}`)?.value || "";
-  const email = document.getElementById(`cliente-email-${id}`)?.value || "";
-  const telefone = document.getElementById(`cliente-tel-${id}`)?.value || "";
+  const id = document.getElementById("modal-cliente-id")?.value;
+  const nome = document.getElementById("modal-cliente-nome")?.value || "";
+  const email = document.getElementById("modal-cliente-email")?.value || "";
+  const telefone = document.getElementById("modal-cliente-tel")?.value || "";
 
   try {
     const res = await fetch(`${API}/clientes/${id}`, {
@@ -492,6 +557,7 @@ async function salvarCliente(id) {
     }
 
     alert("Cliente atualizado!");
+    fecharModalCliente();
     carregarClientes();
   } catch (error) {
     console.error(error);
