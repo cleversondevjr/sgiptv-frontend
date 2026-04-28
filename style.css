@@ -507,18 +507,16 @@ footer img {
   box-shadow: 0 0 26px rgba(185,54,255,0.10);
 }
 
-.trust-item strong,
-.trust-item span {
-  display: block;
-}
-
-.trust-item strong {
+.trust-item h3 {
+  margin: 0 0 10px;
   color: #ffcc00;
-  margin-bottom: 8px;
+  font-size: 16px;
+  letter-spacing: 0;
 }
 
-.trust-item span {
-  color: #d1d5db;
+.trust-item p {
+  margin: 0;
+  color: #e5e7eb;
   line-height: 1.45;
 }
 
