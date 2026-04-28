@@ -163,7 +163,7 @@ function formatarTempoRestante(ms) {
   return `${minutos}:${segundos}`;
 }
 
-function tempoRestanteAte(data) {
+function tempoRestanteAte(data, modo = "plano") {
   if (!data) return "Aguardando confirmação";
 
   const alvo = new Date(data).getTime();
@@ -172,14 +172,16 @@ function tempoRestanteAte(data) {
   const diff = alvo - Date.now();
   if (diff <= 0) return "Expirado";
 
-  const totalMin = Math.floor(diff / 60000);
-  const dias = Math.floor(totalMin / (60 * 24));
-  const horas = Math.floor((totalMin % (60 * 24)) / 60);
-  const minutos = totalMin % 60;
+  const totalHoras = Math.floor(diff / (60 * 60 * 1000));
+  const totalMin = Math.floor((diff % (60 * 60 * 1000)) / 60000);
 
-  if (dias > 0) return `${dias}d ${horas}h ${minutos}min`;
-  if (horas > 0) return `${horas}h ${minutos}min`;
-  return `${minutos}min`;
+  if (modo === "teste") {
+    return `${totalHoras}h ${totalMin}min`;
+  }
+
+  const dias = Math.floor(totalHoras / 24);
+  const horas = totalHoras % 24;
+  return `${dias}d ${horas}h`;
 }
 
 function iniciarContadorPix(expiraEm, idElemento, aoExpirar) {
@@ -407,8 +409,13 @@ function montarPainel(cliente) {
           <strong>Expira em</strong>
           <p class="${teste.expirado ? "status-pendente" : "status-confirmado"}">
             ${escaparHtml(textoExpiracao(teste))}
-            <br>
-            <small>Tempo restante: ${escaparHtml(tempoRestanteAte(teste.data_expiracao))}</small>
+          </p>
+        </div>
+
+        <div class="info">
+          <strong>Tempo restante</strong>
+          <p class="${teste.expirado ? "status-pendente" : "status-confirmado"}">
+            ${escaparHtml(tempoRestanteAte(teste.data_expiracao, "teste"))}
           </p>
         </div>
       </div>
@@ -480,6 +487,13 @@ function montarPainel(cliente) {
       <div class="info">
         <strong>Expira em</strong>
         <p class="${pagamento.expirado ? "status-pendente" : "status-confirmado"}">${escaparHtml(textoExpiracao(pagamento))}</p>
+      </div>
+
+      <div class="info">
+        <strong>Tempo restante</strong>
+        <p class="${pagamento.expirado ? "status-pendente" : "status-confirmado"}">
+          ${escaparHtml(tempoRestanteAte(pagamento.data_expiracao, "plano"))}
+        </p>
       </div>
     </div>
 
