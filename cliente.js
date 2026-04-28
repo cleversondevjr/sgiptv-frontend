@@ -163,6 +163,25 @@ function formatarTempoRestante(ms) {
   return `${minutos}:${segundos}`;
 }
 
+function tempoRestanteAte(data) {
+  if (!data) return "Aguardando confirmação";
+
+  const alvo = new Date(data).getTime();
+  if (Number.isNaN(alvo)) return "Não informado";
+
+  const diff = alvo - Date.now();
+  if (diff <= 0) return "Expirado";
+
+  const totalMin = Math.floor(diff / 60000);
+  const dias = Math.floor(totalMin / (60 * 24));
+  const horas = Math.floor((totalMin % (60 * 24)) / 60);
+  const minutos = totalMin % 60;
+
+  if (dias > 0) return `${dias}d ${horas}h ${minutos}min`;
+  if (horas > 0) return `${horas}h ${minutos}min`;
+  return `${minutos}min`;
+}
+
 function iniciarContadorPix(expiraEm, idElemento, aoExpirar) {
   pararContadorPix();
 
@@ -369,7 +388,7 @@ function montarPainel(cliente) {
     configurarRenovacao("Ativar Plano");
 
     box.innerHTML = `
-      <h3 style="color:#facc15;">Teste Gratuito Ativo</h3>
+      <h3 style="color:#facc15;">Teste Gratuito</h3>
 
       <div class="info-grid">
         <div class="info">
@@ -386,13 +405,24 @@ function montarPainel(cliente) {
         ${renderizarCredencial("Senha IPTV", teste.senha, "credTesteSenha")}
 
         <div class="info">
-          <strong>Teste gerado em</strong>
-          <p>${escaparHtml(formatarData(teste.criado_em))}</p>
+          <strong>Status</strong>
+          <p class="${teste.expirado ? "status-pendente" : "status-confirmado"}">
+            ${teste.expirado ? "Expirado" : "Ativo"}
+          </p>
+        </div>
+
+        <div class="info">
+          <strong>Duração</strong>
+          <p>${escaparHtml(teste.duracao_teste_horas ? `${teste.duracao_teste_horas} horas` : "Não informado")}</p>
         </div>
 
         <div class="info">
           <strong>Expira em</strong>
-          <p class="${teste.expirado ? "status-pendente" : "status-confirmado"}">${escaparHtml(textoExpiracao(teste))}</p>
+          <p class="${teste.expirado ? "status-pendente" : "status-confirmado"}">
+            ${escaparHtml(textoExpiracao(teste))}
+            <br>
+            <small>Tempo restante: ${escaparHtml(tempoRestanteAte(teste.data_expiracao))}</small>
+          </p>
         </div>
       </div>
 
@@ -447,24 +477,12 @@ function montarPainel(cliente) {
         <p>${escaparHtml(formatarTelefone(cliente.telefone))}</p>
       </div>
 
-      <div class="info">
-        <strong>Plano atual</strong>
-        <p>${escaparHtml(pagamento.plano || nomePlano(pagamento.valor))}</p>
-      </div>
-
-      <div class="info">
-        <strong>Valor</strong>
-        <p>R$ ${escaparHtml(pagamento.valor)}</p>
-      </div>
+      ${renderizarCredencial("Login IPTV", cliente.loginAreaCliente, "credPagamentoLogin")}
+      ${renderizarCredencial("Senha IPTV", cliente.senhaAreaCliente, "credPagamentoSenha")}
 
       <div class="info">
         <strong>Status</strong>
         <p class="${statusClass}">${escaparHtml(pagamento.status)}</p>
-      </div>
-
-      <div class="info">
-        <strong>Pagamento gerado em</strong>
-        <p>${escaparHtml(formatarData(pagamento.criado_em))}</p>
       </div>
 
       <div class="info">
@@ -540,16 +558,17 @@ async function gerarPixRenovacao() {
 
     box.innerHTML = `
       <h3 style="color:#facc15;">Pix gerado</h3>
-
-      <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
-
+      <div class="pix-flex">
+        <div class="pix-qr">
+          <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
+        </div>
+        <div class="pix-code">
+          <p>Copie o codigo Pix:</p>
+          <textarea id="codigoPixRenovacao" readonly>${escaparHtml(data.qr_code)}</textarea>
+          <button onclick="copiarPixRenovacao(this)">Copiar Pix</button>
+        </div>
+      </div>
       <p id="pixCountdownRenovacao" class="pix-countdown">Calculando validade do Pix...</p>
-
-      <p>Copie o codigo Pix:</p>
-
-      <textarea id="codigoPixRenovacao" readonly>${escaparHtml(data.qr_code)}</textarea>
-
-      <button onclick="copiarPixRenovacao(this)">Copiar Pix</button>
 
       <a class="whatsapp-btn" href="https://wa.me/5511951623333?text=${mensagem}" target="_blank" rel="noopener noreferrer">
         Enviar comprovante no WhatsApp

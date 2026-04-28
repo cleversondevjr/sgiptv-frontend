@@ -248,6 +248,23 @@ button:hover {
   border-radius: 12px;
 }
 
+.pix-flex {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+.pix-code p {
+  margin: 0 0 8px;
+  text-align: left;
+}
+
+.pix-code textarea {
+  min-height: 130px;
+}
+
 .pix-countdown {
   color: #facc15;
   font-weight: bold;
@@ -409,6 +426,10 @@ td .whatsapp-btn {
   }
 
   .detalhes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pix-flex {
     grid-template-columns: 1fr;
   }
 }
