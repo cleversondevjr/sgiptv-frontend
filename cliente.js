@@ -328,26 +328,13 @@ async function consultarCliente() {
   }
 }
 
-function renderizarCredencial(label, valor, id) {
+function renderizarCredencial(label, valor) {
   return `
     <div class="info secure-info">
       <strong>${escaparHtml(label)}</strong>
-      <div class="secure-value">
-        <input id="${id}" type="password" value="${escaparHtml(valor)}" readonly>
-        <button type="button" onclick="alternarCredencial('${id}', this)">Mostrar</button>
-        <button type="button" onclick="copiarValor('${id}', this)">Copiar</button>
-      </div>
+      <p>${escaparHtml(valor)}</p>
     </div>
   `;
-}
-
-function alternarCredencial(id, botao) {
-  const campo = document.getElementById(id);
-  if (!campo) return;
-
-  const mostrando = campo.type === "text";
-  campo.type = mostrando ? "password" : "text";
-  botao.textContent = mostrando ? "Mostrar" : "Ocultar";
 }
 
 async function copiarValor(id, botao) {
@@ -401,8 +388,8 @@ function montarPainel(cliente) {
           <p>${escaparHtml(formatarTelefone(cliente.telefone))}</p>
         </div>
 
-        ${renderizarCredencial("Login IPTV", teste.login, "credTesteLogin")}
-        ${renderizarCredencial("Senha IPTV", teste.senha, "credTesteSenha")}
+      ${renderizarCredencial("Login IPTV", teste.login)}
+      ${renderizarCredencial("Senha IPTV", teste.senha)}
 
         <div class="info">
           <strong>Status</strong>
@@ -477,8 +464,8 @@ function montarPainel(cliente) {
         <p>${escaparHtml(formatarTelefone(cliente.telefone))}</p>
       </div>
 
-      ${renderizarCredencial("Login IPTV", cliente.loginAreaCliente, "credPagamentoLogin")}
-      ${renderizarCredencial("Senha IPTV", cliente.senhaAreaCliente, "credPagamentoSenha")}
+      ${renderizarCredencial("Login IPTV", cliente.loginAreaCliente)}
+      ${renderizarCredencial("Senha IPTV", cliente.senhaAreaCliente)}
 
       <div class="info">
         <strong>Status</strong>
