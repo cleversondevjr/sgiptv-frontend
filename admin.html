@@ -2,169 +2,119 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Painel SG IPTV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin - SG IPTV</title>
 
-  <style>
-    body {
-      margin: 0;
-      background: #0f172a;
-      color: #fff;
-      font-family: Arial, sans-serif;
-    }
-
-    .main {
-      padding: 30px;
-    }
-
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-
-    button {
-      background: #22c55e;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .sair {
-      background: #ef4444;
-      color: white;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #1e293b;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    th, td {
-      padding: 14px;
-      border-bottom: 1px solid #334155;
-      text-align: left;
-    }
-
-    th {
-      background: #020617;
-      color: #22c55e;
-    }
-
-    .pendente {
-      color: #facc15;
-      font-weight: bold;
-    }
-
-    .confirmado {
-      color: #22c55e;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="cliente.css">
 </head>
 <body>
 
-<main class="main">
+<div class="container admin-container">
+  <div class="card painel-card admin-card">
 
-  <div class="top">
-    <h1>Painel SG IPTV</h1>
-    <div>
-      <button onclick="carregar()">Atualizar</button>
-      <button class="sair" onclick="sair()">Sair</button>
+    <div class="topo">
+      <img src="assets/logo.png" alt="SG IPTV" class="logo-small">
+      <button class="sair" onclick="sairAdmin()">Sair</button>
     </div>
+
+    <h1>Painel Admin</h1>
+    <p>Gerencie pagamentos, clientes e renovações.</p>
+
+    <div class="admin-nav">
+      <button id="btnPagamentos" class="nav-active" onclick="mostrarSecaoAdmin('pagamentos')">Pagamentos</button>
+      <button id="btnTestes" onclick="mostrarSecaoAdmin('testes')">Testes IPTV</button>
+      <button id="btnClientes" onclick="mostrarSecaoAdmin('clientes')">Clientes</button>
+      <button onclick="carregarPagamentos(); carregarTestes();">Atualizar Dados</button>
+    </div>
+
+    <div id="adminMensagem"></div>
+
+    <section id="pagamentos" class="renovar-box admin-section">
+      <h2>Pagamentos</h2>
+
+      <div class="admin-report">
+        <h3>Relatorio mensal</h3>
+        <div class="month-tabs" id="monthTabs"></div>
+        <div class="month-summary" id="monthSummary"></div>
+
+        <div class="tabela-area admin-hidden" id="monthTableBox">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Email</th>
+                <th>WhatsApp</th>
+                <th>Plano</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="listaPagamentosMes"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tabela-area">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>WhatsApp</th>
+              <th>Login</th>
+              <th>Senha</th>
+              <th>Detalhes</th>
+            </tr>
+          </thead>
+          <tbody id="listaPagamentos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="testes" class="renovar-box admin-section admin-hidden">
+      <h2>Testes IPTV</h2>
+
+      <div class="tabela-area">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>WhatsApp</th>
+              <th>Login</th>
+              <th>Senha</th>
+              <th>Criado em</th>
+              <th>Expira em</th>
+            </tr>
+          </thead>
+          <tbody id="listaTestes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="clientes" class="renovar-box admin-section admin-hidden">
+      <h2>Clientes</h2>
+
+      <div class="tabela-area">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Senha</th>
+              <th>Plano</th>
+              <th>Conexoes</th>
+              <th>Vencimento</th>
+              <th>Contato</th>
+            </tr>
+          </thead>
+          <tbody id="listaClientes"></tbody>
+        </table>
+      </div>
+    </section>
+
   </div>
+</div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Email</th>
-        <th>Plano</th>
-        <th>Valor</th>
-        <th>Status</th>
-        <th>Ação</th>
-      </tr>
-    </thead>
-    <tbody id="tabela"></tbody>
-  </table>
-
-</main>
-
-<script>
-const token = localStorage.getItem("token_admin");
-
-if (!token) {
-  window.location.href = "login.html";
-}
-
-async function carregar() {
-  try {
-    const res = await fetch("http://127.0.0.1:4000/pagamentos", {
-      headers: {
-        Authorization: token
-      }
-    });
-
-    if (res.status === 401) {
-      localStorage.removeItem("token_admin");
-      window.location.href = "login.html";
-      return;
-    }
-
-    const dados = await res.json();
-
-    const tabela = document.getElementById("tabela");
-    tabela.innerHTML = "";
-
-    dados.forEach(p => {
-      tabela.innerHTML += `
-        <tr>
-          <td>${p.id}</td>
-          <td>${p.email}</td>
-          <td>${p.plano}</td>
-          <td>R$ ${p.valor}</td>
-          <td class="${p.status}">${p.status}</td>
-          <td>
-            ${
-              p.status === "confirmado"
-              ? "Confirmado"
-              : `<button onclick="confirmar(${p.id})">Confirmar</button>`
-            }
-          </td>
-        </tr>
-      `;
-    });
-
-  } catch (error) {
-    console.error("Erro ao carregar pagamentos:", error);
-    alert("Erro ao carregar pagamentos. Veja o console F12.");
-  }
-}
-
-async function confirmar(id) {
-  await fetch(`http://127.0.0.1:4000/pagamentos/${id}/confirmar`, {
-    method: "PUT",
-    headers: {
-      Authorization: token
-    }
-  });
-
-  alert("Pagamento confirmado!");
-  carregar();
-}
-
-function sair() {
-  localStorage.removeItem("token_admin");
-  window.location.href = "login.html";
-}
-
-carregar();
-</script>
-
+<script src="admin.js"></script>
 </body>
 </html>

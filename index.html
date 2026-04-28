@@ -4,7 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SG IPTV</title>
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="shortcut icon" href="/favicon.ico">
+
   <link rel="stylesheet" href="style.css">
+
+  <meta name="description" content="SG IPTV - Assista canais, filmes e séries sem travamentos. Teste grátis disponível. Suporte rápido e ativação imediata.">
+
+<meta name="keywords" content="iptv, iptv brasil, iptv barato, teste iptv, iptv sem travar, iptv smart tv">
+
+<meta name="author" content="SG IPTV">
+
+<meta property="og:title" content="SG IPTV - Teste Grátis IPTV">
+<meta property="og:description" content="Canais, filmes e séries sem travamentos. Teste grátis disponível.">
+<meta property="og:image" content="https://sgiptv.com.br/assets/logo.png">
+<meta property="og:url" content="https://sgiptv.com.br">
+<meta name="robots" content="index, follow">
 </head>
 <body>
 
@@ -17,13 +33,16 @@
 
   <nav>
     <a href="#inicio">Início</a>
+    <a href="#teste-gratis">Teste</a>
     <a href="#planos">Planos</a>
     <a href="#beneficios">Benefícios</a>
-    <a href="#checkout">Como funciona</a>
+    <a href="#planos">Pagamento</a>
     <a href="#faq">FAQ</a>
   </nav>
 
-  <a class="client-btn" href="login.html">Área do Cliente</a>
+  <a class="client-btn" href="https://sgiptv.com.br/cliente.html" target="_blank" rel="noopener noreferrer">
+    Área do Cliente
+  </a>
 </header>
 
 <section id="inicio" class="hero">
@@ -39,8 +58,8 @@
     <p>Canais ao vivo, filmes, séries e muito mais em alta qualidade e sem travamentos.</p>
 
     <div class="hero-buttons">
-      <a href="#checkout" class="btn primary">🚀 ASSINAR AGORA</a>
-      <a href="#planos" class="btn secondary">▶ SAIBA MAIS</a>
+      <a href="#planos" class="btn primary">🚀 ASSINAR AGORA</a>
+      <a href="#teste-gratis" class="btn secondary">🎁 TESTE GRÁTIS</a>
     </div>
 
     <div class="quick-info">
@@ -73,36 +92,176 @@
   </div>
 </section>
 
+<section class="trust-strip" aria-label="Garantias SG IPTV">
+  <div class="trust-item">
+    <h3>🔒 PAGAMENTO SEGURO</h3>
+    <p>Pix com confirmacao automatica e area do cliente.</p>
+  </div>
+
+  <div class="trust-item">
+    <h3>⚡ ATIVACAO RAPIDA</h3>
+    <p>Seu acesso fica disponivel logo apos a confirmacao.</p>
+  </div>
+
+  <div class="trust-item">
+    <h3>💬 SUPORTE DIRETO</h3>
+    <p>Atendimento pelo WhatsApp todos os dias.</p>
+  </div>
+
+  <div class="trust-item">
+    <h3>🛡️ GARANTIA DE 7 DIAS</h3>
+    <p>Ajuda na instalacao e suporte se precisar ajustar.</p>
+  </div>
+</section>
+
+<section class="netflix-section">
+  <h2>🎞️ Catálogo Completo</h2>
+  <p>Filmes, séries, desenhos, esportes e conteúdos para toda a família.</p>
+
+  <div class="catalog-shell" aria-label="Catalogo de capas">
+    <button class="catalog-nav left" type="button" aria-label="Voltar" onclick="scrollCatalog(-1)">
+      ‹
+    </button>
+
+    <div class="netflix-row" id="catalogRow" data-carousel="1">
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg" alt="Duna: Parte Dois" loading="lazy">
+        <figcaption>Duna: Parte Dois</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/8UlWHLMpgZm9bx6QYh0NFoq67TZ.jpg" alt="Oppenheimer" loading="lazy">
+        <figcaption>Oppenheimer</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg" alt="Deadpool e Wolverine" loading="lazy">
+        <figcaption>Deadpool e Wolverine</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg" alt="Vingadores: Guerra Infinita" loading="lazy">
+        <figcaption>Vingadores: Guerra Infinita</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/xDMIl84Qo5Tsu62c9DGWhmPI67A.jpg" alt="Matrix" loading="lazy">
+        <figcaption>Matrix</figcaption>
+      </figure>
+      <figure class="catalog-item">
+        <img src="https://image.tmdb.org/t/p/w500/6ELCZlTA5lGUops70hKdB83WJxH.jpg" alt="Wandinha" loading="lazy">
+        <figcaption>Wandinha</figcaption>
+      </figure>
+
+      <figure class="catalog-item channel sport">
+        <div class="channel-card">
+          <span class="channel-badge">AO VIVO</span>
+          <strong>SportTV</strong>
+          <small>Futebol e lutas</small>
+        </div>
+        <figcaption>SportTV</figcaption>
+      </figure>
+      <figure class="catalog-item channel sport">
+        <div class="channel-card">
+          <span class="channel-badge">AO VIVO</span>
+          <strong>Premiere</strong>
+          <small>Brasileirao</small>
+        </div>
+        <figcaption>Premiere</figcaption>
+      </figure>
+      <figure class="catalog-item channel sport">
+        <div class="channel-card">
+          <span class="channel-badge">AO VIVO</span>
+          <strong>BandSports</strong>
+          <small>Esportes 24h</small>
+        </div>
+        <figcaption>BandSports</figcaption>
+      </figure>
+      <figure class="catalog-item channel open">
+        <div class="channel-card">
+          <span class="channel-badge">ABERTO</span>
+          <div class="channel-icon">📡</div>
+          <strong>Globo</strong>
+          <small>Novelas e jornalismo</small>
+        </div>
+        <figcaption>Globo</figcaption>
+      </figure>
+      <figure class="catalog-item channel open">
+        <div class="channel-card">
+          <span class="channel-badge">ABERTO</span>
+          <div class="channel-icon">📺</div>
+          <strong>SBT</strong>
+          <small>Programacao completa</small>
+        </div>
+        <figcaption>SBT</figcaption>
+      </figure>
+      <figure class="catalog-item channel open">
+        <div class="channel-card">
+          <span class="channel-badge">ABERTO</span>
+          <div class="channel-icon">🗞️</div>
+          <strong>Band</strong>
+          <small>Esportes e noticias</small>
+        </div>
+        <figcaption>Band</figcaption>
+      </figure>
+      <figure class="catalog-item channel series">
+        <div class="channel-card">
+          <span class="channel-badge">SERIES</span>
+          <strong>Series Atuais</strong>
+          <small>Lancamentos</small>
+        </div>
+        <figcaption>Series atuais</figcaption>
+      </figure>
+      <figure class="catalog-item channel novela">
+        <div class="channel-card">
+          <span class="channel-badge">NOVELAS</span>
+          <strong>Novelas</strong>
+          <small>Clássicos e atuais</small>
+        </div>
+        <figcaption>Novelas</figcaption>
+      </figure>
+      <figure class="catalog-item channel dorama">
+        <div class="channel-card">
+          <span class="channel-badge">DORAMAS</span>
+          <strong>Doramas</strong>
+          <small>Legendado</small>
+        </div>
+        <figcaption>Doramas</figcaption>
+      </figure>
+    </div>
+
+    <button class="catalog-nav right" type="button" aria-label="Avancar" onclick="scrollCatalog(1)">
+      ›
+    </button>
+  </div>
+</section>
+
 <section id="planos" class="plans-section">
   <h2>ESCOLHA SEU <span>PLANO</span></h2>
   <p>Planos acessíveis para toda a família</p>
 
   <div class="plans">
-    <div class="plan">
+    <div class="plan destaque-principal">
+      <div class="tag">🔥 DESTAQUE</div>
       <h3>MENSAL</h3>
       <h4>1 TELA</h4>
-      <div class="price">R$ 30<span>,00<br>/mês</span></div>
+      <div class="price yellow">R$ 30<span>,00<br>/mês</span></div>
       <ul>
         <li>✔ Acesso por 30 dias</li>
         <li>✔ 1 dispositivo</li>
         <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
+        <li>✔ Suporte via WhatsApp</li>
       </ul>
-      <button onclick="selecionarPlano('30')">ESCOLHER PLANO</button>
+      <button class="yellow-btn" onclick="selecionarPlano('30')">ESCOLHER PLANO</button>
     </div>
 
-    <div class="plan destaque">
-      <div class="tag">★ MAIS ESCOLHIDO</div>
+    <div class="plan">
       <h3>MENSAL</h3>
       <h4>2 TELAS</h4>
-      <div class="price yellow">R$ 50<span>,00<br>/mês</span></div>
+      <div class="price">R$ 50<span>,00<br>/mês</span></div>
       <ul>
         <li>✔ Acesso por 30 dias</li>
         <li>✔ 2 dispositivos</li>
         <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
+        <li>✔ Melhor custo-benefício</li>
       </ul>
-      <button class="yellow-btn" onclick="selecionarPlano('50')">ESCOLHER PLANO</button>
+      <button onclick="selecionarPlano('50')">ESCOLHER PLANO</button>
     </div>
 
     <div class="plan">
@@ -112,8 +271,8 @@
       <ul>
         <li>✔ Acesso por 90 dias</li>
         <li>✔ 1 dispositivo</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
+        <li>✔ Economia garantida</li>
+        <li>✔ Suporte VIP</li>
       </ul>
       <button onclick="selecionarPlano('80')">ESCOLHER PLANO</button>
     </div>
@@ -121,50 +280,20 @@
     <div class="plan">
       <h3>TRIMESTRAL</h3>
       <h4>2 TELAS</h4>
-      <div class="price">R$ 130<span>,00<br>/3 meses</span></div>
+      <div class="price">R$ 140<span>,00<br>/3 meses</span></div>
       <ul>
         <li>✔ Acesso por 90 dias</li>
         <li>✔ 2 dispositivos</li>
-        <li>✔ Todos os canais</li>
-        <li>✔ Suporte incluso</li>
+        <li>✔ Melhor experiência</li>
+        <li>✔ Sem travamentos</li>
       </ul>
-      <button onclick="selecionarPlano('130')">ESCOLHER PLANO</button>
+      <button onclick="selecionarPlano('140')">ESCOLHER PLANO</button>
     </div>
   </div>
-</section>
 
-<section id="checkout" class="checkout">
-  <div class="checkout-box">
-    <div class="checkout-left">
-      <h2>PAGAMENTO VIA <span>PIX</span></h2>
-      <p>Rápido, seguro e com confirmação automática</p>
-
-      <label>1. ESCOLHA SEU PLANO</label>
-      <select id="plano">
-        <option value="30">Mensal - 1 Tela (R$ 30,00)</option>
-        <option value="50">Mensal - 2 Telas (R$ 50,00)</option>
-        <option value="80">Trimestral - 1 Tela (R$ 80,00)</option>
-        <option value="130">Trimestral - 2 Telas (R$ 130,00)</option>
-      </select>
-
-      <label>2. SEU EMAIL</label>
-      <input type="email" id="email" placeholder="Digite seu melhor email">
-
-      <button class="generate-btn" onclick="gerarPix()">⚡ GERAR PIX</button>
-    </div>
-
-    <div class="checkout-right">
-      <div class="steps">
-        <span>1<br>DADOS</span>
-        <span class="active">2<br>PAGAMENTO</span>
-        <span>3<br>CONFIRMAÇÃO</span>
-      </div>
-
-      <div id="pix" class="pix-box">
-        <h3>ESCANEIE O QR CODE</h3>
-        <p>O QR Code aparecerá aqui após gerar o Pix.</p>
-      </div>
-    </div>
+  <div class="social-proof">
+    <p>🔥 Mais de <strong>2.000 clientes ativos</strong> usando SG IPTV</p>
+    <p>⚡ Ativação imediata após pagamento</p>
   </div>
 </section>
 
@@ -181,27 +310,77 @@
   </div>
 </section>
 
+<section id="teste-gratis" class="checkout">
+  <div class="checkout-box">
+    <div class="checkout-left">
+      <h2>TESTE GRÁTIS <span>IPTV</span></h2>
+      <p>Informe seus dados para receber seu teste automático.</p>
+
+      <label>TIPO DE TESTE</label>
+      <select id="tipoTeste">
+        <option value="iptv_com_adulto">⚡ TESTE COMPLETO C/ ADULTO</option>
+        <option value="iptv_sem_adulto">⚡ TESTE COMPLETO S/ ADULTO</option>
+        <option value="p2p">🔥 P2P COMPLETO (CELULAR)</option>
+      </select>
+
+      <label>SEU EMAIL</label>
+      <input type="email" id="testeEmail" placeholder="Digite seu email" autocomplete="email">
+
+      <label>SEU WHATSAPP</label>
+      <input type="tel" id="testeTelefone" placeholder="Ex: 11912345678" inputmode="tel" autocomplete="tel">
+
+      <button class="generate-btn" onclick="gerarTesteGratis()">GERAR TESTE GRÁTIS</button>
+    </div>
+
+    <div class="checkout-right">
+      <div id="resultadoTeste" class="pix-box">
+        <h3>Seu teste aparecerá aqui</h3>
+        <p>Você receberá também por email as informações completas de instalação e configuração.</p>
+
+        <div class="apps-box">
+          <h4>📱 Códigos dos Aplicativos Gratis</h4>
+          <p>✅ <strong>FUN PLAY</strong> - 🔢 Código: <strong>powerpixel</strong></p>
+          <p>✅ <strong>LAZER PLAY</strong> - 🔢 Código: <strong>powerpixel</strong></p>
+
+          <br>
+
+          <h4>📱 Aplicativo Pago - Recomendado para Smart TVs</h4>
+          <p>✅ <strong>IBO Player</strong> - 🔢 Código: <strong>Anuidade R$30,00</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="faq" class="faq">
   <h2>FAQ</h2>
 
   <div class="faq-item">
     <h3>Como recebo meu acesso?</h3>
-    <p>Após a confirmação do pagamento, nossa equipe libera seu acesso pelo suporte.</p>
+    <p>Primeiro gere seu teste grátis para receber usuário e senha. Depois, entre na Área do Cliente e gere o Pix por lá. A confirmação é automática.</p>
   </div>
 
   <div class="faq-item">
     <h3>Funciona em Smart TV?</h3>
     <p>Sim, funciona em Smart TV, TV Box, celular, computador e outros dispositivos compatíveis.</p>
   </div>
+
+  <div class="faq-item">
+    <h3>Tem teste grátis?</h3>
+    <p>Sim. Você pode gerar um teste automático informando seu email e WhatsApp.</p>
+  </div>
 </section>
 
 <footer>
   <img src="assets/logo.png" alt="SG IPTV">
   <p>SG IPTV © 2026 - Todos os direitos reservados</p>
-  <p>Atendimento: (11) 95162-3333</p>
+  <p>Atendimento: 11919628194</p>
 </footer>
 
-<a class="whatsapp" href="https://wa.me/5511951623333" target="_blank">💬</a>
+<a class="whatsapp" href="https://wa.me/5511919628194" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+  WA
+</a>
+<a class="mobile-cta" href="#planos">Assinar agora</a>
 
 <script src="script.js"></script>
 </body>

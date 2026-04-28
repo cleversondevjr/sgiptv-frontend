@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Área do Cliente - SG IPTV</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+
+<link rel="icon" href="/favicon.ico">
+<link rel="shortcut icon" href="/favicon.ico">
+
+<div class="container">
+  <div class="card login-card" id="loginBox">
+    <img src="assets/logo.png" alt="SG IPTV" class="logo">
+
+    <h1>Área do Cliente</h1>
+    <p>Consulte seu plano, status do pagamento e renove seu acesso.</p>
+
+    <div class="login-tabs" role="tablist" aria-label="Tipo de login">
+      <button type="button" class="login-tab tab-active" id="tabContato" onclick="selecionarLoginModo('contato')">Email</button>
+      <button type="button" class="login-tab" id="tabUsuario" onclick="selecionarLoginModo('usuario')">Usuario</button>
+    </div>
+
+    <form id="clienteLoginForm" autocomplete="on">
+      <div id="loginModoContato">
+        <label>Email</label>
+        <input type="email" id="clienteEmail" placeholder="Digite seu email" autocomplete="email">
+
+        <label>WhatsApp</label>
+        <input type="tel" id="clienteTelefone" placeholder="Ex: 11912345678" inputmode="tel" autocomplete="tel">
+      </div>
+
+      <div id="loginModoUsuario" class="admin-hidden">
+        <label>Usuario</label>
+        <input type="text" id="clienteUsuario" placeholder="Digite seu usuario" autocomplete="username">
+
+        <label>Senha</label>
+        <input type="password" id="clienteSenha" placeholder="Digite sua senha" autocomplete="current-password">
+      </div>
+
+      <button type="submit">Entrar</button>
+    </form>
+
+    <a class="whatsapp-btn" href="index.html#teste-gratis" style="margin-top:12px;">
+      Ainda nao tenho login
+    </a>
+
+    <div id="loginMensagem"></div>
+  </div>
+
+  <div class="card painel-card" id="painelCliente" style="display:none;">
+    <div class="topo">
+      <img src="assets/logo.png" alt="SG IPTV" class="logo-small">
+      <button class="sair" onclick="sairCliente()">Sair</button>
+    </div>
+
+    <h1 id="painelTitulo">Meu Plano</h1>
+
+    <div id="dadosCliente"></div>
+
+    <div class="renovar-box" id="renovarBox">
+      <h2 id="renovarTitulo">Renovar Plano</h2>
+
+      <label>Escolha o plano</label>
+      <select id="planoRenovacao">
+        <option value="mensal_1_tela">Mensal - 1 Tela (R$ 30,00)</option>
+        <option value="mensal_2_telas">Mensal - 2 Telas (R$ 50,00)</option>
+        <option value="trimestral_1_tela">Trimestral - 1 Tela (R$ 80,00)</option>
+        <option value="trimestral_2_telas">Trimestral - 2 Telas (R$ 140,00)</option>
+      </select>
+
+      <button onclick="gerarPixRenovacao()">Gerar Pix de Renovação</button>
+
+      <div id="pixRenovacao"></div>
+    </div>
+  </div>
+</div>
+
+<script src="cliente.js"></script>
+</body>
+</html>

@@ -2,89 +2,38 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Login Admin - SG IPTV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - SG IPTV</title>
 
-  <style>
-    body {
-      margin: 0;
-      background: #0f172a;
-      color: white;
-      font-family: Arial;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .box {
-      background: #1e293b;
-      padding: 30px;
-      border-radius: 12px;
-      width: 300px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #22c55e;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 6px;
-      border: none;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #22c55e;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    button:hover {
-      background: #16a34a;
-    }
-  </style>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="cliente.css">
 </head>
 <body>
 
-<div class="box">
-  <h1>SG IPTV</h1>
+<div class="container">
+  <div class="card login-card">
 
-  <input type="text" id="usuario" placeholder="Usuário">
-  <input type="password" id="senha" placeholder="Senha">
+    <img src="assets/logo.png" alt="SG IPTV" class="logo">
 
-  <button onclick="login()">Entrar</button>
+    <h1>Painel Admin</h1>
+    <p>Faça login para gerenciar pagamentos e clientes.</p>
+
+    <form id="adminLoginForm" autocomplete="on">
+      <label>Usuário</label>
+      <input type="text" id="adminUser" placeholder="Digite o usuário" autocomplete="username">
+
+      <label>Senha</label>
+      <input type="password" id="adminPass" placeholder="Digite a senha" autocomplete="current-password">
+
+      <button type="submit">Entrar</button>
+    </form>
+
+    <div id="loginMsg"></div>
+
+  </div>
 </div>
 
-<script>
-async function login() {
-  const usuario = document.getElementById("usuario").value;
-  const senha = document.getElementById("senha").value;
-
-  const res = await fetch("http://127.0.0.1:4000/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ usuario, senha })
-  });
-
-  const data = await res.json();
-
-  if (data.token) {
-    localStorage.setItem("token_admin", data.token);
-    window.location.href = "admin.html";
-  } else {
-    alert("Usuário ou senha inválidos");
-  }
-}
-</script>
+<script src="admin.js"></script>
 
 </body>
 </html>
