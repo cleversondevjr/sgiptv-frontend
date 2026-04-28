@@ -438,7 +438,17 @@ async function carregarClientes() {
 
     dados.forEach(c => {
       const vencimento = c.vencimento ? formatarDataFimDoDia(c.vencimento) : "Nao informado";
-      const contato = c.telefone ? `+55${String(c.telefone).replace(/\D/g, "")}` : "-";
+      const telefoneDigits = String(c.telefone || "").replace(/\D/g, "");
+      const contato = telefoneDigits ? `55${telefoneDigits}` : "";
+      const vencimentoDate = c.vencimento ? new Date(c.vencimento) : null;
+      const diasRestantes = vencimentoDate && !Number.isNaN(vencimentoDate.getTime())
+        ? Math.ceil((vencimentoDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000))
+        : null;
+      const vencimentoClasse = (diasRestantes !== null && diasRestantes <= 0)
+        ? "badge-expirado"
+        : (diasRestantes !== null && diasRestantes <= 3)
+          ? "badge-urgente"
+          : "badge-ok";
       const resumoContato = [
         c.nome ? escaparHtml(c.nome) : null,
         c.email ? escaparHtml(c.email) : null,
@@ -450,7 +460,7 @@ async function carregarClientes() {
         `Vencimento: ${vencimento}\n\n` +
         `Para renovar, acesse a Area do Cliente: https://sgiptv.com.br/cliente.html`
       );
-      const linkLembrete = contato !== "-"
+      const linkLembrete = contato
         ? `https://wa.me/${contato}?text=${lembreteMsg}`
         : "";
 
@@ -460,14 +470,14 @@ async function carregarClientes() {
           <td>${escaparHtml(c.senha)}</td>
           <td>${escaparHtml(c.plano)}</td>
           <td>${escaparHtml(c.conexoes)}</td>
-          <td>${escaparHtml(vencimento)}</td>
+          <td><span class="vencimento-badge ${vencimentoClasse}">${escaparHtml(vencimento)}</span></td>
           <td>
             <div class="cliente-contato">
               <div class="cliente-contato-resumo">${resumoContato || "-"}</div>
               <div class="cliente-contato-acoes">
                 <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}')">Editar</button>
-                ${contato !== "-" ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/${contato}?text=${encodeURIComponent("Ola! Aqui e a equipe SG IPTV.")}">WhatsApp</a>` : ""}
-                ${contato !== "-" ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkLembrete}">Lembrar</a>` : ""}
+                ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/${contato}?text=${encodeURIComponent("Ola! Aqui e a equipe SG IPTV.")}">WhatsApp</a>` : ""}
+                ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkLembrete}">Lembrar</a>` : ""}
               </div>
             </div>
           </td>
