@@ -731,6 +731,12 @@ footer img {
   box-shadow: 0 0 20px rgba(126, 34, 206, 0.25);
 }
 
+.channel-icon {
+  font-size: 28px;
+  line-height: 1;
+  opacity: 0.95;
+}
+
 .channel-card strong {
   font-size: 22px;
   color: #ffcc00;
@@ -753,52 +759,6 @@ footer img {
   background: rgba(15, 23, 42, 0.55);
 }
 
-.notice {
-  background: #06000f;
-  padding: 0 20px 40px;
-}
-
-.notice-box {
-  max-width: 1180px;
-  margin: 0 auto;
-  border: 1px solid rgba(185,54,255,.45);
-  background: #10051d;
-  border-radius: 16px;
-  padding: 18px 20px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 14px;
-  align-items: center;
-}
-
-.notice-box strong {
-  color: #ffcc00;
-  font-size: 16px;
-}
-
-.notice-box span {
-  color: #d1d5db;
-}
-
-.notice-link {
-  justify-self: end;
-  padding: 12px 14px;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: 800;
-  background: #ffcc00;
-  color: #000;
-}
-
-@media (max-width: 980px) {
-  .notice-box {
-    grid-template-columns: 1fr;
-  }
-
-  .notice-link {
-    justify-self: start;
-  }
-}
 
 .catalog-item img:hover {
   transform: translateY(-2px) scale(1.03);

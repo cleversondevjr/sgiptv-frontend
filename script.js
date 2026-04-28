@@ -31,11 +31,13 @@ function irParaItemCatalogo(novoIndex) {
   const data = obterItensCatalogo();
   if (!data) return;
 
-  const { itens } = data;
+  const { row, itens } = data;
   if (itens.length === 0) return;
 
   catalogIndex = ((novoIndex % itens.length) + itens.length) % itens.length;
-  itens[catalogIndex].scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+  const alvo = itens[catalogIndex];
+  const left = alvo.offsetLeft - row.offsetLeft;
+  row.scrollTo({ left, behavior: "smooth" });
 }
 
 function scrollCatalog(direcao) {

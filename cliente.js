@@ -431,9 +431,11 @@ function configurarRenovacao(titulo) {
 
 function montarPainel(cliente) {
   const box = document.getElementById("dadosCliente");
+  const titulo = document.getElementById("painelTitulo");
 
   if (cliente.tipoCliente === "cliente") {
     configurarRenovacao("Renovar Plano");
+    if (titulo) titulo.textContent = `PLANO PAGO - ${cliente.plano}`;
 
     const vencimento = cliente.vencimento ? new Date(cliente.vencimento) : null;
     const vencimentoTexto = vencimento && !Number.isNaN(vencimento.getTime())
@@ -474,6 +476,7 @@ function montarPainel(cliente) {
     const teste = cliente.ultimoTeste;
 
     configurarRenovacao("Ativar Plano");
+    if (titulo) titulo.textContent = "TESTE GRATUITO";
 
     box.innerHTML = `
       <h3 style="color:#facc15;">Teste Gratuito</h3>
@@ -546,6 +549,10 @@ function montarPainel(cliente) {
       <p class="erro">Nenhum pagamento encontrado.</p>
     `;
     return;
+  }
+
+  if (titulo) {
+    titulo.textContent = `PLANO PAGO - ${pagamento.plano || nomePlano(pagamento.valor)}`;
   }
 
   const statusClass = pagamento.status === "confirmado"
