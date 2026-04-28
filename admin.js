@@ -548,16 +548,18 @@ async function carregarClientes() {
         c.email ? escaparHtml(c.email) : null,
         c.telefone ? escaparHtml(c.telefone) : null
       ].filter(Boolean).join("<br>");
-      const lembreteMsg = encodeURIComponent(
-        `Ola${c.nome ? `, ${c.nome}` : ""}! Aqui e a equipe SG IPTV.\n\n` +
-        `Seu plano esta proximo de expirar.\n` +
-        `Login: ${c.usuario}\n` +
-        `Senha: ${c.senha}\n` +
-        `Vencimento: ${vencimento}\n\n` +
-        `Para renovar, acesse a Area do Cliente: https://sgiptv.com.br/cliente.html`
-      );
-      const linkLembrete = contato
-        ? `https://wa.me/${contato}?text=${lembreteMsg}`
+      const nomeCliente = String(c.nome || "").trim();
+      const loginCliente = String(c.usuario || "").trim();
+      const senhaCliente = String(c.senha || "").trim();
+      const textoWhatsapp =
+        `Ola!${nomeCliente ? ` ${nomeCliente}` : ""}\n\n` +
+        `Aqui e a equipe SG IPTV. Seu plano esta proximo de expirar.\n` +
+        `Vencimento: ${vencimento}\n` +
+        `Para renovar, acesse a Area do Cliente: https://sgiptv.com.br/cliente.html\n\n` +
+        `Login: ${loginCliente}\n` +
+        `Senha: ${senhaCliente}`;
+      const linkWhatsapp = contato
+        ? `https://wa.me/${contato}?text=${encodeURIComponent(textoWhatsapp)}`
         : "";
       const temContato = Boolean(c.nome || c.email || telefoneDigits);
       const textoEditar = temContato ? "Editar" : "Adicionar";
@@ -574,8 +576,7 @@ async function carregarClientes() {
               <div class="cliente-contato-resumo">${resumoContato || "-"}</div>
               <div class="cliente-contato-acoes">
                 <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}')">${textoEditar}</button>
-                ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/${contato}?text=${encodeURIComponent("Ola! Aqui e a equipe SG IPTV.")}">WhatsApp</a>` : `<span class="whatsapp-btn whatsapp-disabled">WhatsApp</span>`}
-                ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkLembrete}">Lembrar</a>` : ""}
+                ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkWhatsapp}">WhatsApp</a>` : `<span class="whatsapp-btn whatsapp-disabled">WhatsApp</span>`}
               </div>
             </div>
           </td>
