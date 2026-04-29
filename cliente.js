@@ -2,21 +2,7 @@ const API = "https://sgiptv-backend.onrender.com";
 let clienteAtual = null;
 let pixStatusTimer = null;
 let pixCountdownTimer = null;
-let loginModo = "contato";
-
-function selecionarLoginModo(modo) {
-  loginModo = modo === "usuario" ? "usuario" : "contato";
-
-  const tabContato = document.getElementById("tabContato");
-  const tabUsuario = document.getElementById("tabUsuario");
-  const boxContato = document.getElementById("loginModoContato");
-  const boxUsuario = document.getElementById("loginModoUsuario");
-
-  if (tabContato) tabContato.classList.toggle("tab-active", loginModo === "contato");
-  if (tabUsuario) tabUsuario.classList.toggle("tab-active", loginModo === "usuario");
-  if (boxContato) boxContato.classList.toggle("admin-hidden", loginModo !== "contato");
-  if (boxUsuario) boxUsuario.classList.toggle("admin-hidden", loginModo !== "usuario");
-}
+const loginModo = "usuario";
 
 function normalizarTelefone(numero) {
   return String(numero || "").replace(/\D/g, "");
@@ -117,24 +103,7 @@ function limparErroCampo(id) {
 }
 
 function validarLoginCliente() {
-  const email = document.getElementById("clienteEmail").value.trim().toLowerCase();
-  const telefone = normalizarTelefone(document.getElementById("clienteTelefone").value);
-  let valido = true;
-
-  limparErroCampo("clienteEmail");
-  limparErroCampo("clienteTelefone");
-
-  if (!emailValido(email)) {
-    mostrarErroCampo("clienteEmail", "Digite um email valido.");
-    valido = false;
-  }
-
-  if (!telefoneValido(telefone)) {
-    mostrarErroCampo("clienteTelefone", "Digite um WhatsApp com DDD.");
-    valido = false;
-  }
-
-  return { valido, email, telefone };
+  return validarLoginUsuario();
 }
 
 function validarLoginUsuario() {
@@ -299,8 +268,6 @@ function iniciarMonitoramentoPix({ paymentId, email, telefone, plano, valor, box
       if (pagamento.status !== "confirmado") return;
 
       pararMonitoramentoPix();
-      localStorage.setItem("cliente_email", email);
-      localStorage.setItem("cliente_telefone", telefone);
 
       box.innerHTML = `
         <h3 style="color:#22c55e;">Pix recebido!</h3>
@@ -328,21 +295,12 @@ async function consultarCliente() {
 
   let payload = null;
 
-  if (loginModo === "usuario") {
-    const cred = validarLoginUsuario();
-    if (!cred.valido) {
-      msg.innerHTML = `<p class="erro">Revise usuario e senha para entrar.</p>`;
-      return;
-    }
-    payload = { usuario: cred.usuario, senha: cred.senha };
-  } else {
-    const contato = validarLoginCliente();
-    if (!contato.valido) {
-      msg.innerHTML = `<p class="erro">Revise email e WhatsApp para entrar.</p>`;
-      return;
-    }
-    payload = { email: contato.email, telefone: contato.telefone };
+  const cred = validarLoginUsuario();
+  if (!cred.valido) {
+    msg.innerHTML = `<p class="erro">Revise usuario e senha para entrar.</p>`;
+    return;
   }
+  payload = { usuario: cred.usuario, senha: cred.senha };
 
   msg.innerHTML = `<p class="sucesso">Consultando...</p>`;
 
@@ -363,11 +321,6 @@ async function consultarCliente() {
     }
 
     clienteAtual = data.cliente;
-
-    if (payload.email && payload.telefone) {
-      localStorage.setItem("cliente_email", payload.email);
-      localStorage.setItem("cliente_telefone", payload.telefone);
-    }
 
     if (payload.usuario && payload.senha) {
       localStorage.setItem("cliente_usuario", payload.usuario);
@@ -447,11 +400,6 @@ function montarPainel(cliente) {
         <div class="info">
           <strong>Plano</strong>
           <p>${escaparHtml(cliente.plano)}</p>
-        </div>
-
-        <div class="info">
-          <strong>Conexoes</strong>
-          <p>${escaparHtml(cliente.conexoes)}</p>
         </div>
 
         <div class="info">
@@ -707,14 +655,14 @@ function copiarPixRenovacao(botao) {
 }
 
 function sairCliente() {
-  localStorage.removeItem("cliente_email");
-  localStorage.removeItem("cliente_telefone");
-  location.reload();
+  pararMonitoramentoPix();
+  clienteAtual = null;
+  localStorage.removeItem("cliente_usuario");
+  localStorage.removeItem("cliente_senha");
+  window.location.href = "cliente.html";
 }
 
 window.addEventListener("load", () => {
-  aplicarMascaraTelefone("clienteTelefone");
-
   const loginForm = document.getElementById("clienteLoginForm");
   if (loginForm) {
     loginForm.addEventListener("submit", (event) => {
@@ -723,25 +671,12 @@ window.addEventListener("load", () => {
     });
   }
 
-  selecionarLoginModo("contato");
-  selecionarLoginModo("usuario");
-
-  const email = localStorage.getItem("cliente_email");
-  const telefone = localStorage.getItem("cliente_telefone");
   const usuario = localStorage.getItem("cliente_usuario");
   const senha = localStorage.getItem("cliente_senha");
 
   if (usuario && senha) {
     document.getElementById("clienteUsuario").value = usuario;
     document.getElementById("clienteSenha").value = senha;
-    consultarCliente();
-    return;
-  }
-
-  if (email && telefone) {
-    selecionarLoginModo("contato");
-    document.getElementById("clienteEmail").value = email;
-    document.getElementById("clienteTelefone").value = formatarTelefone(telefone);
     consultarCliente();
   }
 });

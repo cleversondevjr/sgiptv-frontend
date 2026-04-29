@@ -19,27 +19,12 @@
     <h1>Área do Cliente</h1>
     <p>Consulte seu plano, status do pagamento e renove seu acesso.</p>
 
-    <div class="login-tabs" role="tablist" aria-label="Tipo de login">
-      <button type="button" class="login-tab tab-active" id="tabContato" onclick="selecionarLoginModo('contato')">Email</button>
-      <button type="button" class="login-tab" id="tabUsuario" onclick="selecionarLoginModo('usuario')">Usuario</button>
-    </div>
-
     <form id="clienteLoginForm" autocomplete="on">
-      <div id="loginModoContato">
-        <label>Email</label>
-        <input type="email" id="clienteEmail" placeholder="Digite seu email" autocomplete="email">
+      <label>Usuario</label>
+      <input type="text" id="clienteUsuario" placeholder="Digite seu usuario" autocomplete="username">
 
-        <label>WhatsApp</label>
-        <input type="tel" id="clienteTelefone" placeholder="Ex: 11912345678" inputmode="tel" autocomplete="tel">
-      </div>
-
-      <div id="loginModoUsuario" class="admin-hidden">
-        <label>Usuario</label>
-        <input type="text" id="clienteUsuario" placeholder="Digite seu usuario" autocomplete="username">
-
-        <label>Senha</label>
-        <input type="password" id="clienteSenha" placeholder="Digite sua senha" autocomplete="current-password">
-      </div>
+      <label>Senha</label>
+      <input type="password" id="clienteSenha" placeholder="Digite sua senha" autocomplete="current-password">
 
       <button type="submit">Entrar</button>
     </form>
