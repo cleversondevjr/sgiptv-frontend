@@ -136,25 +136,80 @@ function mostrarSecaoAdmin(secao) {
   const pagamentos = document.getElementById("pagamentos");
   const testes = document.getElementById("testes");
   const clientes = document.getElementById("clientes");
+  const revendedores = document.getElementById("revendedores");
   const btnPagamentos = document.getElementById("btnPagamentos");
   const btnTestes = document.getElementById("btnTestes");
   const btnClientes = document.getElementById("btnClientes");
+  const btnRevendedores = document.getElementById("btnRevendedores");
 
-  if (!pagamentos || !testes || !clientes || !btnPagamentos || !btnTestes || !btnClientes) return;
+  if (!pagamentos || !testes || !clientes || !revendedores) return;
+  if (!btnPagamentos || !btnTestes || !btnClientes || !btnRevendedores) return;
 
   const mostrarPagamentos = secao === "pagamentos";
   const mostrarTestes = secao === "testes";
   const mostrarClientes = secao === "clientes";
+  const mostrarRevendedores = secao === "revendedores";
 
   pagamentos.classList.toggle("admin-hidden", !mostrarPagamentos);
   testes.classList.toggle("admin-hidden", !mostrarTestes);
   clientes.classList.toggle("admin-hidden", !mostrarClientes);
+  revendedores.classList.toggle("admin-hidden", !mostrarRevendedores);
   btnPagamentos.classList.toggle("nav-active", mostrarPagamentos);
   btnTestes.classList.toggle("nav-active", mostrarTestes);
   btnClientes.classList.toggle("nav-active", mostrarClientes);
+  btnRevendedores.classList.toggle("nav-active", mostrarRevendedores);
 
   if (mostrarClientes) {
     carregarClientes();
+  }
+
+  if (mostrarRevendedores) {
+    carregarRevendedores();
+  }
+}
+
+async function carregarRevendedores() {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const lista = document.getElementById("listaRevendedores");
+  if (!lista) return;
+
+  lista.innerHTML = `<tr><td colspan="5">Carregando...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API}/revendedores`, {
+      headers: { Authorization: token }
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao buscar revendedores");
+    }
+
+    const itens = Array.isArray(data.revendedores) ? data.revendedores : [];
+    if (itens.length === 0) {
+      lista.innerHTML = `<tr><td colspan="5">Nenhum revendedor cadastrado.</td></tr>`;
+      return;
+    }
+
+    lista.innerHTML = itens.map((item) => {
+      const pendente = formatarDinheiro(item.total_pendente || 0);
+      const status = String(item.status || "Ativo");
+
+      return `
+        <tr>
+          <td>${escaparHtml(item.codigo)}</td>
+          <td>${escaparHtml(item.email)}</td>
+          <td>${escaparHtml(item.pix_cpf || "-")}</td>
+          <td><strong>${pendente}</strong></td>
+          <td>${escaparHtml(status)}</td>
+        </tr>
+      `;
+    }).join("");
+  } catch (error) {
+    console.error(error);
+    lista.innerHTML = `<tr><td colspan="5">Erro ao carregar.</td></tr>`;
   }
 }
 
