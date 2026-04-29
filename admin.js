@@ -275,20 +275,43 @@ async function gerarPixTesteAdmin() {
       return;
     }
 
+    const codigo = String(data.qr_code || "");
+
     resultado.innerHTML = `
       <p><strong>Payment ID:</strong> ${escaparHtml(data.payment_id)}</p>
       <p><strong>Expira em:</strong> ${escaparHtml(formatarData(data.pix_expira_em))}</p>
-      <div class="pix-flex" style="grid-template-columns: 200px minmax(0,1fr);">
-        <img alt="QR Code Pix" src="data:image/png;base64,${data.qr_base64}">
+      <div class="pix-flex" style="grid-template-columns: 260px minmax(0,1fr);">
+        <div class="pix-preview">
+          <img alt="QR Code Pix" src="data:image/png;base64,${data.qr_base64}">
+        </div>
         <div>
           <label>Codigo copia e cola</label>
-          <textarea id="pixTesteCopia" readonly>${escaparHtml(data.qr_code)}</textarea>
+          <textarea id="pixTesteCopia" readonly>${escaparHtml(codigo)}</textarea>
+          <button type="button" style="margin-top:10px;" onclick="copiarTextoArea('pixTesteCopia', this)">Copiar codigo</button>
         </div>
       </div>
     `;
   } catch (error) {
     console.error(error);
     resultado.innerHTML = `<p class="erro">Erro ao gerar Pix.</p>`;
+  }
+}
+
+function copiarTextoArea(id, botao) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.focus();
+  el.select();
+
+  try {
+    document.execCommand("copy");
+    if (botao) botao.textContent = "Copiado!";
+    setTimeout(() => {
+      if (botao) botao.textContent = "Copiar codigo";
+    }, 1500);
+  } catch {
+    alert("Nao foi possivel copiar automaticamente.");
   }
 }
 

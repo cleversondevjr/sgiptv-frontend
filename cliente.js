@@ -106,6 +106,15 @@ function validarLoginCliente() {
   return validarLoginUsuario();
 }
 
+function limparSufixoConexoesPlano(texto) {
+  // Remove marcadores de conexoes (1CX/2CX) que nao devem aparecer mais no painel do cliente.
+  return String(texto || "")
+    .replace(/\b[12]\s*cx\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+-\s+/g, " - ")
+    .trim();
+}
+
 function validarLoginUsuario() {
   const usuario = String(document.getElementById("clienteUsuario")?.value || "").trim();
   const senha = String(document.getElementById("clienteSenha")?.value || "").trim();
@@ -388,7 +397,8 @@ function montarPainel(cliente) {
 
   if (cliente.tipoCliente === "cliente") {
     configurarRenovacao("Renovar Plano");
-    if (titulo) titulo.textContent = `PLANO PAGO - ${cliente.plano}`;
+    const planoLimpo = limparSufixoConexoesPlano(cliente.plano);
+    if (titulo) titulo.textContent = `PLANO PAGO - ${planoLimpo}`;
 
     const vencimento = cliente.vencimento ? new Date(cliente.vencimento) : null;
     const vencimentoTexto = vencimento && !Number.isNaN(vencimento.getTime())
@@ -399,7 +409,7 @@ function montarPainel(cliente) {
       <div class="info-grid">
         <div class="info">
           <strong>Plano</strong>
-          <p>${escaparHtml(cliente.plano)}</p>
+          <p>${escaparHtml(planoLimpo)}</p>
         </div>
 
         <div class="info">
