@@ -64,7 +64,11 @@ async function cadastrarRevendedor() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Erro ao cadastrar.");
 
-    msg.innerHTML = `<p style="color:#22c55e;"><strong>Cadastrado!</strong> Seu codigo: <strong>${escaparHtml(data.codigo)}</strong></p>`;
+    msg.innerHTML = `
+      <p style="color:#22c55e;"><strong>Cadastro realizado com sucesso!</strong></p>
+      <p>Seu codigo: <strong>${escaparHtml(data.codigo)}</strong></p>
+      <p style="color:#facc15;">Aguarde ate 24 horas para aprovacao do master.</p>
+    `;
   } catch (e) {
     msg.innerHTML = `<p style="color:#ef4444;">${escaparHtml(e.message)}</p>`;
   }
@@ -169,4 +173,3 @@ document.getElementById("revLoginForm")?.addEventListener("submit", async (ev) =
 });
 
 carregarRevendedor();
-

@@ -262,6 +262,8 @@ async function carregarRevendedores() {
     lista.innerHTML = itens.map((item) => {
       const pendente = formatarDinheiro(item.total_pendente || 0);
       const bonus = formatarDinheiro(item.bonus_mes || 0);
+      const status = String(item.status || "pendente");
+      const podeAprovar = status === "pendente";
 
       return `
         <tr>
@@ -271,6 +273,8 @@ async function carregarRevendedores() {
           <td><strong>${bonus}</strong></td>
           <td>
             <button id="rev-toggle-${item.id}" type="button" onclick="alternarClientesRevendedor(${item.id})">+</button>
+            ${podeAprovar ? `<button type="button" onclick="aprovarRevendedor(${item.id})">Aprovar</button>` : ``}
+            ${podeAprovar ? `<button type="button" onclick="reprovarRevendedor(${item.id})">Reprovar</button>` : ``}
             <button type="button" onclick="alert('Pagar comissao (pendente: ${pendente}) - a automatizacao sera implementada na proxima etapa.')">Pagar Comissao</button>
             <button type="button" onclick="alert('Pagar bonus (mes: ${bonus}) - a automatizacao sera implementada na proxima etapa.')">Pagar Bonus</button>
           </td>
@@ -283,6 +287,44 @@ async function carregarRevendedores() {
   } catch (error) {
     console.error(error);
     lista.innerHTML = `<tr><td colspan="6">Erro ao carregar.</td></tr>`;
+  }
+}
+
+async function aprovarRevendedor(id) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API}/revendedores/${id}/aprovar`, {
+      method: "PUT",
+      headers: { Authorization: token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erro ao aprovar.");
+    alert("Revendedor aprovado.");
+    carregarRevendedores();
+  } catch (e) {
+    alert(e.message || "Erro ao aprovar.");
+  }
+}
+
+async function reprovarRevendedor(id) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  if (!confirm("Reprovar este revendedor?")) return;
+
+  try {
+    const res = await fetch(`${API}/revendedores/${id}/reprovar`, {
+      method: "PUT",
+      headers: { Authorization: token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erro ao reprovar.");
+    alert("Revendedor reprovado.");
+    carregarRevendedores();
+  } catch (e) {
+    alert(e.message || "Erro ao reprovar.");
   }
 }
 
