@@ -191,6 +191,159 @@ function formatarDinheiro(valor) {
   return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function garantirModalBasico(id, titulo) {
+  let modal = document.getElementById(id);
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = id;
+  modal.className = "modal-overlay admin-hidden";
+  modal.innerHTML = `
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="${escaparHtml(titulo)}">
+      <div class="modal-header">
+        <strong>${escaparHtml(titulo)}</strong>
+        <button type="button" class="modal-close" onclick="document.getElementById('${id}').classList.add('admin-hidden')">X</button>
+      </div>
+      <div class="modal-body" id="${id}-body"></div>
+    </div>
+  `;
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) modal.classList.add("admin-hidden");
+  });
+
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function abrirModalPixTeste() {
+  const modal = garantirModalBasico("pixTesteModal", "Gerar Pix (Teste)");
+  const body = document.getElementById("pixTesteModal-body");
+
+  body.innerHTML = `
+    <label>Email</label>
+    <input id="pixTesteEmail" type="email" placeholder="cliente@email.com">
+
+    <label>WhatsApp (somente numeros)</label>
+    <input id="pixTesteTel" type="text" placeholder="11912345678">
+
+    <label>Plano</label>
+    <select id="pixTestePlano">
+      <option value="mensal_1_tela">Mensal - 1 Tela</option>
+      <option value="mensal_2_telas">Mensal - 2 Telas</option>
+      <option value="trimestral_1_tela">Trimestral - 1 Tela</option>
+      <option value="trimestral_2_telas">Trimestral - 2 Telas</option>
+    </select>
+
+    <div class="modal-actions" style="grid-template-columns: 1fr;">
+      <button type="button" onclick="gerarPixTesteAdmin()">Gerar</button>
+    </div>
+
+    <div id="pixTesteResultado" style="margin-top:12px;"></div>
+  `;
+
+  modal.classList.remove("admin-hidden");
+}
+
+async function gerarPixTesteAdmin() {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const email = String(document.getElementById("pixTesteEmail")?.value || "").trim().toLowerCase();
+  const telefone = String(document.getElementById("pixTesteTel")?.value || "").replace(/\D/g, "");
+  const planoId = String(document.getElementById("pixTestePlano")?.value || "").trim();
+  const resultado = document.getElementById("pixTesteResultado");
+
+  if (!resultado) return;
+
+  resultado.innerHTML = `<p>Gerando Pix...</p>`;
+
+  try {
+    const res = await fetch(`${API}/admin/pix/teste`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({ email, telefone, planoId })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      resultado.innerHTML = `<p class="erro">${escaparHtml(data.error || "Erro ao gerar Pix.")}</p>`;
+      return;
+    }
+
+    resultado.innerHTML = `
+      <p><strong>Payment ID:</strong> ${escaparHtml(data.payment_id)}</p>
+      <p><strong>Expira em:</strong> ${escaparHtml(formatarData(data.pix_expira_em))}</p>
+      <div class="pix-flex" style="grid-template-columns: 200px minmax(0,1fr);">
+        <img alt="QR Code Pix" src="data:image/png;base64,${data.qr_base64}">
+        <div>
+          <label>Codigo copia e cola</label>
+          <textarea id="pixTesteCopia" readonly>${escaparHtml(data.qr_code)}</textarea>
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error(error);
+    resultado.innerHTML = `<p class="erro">Erro ao gerar Pix.</p>`;
+  }
+}
+
+function abrirModalEmailsTeste() {
+  const modal = garantirModalBasico("emailsTesteModal", "Enviar Emails (Teste)");
+  const body = document.getElementById("emailsTesteModal-body");
+
+  body.innerHTML = `
+    <label>Usuario do cliente</label>
+    <input id="emailsTesteUsuario" type="text" placeholder="913162386">
+
+    <div class="modal-actions" style="grid-template-columns: 1fr;">
+      <button type="button" onclick="enviarEmailsTesteVencimento()">Enviar 2 emails (3d e 1d)</button>
+    </div>
+
+    <div id="emailsTesteResultado" style="margin-top:12px;"></div>
+  `;
+
+  modal.classList.remove("admin-hidden");
+}
+
+async function enviarEmailsTesteVencimento() {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const usuario = String(document.getElementById("emailsTesteUsuario")?.value || "").trim();
+  const resultado = document.getElementById("emailsTesteResultado");
+  if (!resultado) return;
+
+  resultado.innerHTML = `<p>Enviando...</p>`;
+
+  try {
+    const res = await fetch(`${API}/admin/teste-emails-vencimento`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({ usuario })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      resultado.innerHTML = `<p class="erro">${escaparHtml(data.error || "Erro ao enviar emails.")}</p>`;
+      return;
+    }
+
+    resultado.innerHTML = `<p class="sucesso">Emails de teste enviados para ${escaparHtml("suportesgipt01@gmail.com")}.</p>`;
+  } catch (error) {
+    console.error(error);
+    resultado.innerHTML = `<p class="erro">Erro ao enviar emails.</p>`;
+  }
+}
+
 async function carregarRelatorioMes(ano, mes) {
   const token = verificarAdminLogado();
   const summary = document.getElementById("monthSummary");
