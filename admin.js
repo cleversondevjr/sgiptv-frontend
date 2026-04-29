@@ -360,7 +360,7 @@ async function enviarEmailsTesteVencimento() {
       return;
     }
 
-    resultado.innerHTML = `<p class="sucesso">Emails de teste enviados para ${escaparHtml("suportesgipt01@gmail.com")}.</p>`;
+    resultado.innerHTML = `<p class="sucesso">Emails de teste enviados para ${escaparHtml("suportesgiptv01@gmail.com")}.</p>`;
   } catch (error) {
     console.error(error);
     resultado.innerHTML = `<p class="erro">Erro ao enviar emails.</p>`;
