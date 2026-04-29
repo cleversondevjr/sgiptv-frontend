@@ -59,6 +59,22 @@ nav a:hover {
   font-weight: bold;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.client-btn.secondary-action {
+  background: transparent;
+  color: #ffcc00;
+  border: 1px solid rgba(250, 204, 21, 0.7);
+}
+
+.client-btn.secondary-action:hover {
+  background: rgba(250, 204, 21, 0.08);
+}
+
 .hero {
   min-height: 650px;
   display: flex;

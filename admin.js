@@ -168,6 +168,72 @@ function mostrarSecaoAdmin(secao) {
   }
 }
 
+function alternarClientesRevendedor(id) {
+  const detalhes = document.getElementById(`rev-clientes-${id}`);
+  const botao = document.getElementById(`rev-toggle-${id}`);
+  if (!detalhes || !botao) return;
+
+  const fechado = detalhes.classList.toggle("admin-hidden");
+  botao.textContent = fechado ? "+" : "-";
+
+  if (!fechado && !detalhes.dataset.loaded) {
+    carregarClientesDoRevendedor(id);
+  }
+}
+
+async function carregarClientesDoRevendedor(id) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const box = document.getElementById(`rev-clientes-${id}`);
+  if (!box) return;
+
+  box.dataset.loaded = "1";
+  box.innerHTML = `<div style="padding:12px;">Carregando clientes...</div>`;
+
+  try {
+    const res = await fetch(`${API}/revendedores/${id}/clientes`, {
+      headers: { Authorization: token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erro ao carregar clientes.");
+
+    const clientes = Array.isArray(data.clientes) ? data.clientes : [];
+    if (clientes.length === 0) {
+      box.innerHTML = `<div style="padding:12px;">Nenhum cliente vinculado.</div>`;
+      return;
+    }
+
+    const linhas = clientes.map((c) => `
+      <tr>
+        <td>${escaparHtml(c.usuario)}</td>
+        <td>${escaparHtml(c.plano)}</td>
+        <td>${escaparHtml(formatarDataFimDoDia(c.vencimento))}</td>
+        <td>${escaparHtml(c.nome || "-")}<br>${escaparHtml(c.email || "-")}<br>${escaparHtml(c.telefone || "-")}</td>
+      </tr>
+    `).join("");
+
+    box.innerHTML = `
+      <div class="tabela-area" style="margin: 10px 0 0 0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Plano</th>
+              <th>Vencimento</th>
+              <th>Contato</th>
+            </tr>
+          </thead>
+          <tbody>${linhas}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    console.error(e);
+    box.innerHTML = `<div style="padding:12px; color:#ef4444;">Erro ao carregar clientes.</div>`;
+  }
+}
+
 async function carregarRevendedores() {
   const token = verificarAdminLogado();
   if (!token) return;
@@ -175,7 +241,7 @@ async function carregarRevendedores() {
   const lista = document.getElementById("listaRevendedores");
   if (!lista) return;
 
-  lista.innerHTML = `<tr><td colspan="5">Carregando...</td></tr>`;
+  lista.innerHTML = `<tr><td colspan="6">Carregando...</td></tr>`;
 
   try {
     const res = await fetch(`${API}/revendedores`, {
@@ -189,27 +255,34 @@ async function carregarRevendedores() {
 
     const itens = Array.isArray(data.revendedores) ? data.revendedores : [];
     if (itens.length === 0) {
-      lista.innerHTML = `<tr><td colspan="5">Nenhum revendedor cadastrado.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="6">Nenhum revendedor cadastrado.</td></tr>`;
       return;
     }
 
     lista.innerHTML = itens.map((item) => {
       const pendente = formatarDinheiro(item.total_pendente || 0);
-      const status = String(item.status || "Ativo");
+      const bonus = formatarDinheiro(item.bonus_mes || 0);
 
       return `
         <tr>
-          <td>${escaparHtml(item.codigo)}</td>
+          <td><strong>${escaparHtml(item.nome_completo || "-")}</strong><br><span style="opacity:.9;">${escaparHtml(item.codigo)}</span></td>
           <td>${escaparHtml(item.email)}</td>
           <td>${escaparHtml(item.pix_cpf || "-")}</td>
-          <td><strong>${pendente}</strong></td>
-          <td>${escaparHtml(status)}</td>
+          <td><strong>${bonus}</strong></td>
+          <td>
+            <button id="rev-toggle-${item.id}" type="button" onclick="alternarClientesRevendedor(${item.id})">+</button>
+            <button type="button" onclick="alert('Pagar comissao (pendente: ${pendente}) - a automatizacao sera implementada na proxima etapa.')">Pagar Comissao</button>
+            <button type="button" onclick="alert('Pagar bonus (mes: ${bonus}) - a automatizacao sera implementada na proxima etapa.')">Pagar Bonus</button>
+          </td>
+        </tr>
+        <tr id="rev-clientes-${item.id}" class="admin-hidden">
+          <td colspan="6"></td>
         </tr>
       `;
     }).join("");
   } catch (error) {
     console.error(error);
-    lista.innerHTML = `<tr><td colspan="5">Erro ao carregar.</td></tr>`;
+    lista.innerHTML = `<tr><td colspan="6">Erro ao carregar.</td></tr>`;
   }
 }
 

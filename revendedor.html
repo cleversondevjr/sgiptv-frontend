@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Area do Revendedor - SG IPTV</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+
+<div class="container">
+  <div class="card login-card" id="revLoginBox">
+    <img src="assets/logo.png" alt="SG IPTV" class="logo">
+
+    <h1>Area do Revendedor</h1>
+    <p>Acompanhe comissoes, bonus e indicacoes.</p>
+
+    <form id="revLoginForm" autocomplete="on">
+      <label>Email</label>
+      <input type="email" id="revEmail" placeholder="Digite seu email" autocomplete="username">
+
+      <label>Senha</label>
+      <input type="password" id="revSenha" placeholder="Digite sua senha" autocomplete="current-password">
+
+      <button type="submit">Entrar</button>
+    </form>
+
+    <button type="button" class="whatsapp-btn" style="margin-top:12px;" onclick="abrirCadastroRevendedor()">
+      Quero me cadastrar
+    </button>
+
+    <div id="revLoginMensagem"></div>
+  </div>
+
+  <div class="card painel-card" id="revPainel" style="display:none;">
+    <div class="topo">
+      <img src="assets/logo.png" alt="SG IPTV" class="logo-small">
+      <button class="sair" onclick="sairRevendedor()">Sair</button>
+    </div>
+
+    <h1>Meu Painel</h1>
+
+    <div id="revResumo"></div>
+
+    <div class="renovar-box">
+      <h2>Comissoes</h2>
+      <div class="tabela-area">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="revListaComissoes"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="revCadastroModal" class="modal-overlay admin-hidden">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Cadastro revendedor">
+    <div class="modal-header">
+      <strong>Cadastro de Revendedor</strong>
+      <button type="button" class="modal-close" onclick="fecharCadastroRevendedor()">X</button>
+    </div>
+    <div class="modal-body">
+      <label>Email</label>
+      <input id="cadRevEmail" type="email" placeholder="seu@email.com">
+
+      <label>Senha</label>
+      <input id="cadRevSenha" type="password" placeholder="Crie uma senha">
+
+      <label>Nome completo</label>
+      <input id="cadRevNome" type="text" placeholder="Seu nome completo">
+
+      <label>PIX (CPF, somente numeros)</label>
+      <input id="cadRevCpf" type="text" placeholder="00000000000">
+
+      <label>Banco</label>
+      <input id="cadRevBanco" type="text" placeholder="Nome do banco">
+
+      <div class="modal-actions" style="grid-template-columns: 1fr;">
+        <button type="button" onclick="cadastrarRevendedor()">Cadastrar</button>
+      </div>
+
+      <div id="revCadastroMsg" style="margin-top:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<script src="revendedor.js"></script>
+</body>
+</html>
+
