@@ -594,6 +594,8 @@ async function gerarPixRenovacao() {
   const plano = nomePlano(planoId);
   const email = clienteAtual.email;
   const telefone = clienteAtual.telefone;
+  const clienteUsuario = clienteAtual.usuario;
+  const clienteSenha = clienteAtual.senha;
 
   box.innerHTML = `<p style="color:#facc15;">Gerando Pix...</p>`;
   pararMonitoramentoPix();
@@ -604,7 +606,13 @@ async function gerarPixRenovacao() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ planoId, email, telefone })
+      body: JSON.stringify({
+        planoId,
+        email,
+        telefone,
+        cliente_usuario: clienteUsuario,
+        cliente_senha: clienteSenha
+      })
     });
 
     const data = await res.json();

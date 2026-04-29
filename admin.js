@@ -253,6 +253,8 @@ async function gerarPixTesteAdmin() {
   const telefone = String(document.getElementById("pixTesteTel")?.value || "").replace(/\D/g, "");
   const planoId = String(document.getElementById("pixTestePlano")?.value || "").trim();
   const resultado = document.getElementById("pixTesteResultado");
+  const usuario = "admin_teste";
+  const senha = "admin_teste";
 
   if (!resultado) return;
 
@@ -265,7 +267,7 @@ async function gerarPixTesteAdmin() {
         "Content-Type": "application/json",
         Authorization: token
       },
-      body: JSON.stringify({ email, telefone, planoId })
+      body: JSON.stringify({ email, telefone, planoId, cliente_usuario: usuario, cliente_senha: senha })
     });
 
     const data = await res.json();
