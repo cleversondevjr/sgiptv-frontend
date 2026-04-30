@@ -2,9 +2,6 @@ const API = "https://sgiptv-backend.onrender.com";
 let pixStatusTimer = null;
 let pixCountdownTimer = null;
 
-let catalogIndex = 0;
-let catalogAutoTimer = null;
-
 window.addEventListener("load", () => {
   const loader = document.getElementById("loader");
 
@@ -16,52 +13,7 @@ window.addEventListener("load", () => {
 
   aplicarMascaraTelefone("telefone");
   aplicarMascaraTelefone("testeTelefone");
-
-  iniciarCatalogoAuto();
 });
-
-function obterItensCatalogo() {
-  const row = document.getElementById("catalogRow");
-  if (!row) return null;
-  const itens = Array.from(row.querySelectorAll(".catalog-item"));
-  return { row, itens };
-}
-
-function irParaItemCatalogo(novoIndex) {
-  const data = obterItensCatalogo();
-  if (!data) return;
-
-  const { row, itens } = data;
-  if (itens.length === 0) return;
-
-  catalogIndex = ((novoIndex % itens.length) + itens.length) % itens.length;
-  const alvo = itens[catalogIndex];
-  const left = alvo.offsetLeft - row.offsetLeft;
-  row.scrollTo({ left, behavior: "smooth" });
-}
-
-function scrollCatalog(direcao) {
-  const row = document.getElementById("catalogRow");
-  if (!row) return;
-
-  pararCatalogoAuto();
-  irParaItemCatalogo(catalogIndex + direcao);
-  iniciarCatalogoAuto();
-}
-
-function iniciarCatalogoAuto() {
-  pararCatalogoAuto();
-  catalogAutoTimer = setInterval(() => {
-    irParaItemCatalogo(catalogIndex + 1);
-  }, 5000);
-}
-
-function pararCatalogoAuto() {
-  if (catalogAutoTimer) {
-    clearInterval(catalogAutoTimer);
-    catalogAutoTimer = null;
-  }
-}
 
 function selecionarPlano(valor) {
   const planoPorValor = {
