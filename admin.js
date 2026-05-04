@@ -1,4 +1,4 @@
-const API = "https://sgiptv-backend.onrender.com";
+const API = "https://api.sgiptv.com.br";
 
 function escaparHtml(valor) {
   return String(valor || "")
