@@ -381,6 +381,6 @@ async function gerarTesteGratis() {
     }, 1500);
 
   } catch (error) {
-    resultado.innerHTML = `<h3 style="color:#ef4444;">Erro ao gerar teste</h3>`;
+    resultado.innerHTML = `<h3 style="color:#ef4444;">Erro ao gerar teste IPTV.</h3><p>${escaparHtml(error.message || "")}</p>`;
   }
 }

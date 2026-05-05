@@ -415,6 +415,87 @@ function abrirModalPixTeste() {
   modal.classList.remove("admin-hidden");
 }
 
+function abrirModalDinheiro() {
+  const modal = garantirModalBasico("dinheiroModal", "Confirmar Pagamento (Dinheiro)");
+  const body = document.getElementById("dinheiroModal-body");
+
+  body.innerHTML = `
+    <label>Email</label>
+    <input id="dinheiroEmail" type="email" placeholder="cliente@email.com">
+
+    <label>WhatsApp (somente numeros)</label>
+    <input id="dinheiroTel" type="text" placeholder="11912345678">
+
+    <label>Plano</label>
+    <select id="dinheiroPlano">
+      <option value="Mensal - 1 Tela">Mensal - 1 Tela</option>
+      <option value="Mensal - 2 Telas">Mensal - 2 Telas</option>
+      <option value="Trimestral - 1 Tela">Trimestral - 1 Tela</option>
+      <option value="Trimestral - 2 Telas">Trimestral - 2 Telas</option>
+    </select>
+
+    <label>Valor (R$)</label>
+    <input id="dinheiroValor" type="number" min="1" step="0.01" placeholder="30.00">
+
+    <label>Data (opcional)</label>
+    <input id="dinheiroData" type="datetime-local">
+
+    <label>Login (opcional)</label>
+    <input id="dinheiroUsuario" type="text" placeholder="usuario">
+
+    <label>Senha (opcional)</label>
+    <input id="dinheiroSenha" type="text" placeholder="senha">
+
+    <div class="modal-actions" style="grid-template-columns: 1fr;">
+      <button type="button" onclick="confirmarDinheiro()">Confirmar</button>
+    </div>
+
+    <div id="dinheiroMsg" style="margin-top:12px;"></div>
+  `;
+
+  modal.classList.remove("admin-hidden");
+}
+
+async function confirmarDinheiro() {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const msg = document.getElementById("dinheiroMsg");
+  if (msg) msg.textContent = "Confirmando...";
+
+  const email = String(document.getElementById("dinheiroEmail")?.value || "").trim().toLowerCase();
+  const telefone = String(document.getElementById("dinheiroTel")?.value || "").replace(/\\D/g, "");
+  const plano = String(document.getElementById("dinheiroPlano")?.value || "").trim();
+  const valor = String(document.getElementById("dinheiroValor")?.value || "").trim();
+  const data = String(document.getElementById("dinheiroData")?.value || "").trim();
+  const cliente_usuario = String(document.getElementById("dinheiroUsuario")?.value || "").trim();
+  const cliente_senha = String(document.getElementById("dinheiroSenha")?.value || "").trim();
+
+  try {
+    const res = await fetch(`${API}/pagamentos/dinheiro`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: token },
+      body: JSON.stringify({
+        email,
+        telefone,
+        plano,
+        valor,
+        cliente_usuario: cliente_usuario || null,
+        cliente_senha: cliente_senha || null,
+        confirmado_em: data ? new Date(data).toISOString() : null
+      })
+    });
+
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload.error || "Erro ao confirmar pagamento.");
+
+    if (msg) msg.innerHTML = `<p style="color:#22c55e;"><strong>Pagamento confirmado!</strong></p>`;
+    carregarPagamentos();
+  } catch (e) {
+    if (msg) msg.innerHTML = `<p class="erro">${escaparHtml(e.message)}</p>`;
+  }
+}
+
 async function gerarPixTesteAdmin() {
   const token = verificarAdminLogado();
   if (!token) return;
@@ -965,7 +1046,11 @@ function garantirModalCliente() {
         <input id="modal-cliente-tel" type="text" placeholder="11912345678">
 
         <label>Conexoes</label>
-        <input id="modal-cliente-conexoes" type="number" min="1" max="20" step="1" placeholder="2">
+        <select id="modal-cliente-conexoes">
+          <option value="">(manter)</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
 
         <div class="modal-actions">
           <button type="button" onclick="salvarModalCliente()">Salvar</button>
