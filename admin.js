@@ -923,7 +923,7 @@ async function carregarClientes() {
             <div class="cliente-contato">
               <div class="cliente-contato-resumo">${resumoContato || "-"}</div>
               <div class="cliente-contato-acoes">
-                <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}')">${textoEditar}</button>
+                <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}', ${c.conexoes ?? "null"})">${textoEditar}</button>
                 ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkWhatsapp}">WhatsApp</a>` : `<span class="whatsapp-btn whatsapp-disabled">WhatsApp</span>`}
               </div>
             </div>
@@ -964,6 +964,9 @@ function garantirModalCliente() {
         <label>WhatsApp (somente numeros)</label>
         <input id="modal-cliente-tel" type="text" placeholder="11912345678">
 
+        <label>Conexoes</label>
+        <input id="modal-cliente-conexoes" type="number" min="1" max="20" step="1" placeholder="2">
+
         <div class="modal-actions">
           <button type="button" onclick="salvarModalCliente()">Salvar</button>
           <button type="button" class="cancelar-btn" onclick="fecharModalCliente()">Cancelar</button>
@@ -980,13 +983,14 @@ function garantirModalCliente() {
   return modal;
 }
 
-function abrirModalCliente(id, nome, email, telefone) {
+function abrirModalCliente(id, nome, email, telefone, conexoes) {
   const modal = garantirModalCliente();
 
   document.getElementById("modal-cliente-id").value = String(id);
   document.getElementById("modal-cliente-nome").value = String(nome || "");
   document.getElementById("modal-cliente-email").value = String(email || "");
   document.getElementById("modal-cliente-tel").value = String(telefone || "");
+  document.getElementById("modal-cliente-conexoes").value = conexoes != null ? String(conexoes) : "";
 
   modal.classList.remove("admin-hidden");
 }
@@ -1005,6 +1009,7 @@ async function salvarModalCliente() {
   const nome = document.getElementById("modal-cliente-nome")?.value || "";
   const email = document.getElementById("modal-cliente-email")?.value || "";
   const telefone = document.getElementById("modal-cliente-tel")?.value || "";
+  const conexoes = document.getElementById("modal-cliente-conexoes")?.value;
 
   try {
     const res = await fetch(`${API}/clientes/${id}`, {
@@ -1013,7 +1018,7 @@ async function salvarModalCliente() {
         "Content-Type": "application/json",
         Authorization: token
       },
-      body: JSON.stringify({ nome, email, telefone })
+      body: JSON.stringify({ nome, email, telefone, conexoes })
     });
 
     const data = await res.json();
