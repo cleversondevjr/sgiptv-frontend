@@ -113,6 +113,35 @@ input, select, textarea {
   color: #fff;
 }
 
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  padding-right: 92px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: auto;
+  margin-top: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #7e22ce;
+  background: rgba(2, 6, 23, 0.6);
+  color: #facc15;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: rgba(2, 6, 23, 0.85);
+}
+
 .input-error {
   border-color: #ef4444 !important;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16);

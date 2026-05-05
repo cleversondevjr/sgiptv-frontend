@@ -23,7 +23,12 @@
       <input type="text" id="adminUser" placeholder="Digite o usuário" autocomplete="username">
 
       <label>Senha</label>
-      <input type="password" id="adminPass" placeholder="Digite a senha" autocomplete="current-password">
+      <div class="password-field">
+        <input type="password" id="adminPass" placeholder="Digite a senha" autocomplete="current-password">
+        <button type="button" class="password-toggle" data-toggle-password="adminPass" aria-label="Mostrar senha">
+          Mostrar
+        </button>
+      </div>
 
       <button type="submit">Entrar</button>
     </form>
@@ -34,6 +39,22 @@
 </div>
 
 <script src="admin.js"></script>
+<script>
+  (function () {
+    document.querySelectorAll("[data-toggle-password]").forEach(function (btn) {
+      var inputId = btn.getAttribute("data-toggle-password");
+      var input = inputId ? document.getElementById(inputId) : null;
+      if (!input) return;
+
+      btn.addEventListener("click", function () {
+        var visivel = input.type === "text";
+        input.type = visivel ? "password" : "text";
+        btn.textContent = visivel ? "Mostrar" : "Ocultar";
+        btn.setAttribute("aria-label", visivel ? "Mostrar senha" : "Ocultar senha");
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
