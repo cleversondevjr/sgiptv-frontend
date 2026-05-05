@@ -44,15 +44,26 @@ function fecharCadastroRevendedor() {
   document.getElementById("revCadastroModal").classList.add("admin-hidden");
 }
 
-async function cadastrarRevendedor() {
-  const msg = document.getElementById("revCadastroMsg");
-  const email = String(document.getElementById("cadRevEmail")?.value || "").trim().toLowerCase();
-  const senha = String(document.getElementById("cadRevSenha")?.value || "").trim();
-  const nome = String(document.getElementById("cadRevNome")?.value || "").trim();
-  const cpf = String(document.getElementById("cadRevCpf")?.value || "").replace(/\D/g, "");
-  const banco = String(document.getElementById("cadRevBanco")?.value || "").trim();
+  async function cadastrarRevendedor() {
+    const msg = document.getElementById("revCadastroMsg");
+    const email = String(document.getElementById("cadRevEmail")?.value || "").trim().toLowerCase();
+    const senha = String(document.getElementById("cadRevSenha")?.value || "").trim();
+    const senha2 = String(document.getElementById("cadRevSenha2")?.value || "").trim();
+    const nome = String(document.getElementById("cadRevNome")?.value || "").trim();
+    const cpf = String(document.getElementById("cadRevCpf")?.value || "").replace(/\D/g, "");
+    const banco = String(document.getElementById("cadRevBanco")?.value || "").trim();
 
-  msg.textContent = "Cadastrando...";
+    if (!senha || senha.length < 4) {
+      msg.innerHTML = `<p style="color:#ef4444;">Defina uma senha valida.</p>`;
+      return;
+    }
+
+    if (senha !== senha2) {
+      msg.innerHTML = `<p style="color:#ef4444;">As senhas nao conferem.</p>`;
+      return;
+    }
+
+    msg.textContent = "Cadastrando...";
 
   try {
     const res = await fetch(`${API}/revendedor/register`, {
