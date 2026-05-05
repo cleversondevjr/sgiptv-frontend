@@ -456,6 +456,23 @@ function abrirModalDinheiro() {
   modal.classList.remove("admin-hidden");
 }
 
+// Abre o modal de "pagamento em dinheiro" com campos pre-preenchidos (ex: vindo da aba Clientes).
+function abrirModalDinheiroPreenchido({ email = "", telefone = "", plano = "", valor = "", cliente_usuario = "", cliente_senha = "" } = {}) {
+  abrirModalDinheiro();
+
+  const setVal = (id, v) => {
+    const el = document.getElementById(id);
+    if (el && v !== undefined && v !== null) el.value = String(v);
+  };
+
+  setVal("dinheiroEmail", String(email || "").trim().toLowerCase());
+  setVal("dinheiroTel", String(telefone || "").replace(/\\D/g, ""));
+  if (plano) setVal("dinheiroPlano", plano);
+  if (valor) setVal("dinheiroValor", valor);
+  if (cliente_usuario) setVal("dinheiroUsuario", cliente_usuario);
+  if (cliente_senha) setVal("dinheiroSenha", cliente_senha);
+}
+
 async function confirmarDinheiro() {
   const token = verificarAdminLogado();
   if (!token) return;
@@ -1005,6 +1022,7 @@ async function carregarClientes() {
               <div class="cliente-contato-resumo">${resumoContato || "-"}</div>
               <div class="cliente-contato-acoes">
                 <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}', ${c.conexoes ?? "null"})">${textoEditar}</button>
+                <button type="button" onclick="abrirModalDinheiroPreenchido({ email: '${escaparHtml(c.email || "")}', telefone: '${escaparHtml(c.telefone || "")}', plano: '${escaparHtml(c.plano || "")}', cliente_usuario: '${escaparHtml(c.usuario || "")}', cliente_senha: '${escaparHtml(c.senha || "")}' })">Dinheiro</button>
                 ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkWhatsapp}">WhatsApp</a>` : `<span class="whatsapp-btn whatsapp-disabled">WhatsApp</span>`}
               </div>
             </div>
