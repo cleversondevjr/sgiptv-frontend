@@ -363,9 +363,17 @@ async function gerarTesteGratis() {
     localStorage.setItem("cliente_email", email);
     localStorage.setItem("cliente_telefone", telefone);
 
+    // Backend retorna usuario/senha do teste para permitir login imediato.
+    if (data.usuario && data.senha) {
+      localStorage.setItem("cliente_usuario", String(data.usuario));
+      localStorage.setItem("cliente_senha", String(data.senha));
+    }
+
     resultado.innerHTML = `
       <h3 style="color:#22c55e;">Teste gerado com sucesso!</h3>
       <p>Redirecionando para a Area do Cliente...</p>
+      ${data.usuario ? `<p><strong>Usuario:</strong> ${escaparHtml(data.usuario)}</p>` : ""}
+      ${data.senha ? `<p><strong>Senha:</strong> ${escaparHtml(data.senha)}</p>` : ""}
     `;
 
     setTimeout(() => {
