@@ -1,5 +1,12 @@
 const API = "https://api.sgiptv.com.br";
 
+// PWA: registra Service Worker (se suportado).
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
 function escaparHtml(valor) {
   return String(valor || "")
     .replace(/&/g, "&amp;")
