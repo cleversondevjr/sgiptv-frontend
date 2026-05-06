@@ -525,7 +525,9 @@ async function confirmarDinheiro() {
     });
 
     const payload = await res.json();
-    if (!res.ok) throw new Error(payload.error || "Erro ao confirmar pagamento.");
+    if (!res.ok) {
+      throw new Error(payload.detail || payload.error || "Erro ao confirmar pagamento.");
+    }
 
     if (msg) msg.innerHTML = `<p style="color:#22c55e;"><strong>Pagamento confirmado!</strong></p>`;
     carregarPagamentos();
