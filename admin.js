@@ -32,9 +32,10 @@ function formatarDataFimDoDia(data) {
 function textoExpiracao(item) {
   if (!item?.data_expiracao) return "Aguardando confirmacao";
 
+  // Para testes IPTV, a expiracao deve ser exata (ex: +3h), nao "fim do dia".
   return item.expirado
-    ? `${formatarDataFimDoDia(item.data_expiracao)} (vencido)`
-    : formatarDataFimDoDia(item.data_expiracao);
+    ? `${formatarData(item.data_expiracao)} (vencido)`
+    : formatarData(item.data_expiracao);
 }
 
 function textoPrazoPagamento(pagamento) {
@@ -428,10 +429,10 @@ function abrirModalDinheiro() {
 
     <label>Plano</label>
     <select id="dinheiroPlano">
-      <option value="Mensal - 1 Tela">Mensal - 1 Tela</option>
-      <option value="Mensal - 2 Telas">Mensal - 2 Telas</option>
-      <option value="Trimestral - 1 Tela">Trimestral - 1 Tela</option>
-      <option value="Trimestral - 2 Telas">Trimestral - 2 Telas</option>
+      <option value="Mensal - 1 Tela" data-valor="30">Mensal - 1 Tela</option>
+      <option value="Mensal - 2 Telas" data-valor="50">Mensal - 2 Telas</option>
+      <option value="Trimestral - 1 Tela" data-valor="80">Trimestral - 1 Tela</option>
+      <option value="Trimestral - 2 Telas" data-valor="140">Trimestral - 2 Telas</option>
     </select>
 
     <label>Valor (R$)</label>
@@ -452,6 +453,21 @@ function abrirModalDinheiro() {
 
     <div id="dinheiroMsg" style="margin-top:12px;"></div>
   `;
+
+  // Preenche o valor automaticamente ao trocar o plano (evita digitar manualmente).
+  const planoEl = document.getElementById("dinheiroPlano");
+  const valorEl = document.getElementById("dinheiroValor");
+  if (planoEl && valorEl) {
+    const atualizarValor = () => {
+      const opt = planoEl.options[planoEl.selectedIndex];
+      const sugerido = opt?.getAttribute("data-valor");
+      if (!sugerido) return;
+      valorEl.value = String(sugerido);
+    };
+    planoEl.addEventListener("change", atualizarValor);
+    // Ao abrir o modal, ja sugere o valor do plano selecionado.
+    atualizarValor();
+  }
 
   modal.classList.remove("admin-hidden");
 }
