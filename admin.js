@@ -488,13 +488,18 @@ async function confirmarDinheiro() {
   const cliente_usuario = String(document.getElementById("dinheiroUsuario")?.value || "").trim();
   const cliente_senha = String(document.getElementById("dinheiroSenha")?.value || "").trim();
 
+  if (!plano || !valor || Number(valor) <= 0) {
+    if (msg) msg.innerHTML = `<p class="erro">Informe plano e valor.</p>`;
+    return;
+  }
+
   try {
     const res = await fetch(`${API}/pagamentos/dinheiro`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: token },
       body: JSON.stringify({
-        email,
-        telefone,
+        email: email || null,
+        telefone: telefone || null,
         plano,
         valor,
         cliente_usuario: cliente_usuario || null,
