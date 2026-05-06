@@ -778,7 +778,7 @@ async function carregarPagamentos() {
 
   lista.innerHTML = `
     <tr>
-      <td colspan="5">Carregando...</td>
+      <td colspan="6">Carregando...</td>
     </tr>
   `;
 
@@ -805,7 +805,7 @@ async function carregarPagamentos() {
     if (dados.length === 0) {
       lista.innerHTML = `
         <tr>
-          <td colspan="5">Nenhum pagamento encontrado.</td>
+          <td colspan="6">Nenhum pagamento encontrado.</td>
         </tr>
       `;
       return;
@@ -830,22 +830,35 @@ async function carregarPagamentos() {
         `
         : `<span class="${statusClass}">${escaparHtml(pagamento.status)}</span>`;
 
+      const podeExcluir = pagamento.status !== "confirmado" ||
+        String(pagamento.payment_id || "").startsWith("DINHEIRO-") ||
+        String(pagamento.plano || "").toUpperCase().includes("TESTE");
+
+      const botaoExcluir = podeExcluir
+        ? `<button class="cancelar-btn" onclick="excluirPagamento(${pagamento.id})">Excluir</button>`
+        : "";
+
       lista.innerHTML += `
         <tr>
           <td>${escaparHtml(pagamento.email || "-")}</td>
           <td>${escaparHtml(telefone)}</td>
-          <td>${escaparHtml(pagamento.email || "-")}</td>
-          <td>${escaparHtml(telefone)}</td>
+          <td>${escaparHtml(pagamento.cliente_usuario || "-")}</td>
+          <td>${escaparHtml(pagamento.cliente_senha || "-")}</td>
+          <td><span class="${statusClass}">${escaparHtml(pagamento.status)}</span></td>
           <td>
             <button id="toggle-pagamento-${escaparHtml(pagamento.id)}" class="detalhe-btn" onclick="alternarDetalhesPagamento(${pagamento.id})">+</button>
           </td>
         </tr>
         <tr id="detalhes-pagamento-${escaparHtml(pagamento.id)}" class="detalhes-row admin-hidden">
-          <td colspan="5">
+          <td colspan="6">
             <div class="detalhes-grid">
               <div>
                 <strong>Status</strong>
                 <p class="${statusClass}">${escaparHtml(pagamento.status)}</p>
+              </div>
+              <div>
+                <strong>Origem</strong>
+                <p>${escaparHtml(pagamento.origem || (String(pagamento.payment_id || "").startsWith("DINHEIRO-") ? "dinheiro" : "pix"))}</p>
               </div>
               <div>
                 <strong>Tipo de plano</strong>
@@ -868,6 +881,14 @@ async function carregarPagamentos() {
                 <p>${escaparHtml(textoExpiracao(pagamento))}</p>
               </div>
               <div>
+                <strong>Login</strong>
+                <p>${escaparHtml(pagamento.cliente_usuario || "-")}</p>
+              </div>
+              <div>
+                <strong>Senha</strong>
+                <p>${escaparHtml(pagamento.cliente_senha || "-")}</p>
+              </div>
+              <div>
                 <strong>Tempo restante</strong>
                 <p class="${statusClass}">${escaparHtml(tempoRestanteTexto(pagamento.data_expiracao))}</p>
               </div>
@@ -884,6 +905,7 @@ async function carregarPagamentos() {
                 <div>
                   ${acoesPagamento}
                   ${botaoAviso}
+                  ${botaoExcluir}
                   <a
                     class="whatsapp-btn"
                     href="https://wa.me/55${telefoneLink}?text=${encodeURIComponent(
@@ -1119,6 +1141,24 @@ function abrirModalCliente(id, nome, email, telefone, conexoes) {
   document.getElementById("modal-cliente-conexoes").value = conexoes != null ? String(conexoes) : "";
 
   modal.classList.remove("admin-hidden");
+}
+
+async function excluirPagamento(id) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+  if (!confirm("Excluir este pagamento? (Use para limpar testes/pendentes)")) return;
+
+  try {
+    const res = await fetch(`${API}/pagamentos/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { Authorization: token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
+    carregarPagamentos();
+  } catch (e) {
+    alert(e.message);
+  }
 }
 
 function fecharModalCliente() {
