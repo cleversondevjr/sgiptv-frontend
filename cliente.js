@@ -631,6 +631,7 @@ async function gerarPixRenovacao() {
 
     box.innerHTML = `
       <h3 style="color:#facc15;">Pix gerado</h3>
+      <p style="margin-top:6px; color:#cbd5e1;"><strong>Payment ID:</strong> ${escaparHtml(String(data.payment_id || "-"))}</p>
       <div class="pix-flex">
         <div class="pix-qr">
           <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
