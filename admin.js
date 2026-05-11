@@ -285,6 +285,7 @@ async function carregarRevendedores() {
             ${podeAprovar ? `<button type="button" onclick="reprovarRevendedor(${item.id})">Reprovar</button>` : ``}
             <button type="button" onclick="alert('Pagar comissao (pendente: ${pendente}) - a automatizacao sera implementada na proxima etapa.')">Pagar Comissao</button>
             <button type="button" onclick="alert('Pagar bonus (mes: ${bonus}) - a automatizacao sera implementada na proxima etapa.')">Pagar Bonus</button>
+            <button type="button" onclick="excluirRevendedor(${item.id})">Excluir</button>
           </td>
         </tr>
         <tr id="rev-clientes-${item.id}" class="admin-hidden">
@@ -421,6 +422,24 @@ function abrirModalPixTeste() {
   `;
 
   modal.classList.remove("admin-hidden");
+}
+
+async function excluirRevendedor(id) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+  if (!confirm("Excluir este revendedor? (Apenas testes; nao pode ter clientes vinculados)")) return;
+
+  try {
+    const res = await fetch(`${API}/revendedores/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { Authorization: token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
+    carregarRevendedores();
+  } catch (e) {
+    alert(e.message);
+  }
 }
 
 function abrirModalDinheiro() {
@@ -943,7 +962,7 @@ async function carregarTestes() {
   if (!token) return;
   if (!lista) return;
 
-  lista.innerHTML = `<tr><td colspan="7">Carregando...</td></tr>`;
+  lista.innerHTML = `<tr><td colspan="8">Carregando...</td></tr>`;
 
   try {
     const res = await fetch(`${API}/testes-iptv`, {
@@ -961,12 +980,12 @@ async function carregarTestes() {
     }
 
     if (!res.ok) {
-      lista.innerHTML = `<tr><td colspan="7">Erro ao carregar testes.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="8">Erro ao carregar testes.</td></tr>`;
       return;
     }
 
     if (dados.length === 0) {
-      lista.innerHTML = `<tr><td colspan="7">Nenhum teste encontrado.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="8">Nenhum teste encontrado.</td></tr>`;
       return;
     }
 
@@ -982,13 +1001,14 @@ async function carregarTestes() {
           <td>${escaparHtml(t.senha || "-")}</td>
           <td>${escaparHtml(formatarData(t.criado_em))}</td>
           <td>${escaparHtml(textoExpiracao(t))}</td>
+          <td><button type="button" onclick="excluirTesteIptv(${escaparHtml(t.id)})">Excluir</button></td>
         </tr>
       `;
     });
 
   } catch (error) {
     console.error(error);
-    lista.innerHTML = `<tr><td colspan="7">Erro ao carregar testes.</td></tr>`;
+    lista.innerHTML = `<tr><td colspan="8">Erro ao carregar testes.</td></tr>`;
   }
 }
 
@@ -999,7 +1019,7 @@ async function carregarClientes() {
   if (!token) return;
   if (!lista) return;
 
-  lista.innerHTML = `<tr><td colspan="6">Carregando...</td></tr>`;
+  lista.innerHTML = `<tr><td colspan="7">Carregando...</td></tr>`;
 
   try {
     const res = await fetch(`${API}/clientes`, {
@@ -1017,12 +1037,12 @@ async function carregarClientes() {
     }
 
     if (!res.ok) {
-      lista.innerHTML = `<tr><td colspan="6">Erro ao carregar clientes.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="7">Erro ao carregar clientes.</td></tr>`;
       return;
     }
 
     if (dados.length === 0) {
-      lista.innerHTML = `<tr><td colspan="6">Nenhum cliente encontrado.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="7">Nenhum cliente encontrado.</td></tr>`;
       return;
     }
 
@@ -1079,13 +1099,50 @@ async function carregarClientes() {
               </div>
             </div>
           </td>
+          <td><button type="button" onclick="excluirCliente(${c.id})">Excluir</button></td>
         </tr>
       `;
     });
 
   } catch (error) {
     console.error(error);
-    lista.innerHTML = `<tr><td colspan="6">Erro ao carregar clientes.</td></tr>`;
+    lista.innerHTML = `<tr><td colspan="7">Erro ao carregar clientes.</td></tr>`;
+  }
+}
+
+async function excluirTesteIptv(id) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+  if (!confirm("Excluir este teste IPTV?")) return;
+
+  try {
+    const res = await fetch(`${API}/testes-iptv/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { Authorization: token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
+    carregarTestes();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+async function excluirCliente(id) {
+  const token = verificarAdminLogado();
+  if (!token) return;
+  if (!confirm("Excluir este cliente? (Apenas testes)")) return;
+
+  try {
+    const res = await fetch(`${API}/clientes/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { Authorization: token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
+    carregarClientes();
+  } catch (e) {
+    alert(e.message);
   }
 }
 
