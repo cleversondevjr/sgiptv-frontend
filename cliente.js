@@ -405,6 +405,9 @@ function montarPainel(cliente) {
       ? vencimento.toLocaleString("pt-BR")
       : "Nao informado";
 
+    const codigoRev = String(cliente.revendedor_codigo || "").trim();
+    const codigoRevTexto = codigoRev ? codigoRev : "Nao informado";
+
     box.innerHTML = `
       <div class="info-grid">
         <div class="info">
@@ -420,6 +423,11 @@ function montarPainel(cliente) {
         <div class="info">
           <strong>Vencimento</strong>
           <p class="status-confirmado">${escaparHtml(vencimentoTexto)}</p>
+        </div>
+
+        <div class="info">
+          <strong>Codigo do revendedor</strong>
+          <p>${escaparHtml(codigoRevTexto)}</p>
         </div>
 
         ${renderizarCredencial("Usuario", cliente.usuario)}
