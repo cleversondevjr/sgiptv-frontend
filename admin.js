@@ -278,9 +278,11 @@ async function carregarRevendedores() {
           <td><strong>${escaparHtml(item.nome_completo || "-")}</strong><br><span style="opacity:.9;">${escaparHtml(item.codigo)}</span></td>
           <td>${escaparHtml(item.email)}</td>
           <td>${escaparHtml(item.pix_cpf || "-")}</td>
+          <td><strong>${pendente}</strong></td>
           <td><strong>${bonus}</strong></td>
           <td>
             <button id="rev-toggle-${item.id}" type="button" onclick="alternarClientesRevendedor(${item.id})">+</button>
+            <button type="button" onclick="mostrarInfoComissoesRevendedor()">?</button>
             ${podeAprovar ? `<button type="button" onclick="aprovarRevendedor(${item.id})">Aprovar</button>` : ``}
             ${podeAprovar ? `<button type="button" onclick="reprovarRevendedor(${item.id})">Reprovar</button>` : ``}
             <button type="button" onclick="alert('Pagar comissao (pendente: ${pendente}) - a automatizacao sera implementada na proxima etapa.')">Pagar Comissao</button>
@@ -289,7 +291,7 @@ async function carregarRevendedores() {
           </td>
         </tr>
         <tr id="rev-clientes-${item.id}" class="admin-hidden">
-          <td colspan="6"></td>
+          <td colspan="7"></td>
         </tr>
       `;
     }).join("");
@@ -368,6 +370,18 @@ function criarTabsMeses() {
 function formatarDinheiro(valor) {
   const num = Number(valor || 0);
   return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function mostrarInfoComissoesRevendedor() {
+  alert(
+    [
+      "Regras de comissao/bonus:",
+      "",
+      "- Primeira venda: valor fixo por plano (ex.: Mensal 1 tela = R$ 10,00).",
+      "- Renovacao: 10% do valor do plano.",
+      "- Bonus: se o revendedor tiver mais de 10 vendas ativas no mes, ganha R$ 50,00."
+    ].join(\"\\n\")
+  );
 }
 
 function abrirModalConfirmacaoExclusao({ titulo = "Confirmar exclusao", mensagem = "Deseja excluir?", textoCheckbox = "Eu entendo e quero excluir", onConfirm } = {}) {

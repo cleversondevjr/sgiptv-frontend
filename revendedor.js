@@ -111,29 +111,29 @@ async function carregarRevendedor() {
     loginBox.style.display = "none";
     painel.style.display = "block";
 
-    const resumo = document.getElementById("revResumo");
-    resumo.innerHTML = `
-      <div class="grid-2">
-        <div class="info-card">
-          <h3>Seu codigo</h3>
-          <p><strong>${escaparHtml(data.revendedor.codigo)}</strong></p>
+      const resumo = document.getElementById("revResumo");
+      resumo.innerHTML = `
+        <div class="grid-2">
+          <div class="info-card">
+            <h3>Seu codigo</h3>
+            <p><strong>${escaparHtml(data.revendedor.codigo)}</strong></p>
+          </div>
+          <div class="info-card">
+            <h3>Comissao pendente</h3>
+            <p><strong>${formatarDinheiro(data.resumo.total_pendente)}</strong></p>
+          </div>
         </div>
-        <div class="info-card">
-          <h3>Pendente</h3>
-          <p><strong>${formatarDinheiro(data.resumo.total_pendente)}</strong></p>
+        <div class="grid-2" style="margin-top:12px;">
+          <div class="info-card">
+            <h3>Clientes ativos no mes</h3>
+            <p><strong>${escaparHtml(data.resumo.clientes_ativos_mes)}</strong></p>
+          </div>
+          <div class="info-card">
+            <h3>Bonus do mes <button type="button" title="Regras" style="margin-left:6px;" onclick="mostrarInfoComissaoBonus()">+</button></h3>
+            <p><strong>${formatarDinheiro(data.resumo.bonus_mes)}</strong></p>
+          </div>
         </div>
-      </div>
-      <div class="grid-2" style="margin-top:12px;">
-        <div class="info-card">
-          <h3>Clientes ativos no mes</h3>
-          <p><strong>${escaparHtml(data.resumo.clientes_ativos_mes)}</strong></p>
-        </div>
-        <div class="info-card">
-          <h3>Bonus do mes</h3>
-          <p><strong>${formatarDinheiro(data.resumo.bonus_mes)}</strong></p>
-        </div>
-      </div>
-    `;
+      `;
 
     const lista = document.getElementById("revListaComissoes");
     lista.innerHTML = `<tr><td colspan="4">Carregando...</td></tr>`;
@@ -164,6 +164,18 @@ async function carregarRevendedor() {
 function sairRevendedor() {
   limparTokenRevendedor();
   window.location.reload();
+}
+
+function mostrarInfoComissaoBonus() {
+  alert(
+    [
+      "Regras de comissao/bonus:",
+      "",
+      "- Primeira venda: valor fixo por plano (ex.: Mensal 1 tela = R$ 10,00).",
+      "- Renovacao: 10% do valor do plano.",
+      "- Bonus: se tiver mais de 10 vendas ativas no mes, ganha R$ 50,00."
+    ].join(\"\\n\")
+  );
 }
 
 document.getElementById("revLoginForm")?.addEventListener("submit", async (ev) => {
