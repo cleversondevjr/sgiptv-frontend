@@ -221,6 +221,16 @@ async function carregarClientesDoRevendedor(id) {
     const totalRenovacao = sum(comissoesPendentes.filter(c => c.tipo === "renovacao"));
     const totalPendente = totalPrimeira + totalRenovacao;
 
+    const formatarClienteComissao = (c) => {
+      const nome = String(c.cliente_nome || "").trim();
+      const usuario = String(c.cliente_usuario || "").trim();
+      const email = String(c.cliente_email || "").trim();
+      if (nome) return `${nome}${usuario ? ` (${usuario})` : ""}`;
+      if (usuario) return usuario;
+      if (email) return email;
+      return String(c.cliente_id || "-");
+    };
+
     const linhasComissoes = comissoesPendentes.length === 0
       ? `<tr><td colspan="5">Nenhuma comissao pendente.</td></tr>`
       : comissoesPendentes.map((c) => `
@@ -229,7 +239,7 @@ async function carregarClientesDoRevendedor(id) {
             <td>${escaparHtml(c.tipo === "primeira_compra" ? "Primeira venda" : "Renovacao")}</td>
             <td>${formatarDinheiro(c.valor)}</td>
             <td>${escaparHtml(String(c.pagamento_id || "-"))}</td>
-            <td>${escaparHtml(String(c.cliente_usuario || c.cliente_id || "-"))}</td>
+            <td>${escaparHtml(formatarClienteComissao(c))}</td>
           </tr>
         `).join("");
 
@@ -1133,7 +1143,7 @@ async function carregarClientes() {
   if (!token) return;
   if (!lista) return;
 
-  lista.innerHTML = `<tr><td colspan="7">Carregando...</td></tr>`;
+  lista.innerHTML = `<tr><td colspan="8">Carregando...</td></tr>`;
 
   try {
     const res = await fetch(`${API}/clientes`, {
@@ -1151,12 +1161,12 @@ async function carregarClientes() {
     }
 
     if (!res.ok) {
-      lista.innerHTML = `<tr><td colspan="7">Erro ao carregar clientes.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="8">Erro ao carregar clientes.</td></tr>`;
       return;
     }
 
     if (dados.length === 0) {
-      lista.innerHTML = `<tr><td colspan="7">Nenhum cliente encontrado.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="8">Nenhum cliente encontrado.</td></tr>`;
       return;
     }
 
@@ -1198,6 +1208,7 @@ async function carregarClientes() {
 
       lista.innerHTML += `
         <tr>
+          <td>${escaparHtml(String(c.id ?? ""))}</td>
           <td>${escaparHtml(c.usuario)}</td>
           <td>${escaparHtml(c.senha)}</td>
           <td>${escaparHtml(c.plano)}</td>
