@@ -291,7 +291,7 @@ async function carregarRevendedores() {
           </td>
         </tr>
         <tr id="rev-clientes-${item.id}" class="admin-hidden">
-          <td colspan="7"></td>
+          <td colspan="6"></td>
         </tr>
       `;
     }).join("");
