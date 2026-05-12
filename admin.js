@@ -925,17 +925,9 @@ async function carregarPagamentos() {
           <td colspan="6">
             <div class="detalhes-grid">
               <div>
-                  <strong>Status</strong>
-                  <p class="${statusClass}">${escaparHtml(pagamento.status)}</p>
-                </div>
-                <div>
-                  <strong>Acoes</strong>
-                  <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    ${botaoEditar}
-                    ${botaoExcluir}
-                    ${botaoAviso}
-                  </div>
-                </div>
+                <strong>Status</strong>
+                <p class="${statusClass}">${escaparHtml(pagamento.status)}</p>
+              </div>
               <div>
                 <strong>Origem</strong>
                 <p>${escaparHtml(pagamento.origem || (String(pagamento.payment_id || "").startsWith("DINHEIRO-") ? "dinheiro" : "pix"))}</p>
@@ -984,8 +976,9 @@ async function carregarPagamentos() {
                 <strong>Acoes</strong>
                 <div>
                   ${acoesPagamento}
-                  ${botaoAviso}
+                  ${botaoEditar}
                   ${botaoExcluir}
+                  ${botaoAviso}
                   <a
                     class="whatsapp-btn"
                     href="https://wa.me/55${telefoneLink}?text=${encodeURIComponent(
