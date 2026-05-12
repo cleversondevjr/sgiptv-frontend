@@ -621,6 +621,10 @@ async function gerarPixRenovacao() {
       throw new Error(data.error || "Erro ao gerar Pix.");
     }
 
+    if (!data.payment_id || !data.qr_code || !data.qr_base64) {
+      throw new Error("Pix gerado sem identificacao (payment_id). Tente novamente.");
+    }
+
     const mensagem = encodeURIComponent(
       `Olá, segue comprovante de pagamento.\n\n` +
       `Plano: ${plano}\n` +
@@ -631,7 +635,7 @@ async function gerarPixRenovacao() {
 
     box.innerHTML = `
       <h3 style="color:#facc15;">Pix gerado</h3>
-      <p style="margin-top:6px; color:#cbd5e1;"><strong>Payment ID:</strong> ${escaparHtml(String(data.payment_id || "-"))}</p>
+      <p style="margin-top:6px; color:#cbd5e1;"><strong>Payment ID:</strong> ${escaparHtml(String(data.payment_id))}</p>
       <div class="pix-flex">
         <div class="pix-qr">
           <img src="data:image/png;base64,${data.qr_base64}" alt="QR Code Pix">
