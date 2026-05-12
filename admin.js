@@ -380,7 +380,7 @@ function mostrarInfoComissoesRevendedor() {
       "- Primeira venda: valor fixo por plano (ex.: Mensal 1 tela = R$ 10,00).",
       "- Renovacao: 10% do valor do plano.",
       "- Bonus: se o revendedor tiver mais de 10 vendas ativas no mes, ganha R$ 50,00."
-    ].join(\"\\n\")
+    ].join("\n")
   );
 }
 
