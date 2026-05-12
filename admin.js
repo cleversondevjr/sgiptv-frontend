@@ -197,7 +197,7 @@ async function carregarClientesDoRevendedor(id) {
   if (!box) return;
 
   box.dataset.loaded = "1";
-  box.innerHTML = `<div style="padding:12px;">Carregando clientes...</div>`;
+  box.innerHTML = `<td colspan="6"><div style="padding:12px;">Carregando clientes...</div></td>`;
 
   try {
     const res = await fetch(`${API}/revendedores/${id}/clientes`, {
@@ -208,7 +208,7 @@ async function carregarClientesDoRevendedor(id) {
 
     const clientes = Array.isArray(data.clientes) ? data.clientes : [];
     if (clientes.length === 0) {
-      box.innerHTML = `<div style="padding:12px;">Nenhum cliente vinculado.</div>`;
+      box.innerHTML = `<td colspan="6"><div style="padding:12px;">Nenhum cliente vinculado.</div></td>`;
       return;
     }
 
@@ -222,23 +222,25 @@ async function carregarClientesDoRevendedor(id) {
     `).join("");
 
     box.innerHTML = `
-      <div class="tabela-area" style="margin: 10px 0 0 0;">
-        <table>
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Plano</th>
-              <th>Vencimento</th>
-              <th>Contato</th>
-            </tr>
-          </thead>
-          <tbody>${linhas}</tbody>
-        </table>
-      </div>
+      <td colspan="6">
+        <div class="tabela-area" style="margin: 10px 0 0 0;">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Plano</th>
+                <th>Vencimento</th>
+                <th>Contato</th>
+              </tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+          </table>
+        </div>
+      </td>
     `;
   } catch (e) {
     console.error(e);
-    box.innerHTML = `<div style="padding:12px; color:#ef4444;">Erro ao carregar clientes.</div>`;
+    box.innerHTML = `<td colspan="6"><div style="padding:12px; color:#ef4444;">Erro ao carregar clientes.</div></td>`;
   }
 }
 
