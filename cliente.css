@@ -461,7 +461,9 @@ table {
   border-collapse: collapse;
   background: #020617;
   overflow: hidden;
-  table-layout: fixed;
+  /* Deixa a tabela com largura minima para evitar "letra por letra" no admin */
+  min-width: 920px;
+  table-layout: auto;
 }
 
 th,
@@ -480,6 +482,9 @@ td {
 th {
   color: #facc15;
   background: #0b0018;
+  /* Nao aplicar ellipsis no header */
+  overflow: visible;
+  text-overflow: clip;
 }
 
 td button {
