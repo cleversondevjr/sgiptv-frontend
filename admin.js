@@ -1231,6 +1231,9 @@ function garantirModalCliente() {
         <label>Vencimento (opcional)</label>
         <input id="modal-cliente-vencimento" type="datetime-local">
 
+        <label>Codigo do revendedor (opcional)</label>
+        <input id="modal-cliente-revendedor" type="text" placeholder="Ex: ABC123">
+
         <div class="modal-actions">
           <button type="button" onclick="salvarModalCliente()">Salvar</button>
           <button type="button" class="cancelar-btn" onclick="fecharModalCliente()">Cancelar</button>
@@ -1272,6 +1275,9 @@ function abrirModalCliente(id, nome, email, telefone, conexoes, vencimento) {
       }
     }
   }
+
+  const revInput = document.getElementById("modal-cliente-revendedor");
+  if (revInput) revInput.value = "";
 
   modal.classList.remove("admin-hidden");
 }
@@ -1463,6 +1469,7 @@ async function salvarModalCliente() {
   const telefone = document.getElementById("modal-cliente-tel")?.value || "";
   const conexoes = document.getElementById("modal-cliente-conexoes")?.value;
   const vencimento = document.getElementById("modal-cliente-vencimento")?.value || "";
+  const revendedor_codigo = document.getElementById("modal-cliente-revendedor")?.value || "";
 
   try {
     const res = await fetch(`${API}/clientes/${id}`, {
@@ -1471,7 +1478,7 @@ async function salvarModalCliente() {
         "Content-Type": "application/json",
         Authorization: token
       },
-      body: JSON.stringify({ nome, email, telefone, conexoes, vencimento: vencimento || null })
+      body: JSON.stringify({ nome, email, telefone, conexoes, vencimento: vencimento || null, revendedor_codigo: String(revendedor_codigo || "").trim() || null })
     });
 
     const data = await res.json();
