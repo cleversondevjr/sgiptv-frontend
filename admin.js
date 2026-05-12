@@ -1318,6 +1318,12 @@ function garantirModalPagamentoDetalhes() {
       <div class="modal-body">
         <input id="pagdetId" type="hidden">
 
+        <label>Email (do cadastro)</label>
+        <input id="pagdetEmail" type="email" placeholder="cliente@email.com">
+
+        <label>WhatsApp (do cadastro)</label>
+        <input id="pagdetTel" type="text" placeholder="11912345678">
+
         <label>Login do cliente</label>
         <input id="pagdetUsuario" type="text" placeholder="usuario">
 
@@ -1358,6 +1364,8 @@ function abrirModalPagamentoDetalhes(pagamento) {
   };
 
   setVal("pagdetId", pagamento?.id || "");
+  setVal("pagdetEmail", pagamento?.email || "");
+  setVal("pagdetTel", pagamento?.telefone || "");
   setVal("pagdetUsuario", pagamento?.cliente_usuario || "");
   setVal("pagdetSenha", pagamento?.cliente_senha || "");
   setVal("pagdetOrigem", pagamento?.origem || "");
@@ -1405,6 +1413,12 @@ async function buscarDadosClienteParaPagamento() {
     const senhaEl = document.getElementById("pagdetSenha");
     if (senhaEl && cliente.senha) senhaEl.value = String(cliente.senha);
 
+    const emailEl = document.getElementById("pagdetEmail");
+    if (emailEl && cliente.email) emailEl.value = String(cliente.email);
+
+    const telEl = document.getElementById("pagdetTel");
+    if (telEl && cliente.telefone) telEl.value = String(cliente.telefone);
+
     if (msg) msg.innerHTML = `<p style="color:#22c55e;"><strong>OK:</strong> dados carregados do cliente.</p>`;
   } catch (e) {
     if (msg) msg.innerHTML = `<p class="erro">${escaparHtml(e.message)}</p>`;
@@ -1419,6 +1433,8 @@ async function salvarPagamentoDetalhes() {
   if (msg) msg.textContent = "Salvando...";
 
   const id = String(document.getElementById("pagdetId")?.value || "").trim();
+  const email = String(document.getElementById("pagdetEmail")?.value || "").trim().toLowerCase();
+  const telefone = String(document.getElementById("pagdetTel")?.value || "").replace(/\\D/g, "");
   const cliente_usuario = String(document.getElementById("pagdetUsuario")?.value || "").trim();
   const cliente_senha = String(document.getElementById("pagdetSenha")?.value || "").trim();
   const origem = String(document.getElementById("pagdetOrigem")?.value || "").trim();
@@ -1439,6 +1455,8 @@ async function salvarPagamentoDetalhes() {
       body: JSON.stringify({
         cliente_usuario: cliente_usuario || null,
         cliente_senha: cliente_senha || null,
+        email: email || null,
+        telefone: telefone || null,
         origem: origem || null
       })
     });
