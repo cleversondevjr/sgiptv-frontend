@@ -461,6 +461,7 @@ table {
   border-collapse: collapse;
   background: #020617;
   overflow: hidden;
+  table-layout: fixed;
 }
 
 th,
@@ -470,8 +471,10 @@ td {
   text-align: left;
   font-size: 14px;
   vertical-align: middle;
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
+  word-break: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 th {
