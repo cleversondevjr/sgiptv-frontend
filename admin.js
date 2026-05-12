@@ -370,6 +370,55 @@ function formatarDinheiro(valor) {
   return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function abrirModalConfirmacaoExclusao({ titulo = "Confirmar exclusao", mensagem = "Deseja excluir?", textoCheckbox = "Eu entendo e quero excluir", onConfirm } = {}) {
+  const modal = garantirModalBasico("confirmDeleteModal", titulo);
+  const body = document.getElementById("confirmDeleteModal-body");
+
+  body.innerHTML = `
+    <p style="margin:0 0 12px 0; color:#e2e8f0;">${escaparHtml(mensagem)}</p>
+
+    <label style="display:flex; gap:10px; align-items:center; user-select:none; cursor:pointer;">
+      <input id="confirmDeleteCheckbox" type="checkbox" style="width:18px; height:18px; accent-color:#facc15;">
+      <span>${escaparHtml(textoCheckbox)}</span>
+    </label>
+
+    <div id="confirmDeleteMsg" style="margin-top:10px;"></div>
+
+    <div class="modal-actions" style="grid-template-columns: 1fr 1fr;">
+      <button type="button" onclick="confirmarExclusaoModal()">Sim, excluir</button>
+      <button type="button" class="cancelar-btn" onclick="document.getElementById('confirmDeleteModal').classList.add('admin-hidden')">Cancelar</button>
+    </div>
+  `;
+
+  window.__sgiptvConfirmDelete = typeof onConfirm === "function" ? onConfirm : null;
+  modal.classList.remove("admin-hidden");
+}
+
+async function confirmarExclusaoModal() {
+  const cb = document.getElementById("confirmDeleteCheckbox");
+  const msg = document.getElementById("confirmDeleteMsg");
+
+  if (!cb || !cb.checked) {
+    if (msg) msg.innerHTML = `<p class="erro">Marque a caixa para confirmar a exclusao.</p>`;
+    return;
+  }
+
+  const fn = window.__sgiptvConfirmDelete;
+  if (typeof fn !== "function") {
+    if (msg) msg.innerHTML = `<p class="erro">Acao invalida.</p>`;
+    return;
+  }
+
+  if (msg) msg.textContent = "Excluindo...";
+  try {
+    await fn();
+    const modal = document.getElementById("confirmDeleteModal");
+    if (modal) modal.classList.add("admin-hidden");
+  } catch (e) {
+    if (msg) msg.innerHTML = `<p class="erro">${escaparHtml(e.message || String(e))}</p>`;
+  }
+}
+
 function garantirModalBasico(id, titulo) {
   let modal = document.getElementById(id);
   if (modal) return modal;
@@ -427,19 +476,20 @@ function abrirModalPixTeste() {
 async function excluirRevendedor(id) {
   const token = verificarAdminLogado();
   if (!token) return;
-  if (!confirm("Excluir este revendedor? (Apenas testes; nao pode ter clientes vinculados)")) return;
 
-  try {
-    const res = await fetch(`${API}/revendedores/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      headers: { Authorization: token }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
-    carregarRevendedores();
-  } catch (e) {
-    alert(e.message);
-  }
+  abrirModalConfirmacaoExclusao({
+    titulo: "Excluir revendedor",
+    mensagem: "Excluir este revendedor? (Apenas testes; nao pode ter clientes vinculados)",
+    onConfirm: async () => {
+      const res = await fetch(`${API}/revendedores/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
+      carregarRevendedores();
+    }
+  });
 }
 
 function abrirModalDinheiro() {
@@ -1117,37 +1167,39 @@ async function carregarClientes() {
 async function excluirTesteIptv(id) {
   const token = verificarAdminLogado();
   if (!token) return;
-  if (!confirm("Excluir este teste IPTV?")) return;
 
-  try {
-    const res = await fetch(`${API}/testes-iptv/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      headers: { Authorization: token }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
-    carregarTestes();
-  } catch (e) {
-    alert(e.message);
-  }
+  abrirModalConfirmacaoExclusao({
+    titulo: "Excluir teste IPTV",
+    mensagem: "Excluir este teste IPTV?",
+    onConfirm: async () => {
+      const res = await fetch(`${API}/testes-iptv/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
+      carregarTestes();
+    }
+  });
 }
 
 async function excluirCliente(id) {
   const token = verificarAdminLogado();
   if (!token) return;
-  if (!confirm("Excluir este cliente? (Apenas testes)")) return;
 
-  try {
-    const res = await fetch(`${API}/clientes/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      headers: { Authorization: token }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
-    carregarClientes();
-  } catch (e) {
-    alert(e.message);
-  }
+  abrirModalConfirmacaoExclusao({
+    titulo: "Excluir cliente",
+    mensagem: "Excluir este cliente?",
+    onConfirm: async () => {
+      const res = await fetch(`${API}/clientes/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
+      carregarClientes();
+    }
+  });
 }
 
 function garantirModalCliente() {
@@ -1234,19 +1286,20 @@ function abrirModalCliente(id, nome, email, telefone, conexoes, vencimento) {
 async function excluirPagamento(id) {
   const token = verificarAdminLogado();
   if (!token) return;
-  if (!confirm("Excluir este pagamento? (Use para limpar testes/pendentes)")) return;
 
-  try {
-    const res = await fetch(`${API}/pagamentos/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      headers: { Authorization: token }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
-    carregarPagamentos();
-  } catch (e) {
-    alert(e.message);
-  }
+  abrirModalConfirmacaoExclusao({
+    titulo: "Excluir pagamento",
+    mensagem: "Excluir este pagamento?",
+    onConfirm: async () => {
+      const res = await fetch(`${API}/pagamentos/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || data.error || "Erro ao excluir.");
+      carregarPagamentos();
+    }
+  });
 }
 
 function garantirModalPagamentoDetalhes() {
@@ -1255,33 +1308,37 @@ function garantirModalPagamentoDetalhes() {
 
   modal = document.createElement("div");
   modal.id = "pagamentoDetalhesModal";
-  modal.className = "modal admin-hidden";
+  modal.className = "modal-overlay admin-hidden";
   modal.innerHTML = `
-    <div class="modal-content" style="max-width:560px;">
-      <button type="button" class="modal-close" onclick="fecharModalPagamentoDetalhes()">x</button>
-      <h3>Editar Pagamento</h3>
-
-      <input id="pagdetId" type="hidden">
-
-      <label>Login do cliente</label>
-      <input id="pagdetUsuario" type="text" placeholder="usuario">
-
-      <label>Senha (preenche automatico se encontrar no cadastro)</label>
-      <input id="pagdetSenha" type="text" placeholder="senha">
-
-      <label>Origem</label>
-      <select id="pagdetOrigem">
-        <option value="">(manter)</option>
-        <option value="pix">pix</option>
-        <option value="dinheiro">dinheiro</option>
-      </select>
-
-      <div class="modal-actions" style="grid-template-columns: 1fr 1fr; gap:10px;">
-        <button type="button" onclick="buscarDadosClienteParaPagamento()">Buscar no cadastro</button>
-        <button type="button" onclick="salvarPagamentoDetalhes()">Salvar</button>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Editar Pagamento">
+      <div class="modal-header">
+        <strong>Editar Pagamento</strong>
+        <button type="button" class="modal-close" onclick="fecharModalPagamentoDetalhes()">X</button>
       </div>
 
-      <div id="pagdetMsg" style="margin-top:12px;"></div>
+      <div class="modal-body">
+        <input id="pagdetId" type="hidden">
+
+        <label>Login do cliente</label>
+        <input id="pagdetUsuario" type="text" placeholder="usuario">
+
+        <label>Senha (preenche automatico se encontrar no cadastro)</label>
+        <input id="pagdetSenha" type="text" placeholder="senha">
+
+        <label>Origem</label>
+        <select id="pagdetOrigem">
+          <option value="">(manter)</option>
+          <option value="pix">pix</option>
+          <option value="dinheiro">dinheiro</option>
+        </select>
+
+        <div class="modal-actions" style="grid-template-columns: 1fr 1fr; gap:10px;">
+          <button type="button" onclick="buscarDadosClienteParaPagamento()">Buscar no cadastro</button>
+          <button type="button" onclick="salvarPagamentoDetalhes()">Salvar</button>
+        </div>
+
+        <div id="pagdetMsg" style="margin-top:12px;"></div>
+      </div>
     </div>
   `;
 
