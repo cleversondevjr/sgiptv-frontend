@@ -197,22 +197,72 @@ async function carregarClientesDoRevendedor(id) {
   if (!box) return;
 
   box.dataset.loaded = "1";
-  box.innerHTML = `<td colspan="6"><div style="padding:12px;">Carregando clientes...</div></td>`;
+  box.innerHTML = `<td colspan="6"><div style="padding:12px;">Carregando...</div></td>`;
 
   try {
-    const res = await fetch(`${API}/revendedores/${id}/clientes`, {
-      headers: { Authorization: token }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Erro ao carregar clientes.");
+    const [resClientes, resComissoes] = await Promise.all([
+      fetch(`${API}/revendedores/${id}/clientes`, { headers: { Authorization: token } }),
+      fetch(`${API}/revendedores/${id}/comissoes`, { headers: { Authorization: token } })
+    ]);
 
-    const clientes = Array.isArray(data.clientes) ? data.clientes : [];
-    if (clientes.length === 0) {
-      box.innerHTML = `<td colspan="6"><div style="padding:12px;">Nenhum cliente vinculado.</div></td>`;
-      return;
-    }
+    const dataClientes = await resClientes.json();
+    const dataComissoes = await resComissoes.json();
 
-    const linhas = clientes.map((c) => `
+    if (!resClientes.ok) throw new Error(dataClientes.error || "Erro ao carregar clientes.");
+    if (!resComissoes.ok) throw new Error(dataComissoes.error || "Erro ao carregar comissoes.");
+
+    const clientes = Array.isArray(dataClientes.clientes) ? dataClientes.clientes : [];
+    const comissoes = Array.isArray(dataComissoes.comissoes) ? dataComissoes.comissoes : [];
+
+    const comissoesPendentes = comissoes.filter(c => String(c.status || "").toLowerCase() === "pendente");
+
+    const sum = (arr) => arr.reduce((acc, it) => acc + (Number(it.valor) || 0), 0);
+    const totalPrimeira = sum(comissoesPendentes.filter(c => c.tipo === "primeira_compra"));
+    const totalRenovacao = sum(comissoesPendentes.filter(c => c.tipo === "renovacao"));
+    const totalPendente = totalPrimeira + totalRenovacao;
+
+    const linhasComissoes = comissoesPendentes.length === 0
+      ? `<tr><td colspan="5">Nenhuma comissao pendente.</td></tr>`
+      : comissoesPendentes.map((c) => `
+          <tr>
+            <td>${escaparHtml(formatarData(c.criado_em))}</td>
+            <td>${escaparHtml(c.tipo === "primeira_compra" ? "Primeira venda" : "Renovacao")}</td>
+            <td>${formatarDinheiro(c.valor)}</td>
+            <td>${escaparHtml(String(c.pagamento_id || "-"))}</td>
+            <td>${escaparHtml(String(c.cliente_usuario || c.cliente_id || "-"))}</td>
+          </tr>
+        `).join("");
+
+    const blocoComissoes = `
+      <div style="padding: 10px 0 6px 0;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+          <strong>Comissoes pendentes</strong>
+          <span style="opacity:.9;">
+            Primeira venda: <strong>${formatarDinheiro(totalPrimeira)}</strong> |
+            Renovacao: <strong>${formatarDinheiro(totalRenovacao)}</strong> |
+            Total: <strong>${formatarDinheiro(totalPendente)}</strong>
+          </span>
+        </div>
+        <div class="tabela-area" style="margin: 8px 0 12px 0;">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+                <th>Pagamento</th>
+                <th>Cliente</th>
+              </tr>
+            </thead>
+            <tbody>${linhasComissoes}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    const linhasClientes = clientes.length === 0
+      ? `<tr><td colspan="4">Nenhum cliente vinculado.</td></tr>`
+      : clientes.map((c) => `
       <tr>
         <td>${escaparHtml(c.usuario)}</td>
         <td>${escaparHtml(c.plano)}</td>
@@ -224,6 +274,7 @@ async function carregarClientesDoRevendedor(id) {
     box.innerHTML = `
       <td colspan="6">
         <div class="tabela-area" style="margin: 10px 0 0 0;">
+          ${blocoComissoes}
           <table>
             <thead>
               <tr>
@@ -233,7 +284,7 @@ async function carregarClientesDoRevendedor(id) {
                 <th>Contato</th>
               </tr>
             </thead>
-            <tbody>${linhas}</tbody>
+            <tbody>${linhasClientes}</tbody>
           </table>
         </div>
       </td>
