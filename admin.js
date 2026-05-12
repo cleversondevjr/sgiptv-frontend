@@ -1097,7 +1097,7 @@ async function carregarClientes() {
             <div class="cliente-contato">
               <div class="cliente-contato-resumo">${resumoContato || "-"}</div>
               <div class="cliente-contato-acoes">
-                <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}', ${c.conexoes ?? "null"})">${textoEditar}</button>
+                <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}', ${c.conexoes ?? "null"}, '${escaparHtml(c.vencimento || "")}')">${textoEditar}</button>
                 <button type="button" onclick="abrirModalDinheiroPreenchido({ email: '${escaparHtml(c.email || "")}', telefone: '${escaparHtml(c.telefone || "")}', plano: '${escaparHtml(c.plano || "")}', cliente_usuario: '${escaparHtml(c.usuario || "")}', cliente_senha: '${escaparHtml(c.senha || "")}' })">Dinheiro</button>
                 ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkWhatsapp}">WhatsApp</a>` : `<span class="whatsapp-btn whatsapp-disabled">WhatsApp</span>`}
               </div>
@@ -1183,6 +1183,9 @@ function garantirModalCliente() {
           <option value="2">2</option>
         </select>
 
+        <label>Vencimento (opcional)</label>
+        <input id="modal-cliente-vencimento" type="datetime-local">
+
         <div class="modal-actions">
           <button type="button" onclick="salvarModalCliente()">Salvar</button>
           <button type="button" class="cancelar-btn" onclick="fecharModalCliente()">Cancelar</button>
@@ -1199,7 +1202,7 @@ function garantirModalCliente() {
   return modal;
 }
 
-function abrirModalCliente(id, nome, email, telefone, conexoes) {
+function abrirModalCliente(id, nome, email, telefone, conexoes, vencimento) {
   const modal = garantirModalCliente();
 
   document.getElementById("modal-cliente-id").value = String(id);
@@ -1207,6 +1210,23 @@ function abrirModalCliente(id, nome, email, telefone, conexoes) {
   document.getElementById("modal-cliente-email").value = String(email || "");
   document.getElementById("modal-cliente-tel").value = String(telefone || "");
   document.getElementById("modal-cliente-conexoes").value = conexoes != null ? String(conexoes) : "";
+
+  // datetime-local espera "YYYY-MM-DDTHH:mm"
+  const vInput = document.getElementById("modal-cliente-vencimento");
+  if (vInput) {
+    const raw = String(vencimento || "").trim();
+    if (!raw) {
+      vInput.value = "";
+    } else {
+      const d = new Date(raw);
+      if (Number.isNaN(d.getTime())) {
+        vInput.value = "";
+      } else {
+        const pad = (n) => String(n).padStart(2, "0");
+        vInput.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+    }
+  }
 
   modal.classList.remove("admin-hidden");
 }
@@ -1392,6 +1412,7 @@ async function salvarModalCliente() {
   const email = document.getElementById("modal-cliente-email")?.value || "";
   const telefone = document.getElementById("modal-cliente-tel")?.value || "";
   const conexoes = document.getElementById("modal-cliente-conexoes")?.value;
+  const vencimento = document.getElementById("modal-cliente-vencimento")?.value || "";
 
   try {
     const res = await fetch(`${API}/clientes/${id}`, {
@@ -1400,7 +1421,7 @@ async function salvarModalCliente() {
         "Content-Type": "application/json",
         Authorization: token
       },
-      body: JSON.stringify({ nome, email, telefone, conexoes })
+      body: JSON.stringify({ nome, email, telefone, conexoes, vencimento: vencimento || null })
     });
 
     const data = await res.json();
