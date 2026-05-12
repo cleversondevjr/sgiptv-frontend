@@ -53,12 +53,12 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 30px;
+  padding: 18px;
 }
 
 .admin-container {
   align-items: flex-start;
-  padding: 32px;
+  padding: 22px;
 }
 
 .card {
@@ -76,7 +76,7 @@ html {
 }
 
 .admin-card {
-  max-width: 1360px;
+  max-width: 1680px;
 }
 
 .login-card {
@@ -669,7 +669,7 @@ td .whatsapp-btn {
 
 @media (max-width: 700px) {
   .admin-container {
-    padding: 18px;
+    padding: 14px;
   }
 
   .admin-card {
