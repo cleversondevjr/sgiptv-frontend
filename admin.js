@@ -856,13 +856,9 @@ async function carregarPagamentos() {
         `
         : `<span class="${statusClass}">${escaparHtml(pagamento.status)}</span>`;
 
-      const podeExcluir = pagamento.status !== "confirmado" ||
-        String(pagamento.payment_id || "").startsWith("DINHEIRO-") ||
-        String(pagamento.plano || "").toUpperCase().includes("TESTE");
+      const botaoExcluir = `<button class="cancelar-btn" onclick="excluirPagamento(${pagamento.id})">Excluir</button>`;
 
-      const botaoExcluir = podeExcluir
-        ? `<button class="cancelar-btn" onclick="excluirPagamento(${pagamento.id})">Excluir</button>`
-        : "";
+      const botaoEditar = `<button onclick='abrirModalPagamentoDetalhes(${JSON.stringify(pagamento).replace(/</g,"\\u003c")})'>Editar</button>`;
 
       lista.innerHTML += `
         <tr>
@@ -879,9 +875,17 @@ async function carregarPagamentos() {
           <td colspan="6">
             <div class="detalhes-grid">
               <div>
-                <strong>Status</strong>
-                <p class="${statusClass}">${escaparHtml(pagamento.status)}</p>
-              </div>
+                  <strong>Status</strong>
+                  <p class="${statusClass}">${escaparHtml(pagamento.status)}</p>
+                </div>
+                <div>
+                  <strong>Acoes</strong>
+                  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    ${botaoEditar}
+                    ${botaoExcluir}
+                    ${botaoAviso}
+                  </div>
+                </div>
               <div>
                 <strong>Origem</strong>
                 <p>${escaparHtml(pagamento.origem || (String(pagamento.payment_id || "").startsWith("DINHEIRO-") ? "dinheiro" : "pix"))}</p>
@@ -1222,6 +1226,154 @@ async function excluirPagamento(id) {
     carregarPagamentos();
   } catch (e) {
     alert(e.message);
+  }
+}
+
+function garantirModalPagamentoDetalhes() {
+  let modal = document.getElementById("pagamentoDetalhesModal");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "pagamentoDetalhesModal";
+  modal.className = "modal admin-hidden";
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width:560px;">
+      <button type="button" class="modal-close" onclick="fecharModalPagamentoDetalhes()">x</button>
+      <h3>Editar Pagamento</h3>
+
+      <input id="pagdetId" type="hidden">
+
+      <label>Login do cliente</label>
+      <input id="pagdetUsuario" type="text" placeholder="usuario">
+
+      <label>Senha (preenche automatico se encontrar no cadastro)</label>
+      <input id="pagdetSenha" type="text" placeholder="senha">
+
+      <label>Origem</label>
+      <select id="pagdetOrigem">
+        <option value="">(manter)</option>
+        <option value="pix">pix</option>
+        <option value="dinheiro">dinheiro</option>
+      </select>
+
+      <div class="modal-actions" style="grid-template-columns: 1fr 1fr; gap:10px;">
+        <button type="button" onclick="buscarDadosClienteParaPagamento()">Buscar no cadastro</button>
+        <button type="button" onclick="salvarPagamentoDetalhes()">Salvar</button>
+      </div>
+
+      <div id="pagdetMsg" style="margin-top:12px;"></div>
+    </div>
+  `;
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) fecharModalPagamentoDetalhes();
+  });
+
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function abrirModalPagamentoDetalhes(pagamento) {
+  const modal = garantirModalPagamentoDetalhes();
+
+  const setVal = (id, v) => {
+    const el = document.getElementById(id);
+    if (el) el.value = v == null ? "" : String(v);
+  };
+
+  setVal("pagdetId", pagamento?.id || "");
+  setVal("pagdetUsuario", pagamento?.cliente_usuario || "");
+  setVal("pagdetSenha", pagamento?.cliente_senha || "");
+  setVal("pagdetOrigem", pagamento?.origem || "");
+
+  const msg = document.getElementById("pagdetMsg");
+  if (msg) msg.textContent = "";
+
+  modal.classList.remove("admin-hidden");
+}
+
+function fecharModalPagamentoDetalhes() {
+  const modal = document.getElementById("pagamentoDetalhesModal");
+  if (!modal) return;
+  modal.classList.add("admin-hidden");
+}
+
+async function buscarDadosClienteParaPagamento() {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const msg = document.getElementById("pagdetMsg");
+  if (msg) msg.textContent = "Buscando...";
+
+  const usuario = String(document.getElementById("pagdetUsuario")?.value || "").trim();
+  if (!usuario) {
+    if (msg) msg.innerHTML = `<p class="erro">Informe o login do cliente.</p>`;
+    return;
+  }
+
+  try {
+    // Busca lista de clientes e tenta achar pelo usuario.
+    const res = await fetch(`${API}/clientes`, { headers: { Authorization: token } });
+    const lista = await res.json();
+    if (!res.ok) throw new Error(lista.detail || lista.error || "Erro ao buscar clientes.");
+
+    const cliente = Array.isArray(lista)
+      ? lista.find(c => String(c.usuario || "").trim() === usuario)
+      : null;
+
+    if (!cliente) {
+      if (msg) msg.innerHTML = `<p class="erro">Cliente nao encontrado no cadastro.</p>`;
+      return;
+    }
+
+    const senhaEl = document.getElementById("pagdetSenha");
+    if (senhaEl && cliente.senha) senhaEl.value = String(cliente.senha);
+
+    if (msg) msg.innerHTML = `<p style="color:#22c55e;"><strong>OK:</strong> dados carregados do cliente.</p>`;
+  } catch (e) {
+    if (msg) msg.innerHTML = `<p class="erro">${escaparHtml(e.message)}</p>`;
+  }
+}
+
+async function salvarPagamentoDetalhes() {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const msg = document.getElementById("pagdetMsg");
+  if (msg) msg.textContent = "Salvando...";
+
+  const id = String(document.getElementById("pagdetId")?.value || "").trim();
+  const cliente_usuario = String(document.getElementById("pagdetUsuario")?.value || "").trim();
+  const cliente_senha = String(document.getElementById("pagdetSenha")?.value || "").trim();
+  const origem = String(document.getElementById("pagdetOrigem")?.value || "").trim();
+
+  if (!id) {
+    if (msg) msg.innerHTML = `<p class="erro">Pagamento invalido.</p>`;
+    return;
+  }
+  if (!cliente_usuario) {
+    if (msg) msg.innerHTML = `<p class="erro">Informe o login do cliente.</p>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/pagamentos/${encodeURIComponent(id)}/detalhes`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: token },
+      body: JSON.stringify({
+        cliente_usuario: cliente_usuario || null,
+        cliente_senha: cliente_senha || null,
+        origem: origem || null
+      })
+    });
+
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload.detail || payload.error || "Erro ao salvar.");
+
+    if (msg) msg.innerHTML = `<p style="color:#22c55e;"><strong>Salvo!</strong></p>`;
+    carregarPagamentos();
+  } catch (e) {
+    if (msg) msg.innerHTML = `<p class="erro">${escaparHtml(e.message)}</p>`;
   }
 }
 
