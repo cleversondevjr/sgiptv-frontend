@@ -275,18 +275,62 @@ async function carregarClientesDoRevendedor(id) {
       </div>
     `;
 
-    const linhasHistCom = histCom.length === 0
+    // Historico de comissoes: agrupa por comprovante/ID para mostrar 1 linha por pagamento.
+    // (ex.: duas comissoes com mesmo transacao_id+comprovante viram 1 linha com total somado)
+    const comissoesAgrupadas = (() => {
+      const map = new Map();
+      for (const c of (histCom || [])) {
+        const transacaoId = c && c.transacao_id ? String(c.transacao_id) : "-";
+        const comprovante = c && c.comprovante_nome ? String(c.comprovante_nome) : "-";
+        const key = `${transacaoId}||${comprovante}`;
+        const atual = map.get(key) || {
+          pago_em: c.pago_em || c.criado_em,
+          status: c.status || "-",
+          transacao_id: transacaoId,
+          comprovante_nome: comprovante,
+          total: 0,
+          // Contadores por tipo para dar mais controle visual
+          total_primeira: 0,
+          total_renovacao: 0,
+        };
+
+        const v = Number(c.valor) || 0;
+        atual.total += v;
+        if (c.tipo === "primeira_compra") atual.total_primeira += v;
+        else if (c.tipo === "renovacao") atual.total_renovacao += v;
+
+        const tsAtual = new Date(atual.pago_em || 0).getTime();
+        const tsNovo = new Date(c.pago_em || c.criado_em || 0).getTime();
+        if (Number.isFinite(tsNovo) && (!Number.isFinite(tsAtual) || tsNovo > tsAtual)) {
+          atual.pago_em = c.pago_em || c.criado_em;
+        }
+
+        map.set(key, atual);
+      }
+      const arr = Array.from(map.values());
+      arr.sort((a, b) => new Date(b.pago_em || 0).getTime() - new Date(a.pago_em || 0).getTime());
+      return arr;
+    })();
+
+    const linhasHistCom = comissoesAgrupadas.length === 0
       ? `<tr><td colspan="6">Sem historico.</td></tr>`
-      : histCom.slice(0, 20).map((c) => `
-          <tr>
-            <td>${escaparHtml(formatarData(c.pago_em || c.criado_em))}</td>
-            <td>${escaparHtml(c.status || "-")}</td>
-            <td>${escaparHtml(c.tipo === "primeira_compra" ? "Primeira venda" : "Renovacao")}</td>
-            <td>${formatarDinheiro(c.valor)}</td>
-            <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
-            <td>${escaparHtml(String(c.comprovante_nome || "-"))}</td>
-          </tr>
-        `).join("");
+      : comissoesAgrupadas.slice(0, 20).map((c) => {
+          const tipoResumoParts = [];
+          if (c.total_primeira > 0) tipoResumoParts.push(`Primeira venda: ${formatarDinheiro(c.total_primeira)}`);
+          if (c.total_renovacao > 0) tipoResumoParts.push(`Renovacao: ${formatarDinheiro(c.total_renovacao)}`);
+          const tipoResumo = tipoResumoParts.length ? tipoResumoParts.join(" | ") : "-";
+
+          return `
+            <tr>
+              <td>${escaparHtml(formatarData(c.pago_em))}</td>
+              <td>${escaparHtml(c.status || "-")}</td>
+              <td>${escaparHtml(tipoResumo)}</td>
+              <td>${formatarDinheiro(c.total)}</td>
+              <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
+              <td>${escaparHtml(String(c.comprovante_nome || "-"))}</td>
+            </tr>
+          `;
+        }).join("");
 
     const linhasHistBonus = histBonus.length === 0
       ? `<tr><td colspan="5">Sem bonus pago.</td></tr>`
