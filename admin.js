@@ -332,7 +332,10 @@ async function carregarRevendedores() {
 
     lista.innerHTML = itens.map((item) => {
       const pendente = formatarDinheiro(item.total_pendente || 0);
-      const bonus = formatarDinheiro(item.bonus_mes || 0);
+      const bonusMes = Number(item.bonus_mes || 0);
+      const bonusPago = Number(item.bonus_pago_mes || 0);
+      const bonusPendenteMes = Number(item.bonus_pendente_mes || 0);
+      const bonusTexto = formatarDinheiro(bonusPendenteMes);
       const status = String(item.status || "pendente");
       const podeAprovar = status === "pendente";
 
@@ -342,14 +345,14 @@ async function carregarRevendedores() {
           <td>${escaparHtml(item.email)}</td>
           <td>${escaparHtml(item.pix_cpf || "-")}</td>
           <td><strong>${pendente}</strong></td>
-          <td><strong>${bonus}</strong></td>
+          <td><strong>${bonusTexto}</strong></td>
           <td>
             <button id="rev-toggle-${item.id}" type="button" onclick="alternarClientesRevendedor(${item.id})">+</button>
             <button type="button" onclick="mostrarInfoComissoesRevendedor()">?</button>
             ${podeAprovar ? `<button type="button" onclick="aprovarRevendedor(${item.id})">Aprovar</button>` : ``}
             ${podeAprovar ? `<button type="button" onclick="reprovarRevendedor(${item.id})">Reprovar</button>` : ``}
-            <button type="button" onclick="alert('Pagar comissao (pendente: ${pendente}) - a automatizacao sera implementada na proxima etapa.')">Pagar Comissao</button>
-            <button type="button" onclick="alert('Pagar bonus (mes: ${bonus}) - a automatizacao sera implementada na proxima etapa.')">Pagar Bonus</button>
+            <button type="button" onclick="abrirPagarComissao(${item.id}, '${pendente.replace("R$","").trim()}', '${escaparHtml(item.pix_cpf || "")}')">Pagar Comissao</button>
+            <button type="button" onclick="abrirPagarBonus(${item.id}, ${bonusMes}, ${bonusPago}, ${bonusPendenteMes}, '${escaparHtml(item.pix_cpf || "")}')">Pagar Bonus</button>
             <button type="button" onclick="excluirRevendedor(${item.id})">Excluir</button>
           </td>
         </tr>
@@ -433,6 +436,132 @@ function criarTabsMeses() {
 function formatarDinheiro(valor) {
   const num = Number(valor || 0);
   return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function criarModalBasico({ titulo, corpoHtml, onConfirmText = "Confirmar", onConfirm, confirmDanger = false } = {}) {
+  let modal = document.getElementById("adminModalBase");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "adminModalBase";
+    modal.className = "admin-modal-overlay";
+    modal.innerHTML = `
+      <div class="admin-modal">
+        <div class="admin-modal-header">
+          <div class="admin-modal-title"></div>
+          <button type="button" class="admin-modal-close" aria-label="Fechar">X</button>
+        </div>
+        <div class="admin-modal-body"></div>
+        <div class="admin-modal-footer">
+          <label class="admin-modal-check">
+            <input type="checkbox" id="adminModalConfirmCheck" />
+            Confirmo esta acao
+          </label>
+          <div class="admin-modal-actions">
+            <button type="button" class="admin-btn-secondary" id="adminModalCancelBtn">Cancelar</button>
+            <button type="button" class="admin-btn-primary" id="adminModalOkBtn">${onConfirmText}</button>
+          </div>
+        </div>
+        <div class="admin-modal-msg" id="adminModalMsg"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.remove("open");
+    });
+    modal.querySelector(".admin-modal-close").addEventListener("click", () => modal.classList.remove("open"));
+    modal.querySelector("#adminModalCancelBtn").addEventListener("click", () => modal.classList.remove("open"));
+  }
+
+  modal.querySelector(".admin-modal-title").textContent = titulo || "Confirmar";
+  modal.querySelector(".admin-modal-body").innerHTML = corpoHtml || "";
+  modal.querySelector("#adminModalConfirmCheck").checked = false;
+  modal.querySelector("#adminModalMsg").textContent = "";
+
+  const okBtn = modal.querySelector("#adminModalOkBtn");
+  okBtn.textContent = onConfirmText || "Confirmar";
+  okBtn.classList.toggle("danger", !!confirmDanger);
+
+  okBtn.onclick = async () => {
+    const checked = modal.querySelector("#adminModalConfirmCheck").checked;
+    if (!checked) {
+      modal.querySelector("#adminModalMsg").textContent = "Marque a confirmacao para continuar.";
+      return;
+    }
+    try {
+      await onConfirm?.();
+      modal.classList.remove("open");
+    } catch (e) {
+      modal.querySelector("#adminModalMsg").textContent = e?.message || "Erro.";
+    }
+  };
+
+  modal.classList.add("open");
+}
+
+function abrirPagarComissao(revendedorId, pendenteValorTexto, pixCpf) {
+  const valor = String(pendenteValorTexto || "").trim();
+  criarModalBasico({
+    titulo: "Marcar Comissao Como Paga",
+    corpoHtml: `
+      <div style="display:grid; gap:10px;">
+        <div><strong>Revendedor ID:</strong> ${escaparHtml(String(revendedorId))}</div>
+        <div><strong>Chave PIX/CPF:</strong> ${escaparHtml(String(pixCpf || "-"))}</div>
+        <div><strong>Valor pendente:</strong> R$ ${escaparHtml(valor || "0,00")}</div>
+        <label>Comprovante/ID transacao (opcional)<br>
+          <input id="mpTransacaoId" class="admin-input" placeholder="Ex.: TX123, comprovante, etc" />
+        </label>
+      </div>
+    `,
+    onConfirmText: "Marcar como pago",
+    confirmDanger: false,
+    onConfirm: async () => {
+      const token = verificarAdminLogado();
+      if (!token) throw new Error("Admin nao logado.");
+      const transacao_id = document.getElementById("mpTransacaoId")?.value?.trim() || null;
+      const res = await fetch(`${API}/revendedores/${revendedorId}/comissoes/pagar`, {
+        method: "POST",
+        headers: { Authorization: token, "Content-Type": "application/json" },
+        body: JSON.stringify({ transacao_id })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Erro ao marcar comissao.");
+      await carregarRevendedores();
+    }
+  });
+}
+
+function abrirPagarBonus(revendedorId, bonusMes, bonusPago, bonusPendente, pixCpf) {
+  criarModalBasico({
+    titulo: "Marcar Bonus Como Pago",
+    corpoHtml: `
+      <div style="display:grid; gap:10px;">
+        <div><strong>Revendedor ID:</strong> ${escaparHtml(String(revendedorId))}</div>
+        <div><strong>Chave PIX/CPF:</strong> ${escaparHtml(String(pixCpf || "-"))}</div>
+        <div><strong>Bonus do mes:</strong> ${formatarDinheiro(bonusMes || 0)}</div>
+        <div><strong>Bonus ja pago no mes:</strong> ${formatarDinheiro(bonusPago || 0)}</div>
+        <div><strong>Bonus pendente:</strong> ${formatarDinheiro(bonusPendente || 0)}</div>
+        <label>Comprovante/ID transacao (opcional)<br>
+          <input id="mpBonusTransacaoId" class="admin-input" placeholder="Ex.: TX123, comprovante, etc" />
+        </label>
+      </div>
+    `,
+    onConfirmText: "Marcar bonus como pago",
+    confirmDanger: false,
+    onConfirm: async () => {
+      const token = verificarAdminLogado();
+      if (!token) throw new Error("Admin nao logado.");
+      const transacao_id = document.getElementById("mpBonusTransacaoId")?.value?.trim() || null;
+      const res = await fetch(`${API}/revendedores/${revendedorId}/bonus/pagar`, {
+        method: "POST",
+        headers: { Authorization: token, "Content-Type": "application/json" },
+        body: JSON.stringify({ transacao_id })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Erro ao marcar bonus.");
+      await carregarRevendedores();
+    }
+  });
 }
 
 function mostrarInfoComissoesRevendedor() {
