@@ -534,6 +534,10 @@ function abrirPagarComissao(revendedorId, pendenteValorTexto, pixCpf) {
         <label>Comprovante/ID transacao (opcional)<br>
           <input id="mpTransacaoId" class="admin-input" placeholder="Ex.: TX123, comprovante, etc" />
         </label>
+        <label>Anexar comprovante (opcional)<br>
+          <input id="mpComprovanteFile" class="admin-input" type="file" accept="image/*,application/pdf" />
+          <div style="opacity:.85; font-size:12px; margin-top:6px;">Ate ~2MB (imagem/PDF).</div>
+        </label>
       </div>
     `,
     onConfirmText: "Marcar como pago",
@@ -543,10 +547,11 @@ function abrirPagarComissao(revendedorId, pendenteValorTexto, pixCpf) {
       if (!token) throw new Error("Admin nao logado.");
       const transacao_id = document.getElementById("mpTransacaoId")?.value?.trim() || null;
       const notificar = !!document.getElementById("adminModalNotifyCheck")?.checked;
+      const comprovante = await lerComprovanteArquivo("mpComprovanteFile");
       const res = await fetch(`${API}/revendedores/${revendedorId}/comissoes/pagar`, {
         method: "POST",
         headers: { Authorization: token, "Content-Type": "application/json" },
-        body: JSON.stringify({ transacao_id, notificar })
+        body: JSON.stringify({ transacao_id, notificar, comprovante })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Erro ao marcar comissao.");
@@ -577,6 +582,10 @@ function abrirPagarBonus(revendedorId, bonusMes, bonusPago, bonusPendente, pixCp
         <label>Comprovante/ID transacao (opcional)<br>
           <input id="mpBonusTransacaoId" class="admin-input" placeholder="Ex.: TX123, comprovante, etc" />
         </label>
+        <label>Anexar comprovante (opcional)<br>
+          <input id="mpBonusComprovanteFile" class="admin-input" type="file" accept="image/*,application/pdf" />
+          <div style="opacity:.85; font-size:12px; margin-top:6px;">Ate ~2MB (imagem/PDF).</div>
+        </label>
       </div>
     `,
     onConfirmText: "Marcar bonus como pago",
@@ -586,16 +595,38 @@ function abrirPagarBonus(revendedorId, bonusMes, bonusPago, bonusPendente, pixCp
       if (!token) throw new Error("Admin nao logado.");
       const transacao_id = document.getElementById("mpBonusTransacaoId")?.value?.trim() || null;
       const notificar = !!document.getElementById("adminModalNotifyCheck")?.checked;
+      const comprovante = await lerComprovanteArquivo("mpBonusComprovanteFile");
       const res = await fetch(`${API}/revendedores/${revendedorId}/bonus/pagar`, {
         method: "POST",
         headers: { Authorization: token, "Content-Type": "application/json" },
-        body: JSON.stringify({ transacao_id, notificar })
+        body: JSON.stringify({ transacao_id, notificar, comprovante })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Erro ao marcar bonus.");
       await carregarRevendedores();
     }
   });
+}
+
+async function lerComprovanteArquivo(inputId) {
+  const el = document.getElementById(inputId);
+  const file = el && el.files && el.files[0] ? el.files[0] : null;
+  if (!file) return null;
+  if (file.size > 2_000_000) throw new Error("Comprovante muito grande (max ~2MB).");
+
+  const base64 = await new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onerror = () => reject(new Error("Falha ao ler comprovante."));
+    fr.onload = () => {
+      const dataUrl = String(fr.result || "");
+      const idx = dataUrl.indexOf("base64,");
+      if (idx === -1) return reject(new Error("Formato de comprovante invalido."));
+      resolve(dataUrl.slice(idx + "base64,".length));
+    };
+    fr.readAsDataURL(file);
+  });
+
+  return { name: file.name, mime: file.type || "application/octet-stream", base64 };
 }
 
 async function copiarTexto(texto, msgOk) {
