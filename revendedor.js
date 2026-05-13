@@ -254,15 +254,15 @@ async function verComprovanteComissao(comissaoId) {
     const viewer = isImage
       ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
       : isPdf
-        ? `<iframe src="${url}" style="width:100%; height:70vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`
-        : `<iframe src="${url}" style="width:100%; height:70vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
+        ? `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`
+        : `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
 
     // Modal simples (reaproveita estilos do admin)
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.style.display = "flex";
     overlay.innerHTML = `
-      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Comprovante">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Comprovante" style="max-width: 1250px; width: min(1250px, 96vw);">
         <div class="modal-top">
           <div class="modal-title">Comprovante</div>
           <button class="modal-close" type="button" aria-label="Fechar">X</button>
@@ -271,7 +271,6 @@ async function verComprovanteComissao(comissaoId) {
           <div style="opacity:.9; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
             ${escaparHtml(filename)}
           </div>
-          <button type="button" class="btn-secundario" id="revBtnBaixarComprovante">Baixar</button>
         </div>
         ${viewer}
       </div>
@@ -286,14 +285,6 @@ async function verComprovanteComissao(comissaoId) {
       if (ev.target === overlay) fechar();
     });
     overlay.querySelector(".modal-close")?.addEventListener("click", fechar);
-    overlay.querySelector("#revBtnBaixarComprovante")?.addEventListener("click", () => {
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    });
   } catch (e) {
     alert(e.message || "Erro ao baixar comprovante.");
   }

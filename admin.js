@@ -812,8 +812,8 @@ async function verComprovanteComissaoAdmin(comissaoId) {
     const viewer = isImage
       ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
       : isPdf
-        ? `<iframe src="${url}" style="width:100%; height:70vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`
-        : `<iframe src="${url}" style="width:100%; height:70vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
+        ? `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`
+        : `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
 
     criarModalBasico({
       titulo: "Comprovante",
@@ -822,7 +822,6 @@ async function verComprovanteComissaoAdmin(comissaoId) {
           <div style="opacity:.9; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
             ${escaparHtml(filename)}
           </div>
-          <button type="button" class="btn-secundario" id="btnBaixarComprovante">Baixar</button>
         </div>
         ${viewer}
       `,
@@ -830,18 +829,13 @@ async function verComprovanteComissaoAdmin(comissaoId) {
       onConfirm: () => {}
     });
 
-    // handler download
+    // Aumenta o modal para o comprovante (mais largura/altura)
     setTimeout(() => {
-      const btn = document.getElementById("btnBaixarComprovante");
-      if (btn) {
-        btn.onclick = () => {
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        };
+      const modal = document.getElementById("adminModalBase");
+      const card = modal ? modal.querySelector(".admin-modal") : null;
+      if (card) {
+        card.style.maxWidth = "1200px";
+        card.style.width = "min(1200px, 96vw)";
       }
     }, 0);
 
