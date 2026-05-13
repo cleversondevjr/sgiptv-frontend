@@ -176,6 +176,34 @@ function mostrarSecaoAdmin(secao) {
   }
 }
 
+async function atualizarDadosAdmin() {
+  const token = verificarAdminLogado();
+  if (!token) return;
+
+  const msg = document.getElementById("adminMensagem");
+  if (msg) {
+    msg.style.color = "#eab308";
+    msg.textContent = "Atualizando...";
+  }
+
+  // Atualiza tudo. O usuário espera que esse botão "forçe" o refresh geral.
+  const resultados = await Promise.allSettled([
+    carregarPagamentos(),
+    carregarTestes(),
+    carregarClientes(),
+    carregarRevendedores(),
+  ]);
+
+  const teveFalha = resultados.some((r) => r.status === "rejected");
+  if (msg) {
+    msg.style.color = teveFalha ? "#ef4444" : "#22c55e";
+    msg.textContent = teveFalha ? "Atualizado com avisos (alguma aba falhou)." : "Dados atualizados!";
+    setTimeout(() => {
+      if (msg.textContent) msg.textContent = "";
+    }, 2500);
+  }
+}
+
 function alternarClientesRevendedor(id) {
   const detalhes = document.getElementById(`rev-clientes-${id}`);
   const botao = document.getElementById(`rev-toggle-${id}`);
