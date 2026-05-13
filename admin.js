@@ -292,12 +292,15 @@ async function carregarClientesDoRevendedor(id) {
           // Contadores por tipo para dar mais controle visual
           total_primeira: 0,
           total_renovacao: 0,
+          any_id: c.id
         };
 
         const v = Number(c.valor) || 0;
         atual.total += v;
         if (c.tipo === "primeira_compra") atual.total_primeira += v;
         else if (c.tipo === "renovacao") atual.total_renovacao += v;
+
+        if (c.id && (!atual.any_id || Number(c.id) > Number(atual.any_id))) atual.any_id = c.id;
 
         const tsAtual = new Date(atual.pago_em || 0).getTime();
         const tsNovo = new Date(c.pago_em || c.criado_em || 0).getTime();
@@ -320,6 +323,10 @@ async function carregarClientesDoRevendedor(id) {
           if (c.total_renovacao > 0) tipoResumoParts.push(`Renovacao: ${formatarDinheiro(c.total_renovacao)}`);
           const tipoResumo = tipoResumoParts.length ? tipoResumoParts.join(" | ") : "-";
 
+          const btn = (c.comprovante_nome && c.comprovante_nome !== "-" && c.any_id)
+            ? `<button type="button" class="btn-sm" onclick="verComprovanteComissaoAdmin(${Number(c.any_id)})">Ver comprovante</button>`
+            : "";
+
           return `
             <tr>
               <td>${escaparHtml(formatarData(c.pago_em))}</td>
@@ -327,7 +334,7 @@ async function carregarClientesDoRevendedor(id) {
               <td>${escaparHtml(tipoResumo)}</td>
               <td>${formatarDinheiro(c.total)}</td>
               <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
-              <td>${escaparHtml(String(c.comprovante_nome || "-"))}</td>
+              <td>${btn} ${escaparHtml(String(c.comprovante_nome || "-"))}</td>
             </tr>
           `;
         }).join("");
@@ -778,6 +785,38 @@ async function copiarTexto(texto, msgOk) {
         box.style.color = "#ef4444";
       }
     }, 2000);
+  }
+}
+
+async function verComprovanteComissaoAdmin(comissaoId) {
+  try {
+    const token = "Bearer " + (localStorage.getItem("admin_token") || "");
+    if (token === "Bearer ") throw new Error("Token admin ausente.");
+
+    const res = await fetch(`${API}/admin/comissoes/${comissaoId}/comprovante`, {
+      headers: { Authorization: token }
+    });
+    const err = !res.ok ? await res.json().catch(() => ({})) : null;
+    if (!res.ok) throw new Error(err?.error || "Nao foi possivel abrir o comprovante.");
+
+    const blob = await res.blob();
+    const dispo = res.headers.get("content-disposition") || "";
+    const match = dispo.match(/filename=\"?([^\";]+)\"?/i);
+    const filename = match ? match[1] : `comprovante-${comissaoId}.pdf`;
+
+    const url = window.URL.createObjectURL(blob);
+    const w = window.open(url, "_blank");
+    if (!w) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+    setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+  } catch (e) {
+    alert(e.message || "Erro ao abrir comprovante.");
   }
 }
 
