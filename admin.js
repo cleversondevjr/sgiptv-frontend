@@ -200,24 +200,34 @@ async function carregarClientesDoRevendedor(id) {
   box.innerHTML = `<td colspan="6"><div style="padding:12px;">Carregando...</div></td>`;
 
   try {
-    const [resClientes, resComissoes, resHistorico] = await Promise.all([
+    const [resClientes, resComissoes] = await Promise.all([
       fetch(`${API}/revendedores/${id}/clientes`, { headers: { Authorization: token } }),
-      fetch(`${API}/revendedores/${id}/comissoes`, { headers: { Authorization: token } }),
-      fetch(`${API}/revendedores/${id}/historico`, { headers: { Authorization: token } })
+      fetch(`${API}/revendedores/${id}/comissoes`, { headers: { Authorization: token } })
     ]);
 
     const dataClientes = await resClientes.json();
     const dataComissoes = await resComissoes.json();
-    const dataHistorico = await resHistorico.json();
 
     if (!resClientes.ok) throw new Error(dataClientes.error || "Erro ao carregar clientes.");
     if (!resComissoes.ok) throw new Error(dataComissoes.error || "Erro ao carregar comissoes.");
-    if (!resHistorico.ok) throw new Error(dataHistorico.error || "Erro ao carregar historico.");
 
     const clientes = Array.isArray(dataClientes.clientes) ? dataClientes.clientes : [];
     const comissoes = Array.isArray(dataComissoes.comissoes) ? dataComissoes.comissoes : [];
-    const histCom = Array.isArray(dataHistorico.comissoes) ? dataHistorico.comissoes : [];
-    const histBonus = Array.isArray(dataHistorico.bonus) ? dataHistorico.bonus : [];
+
+    // Historico e opcional: se o backend ainda nao tiver o endpoint, nao quebra a tela.
+    let histCom = [];
+    let histBonus = [];
+    try {
+      const resHistorico = await fetch(`${API}/revendedores/${id}/historico`, { headers: { Authorization: token } });
+      const dataHistorico = await resHistorico.json();
+      if (resHistorico.ok) {
+        histCom = Array.isArray(dataHistorico.comissoes) ? dataHistorico.comissoes : [];
+        histBonus = Array.isArray(dataHistorico.bonus) ? dataHistorico.bonus : [];
+      }
+    } catch {
+      histCom = [];
+      histBonus = [];
+    }
 
     const comissoesPendentes = comissoes.filter(c => String(c.status || "").toLowerCase() === "pendente");
 
