@@ -1530,7 +1530,7 @@ async function carregarClientes() {
             <div class="cliente-contato">
               <div class="cliente-contato-resumo">${resumoContato || "-"}</div>
               <div class="cliente-contato-acoes">
-                <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}', ${c.conexoes ?? "null"}, '${escaparHtml(c.vencimento || "")}')">${textoEditar}</button>
+                <button type="button" onclick="abrirModalCliente(${c.id}, '${escaparHtml(c.nome || "")}', '${escaparHtml(c.email || "")}', '${escaparHtml(c.telefone || "")}', ${c.conexoes ?? "null"}, '${escaparHtml(c.vencimento || "")}', '${escaparHtml(c.revendedor_codigo || "")}')">${textoEditar}</button>
                 <button type="button" onclick="abrirModalDinheiroPreenchido({ email: '${escaparHtml(c.email || "")}', telefone: '${escaparHtml(c.telefone || "")}', plano: '${escaparHtml(c.plano || "")}', cliente_usuario: '${escaparHtml(c.usuario || "")}', cliente_senha: '${escaparHtml(c.senha || "")}' })">Dinheiro</button>
                 ${contato ? `<a class="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="${linkWhatsapp}">WhatsApp</a>` : `<span class="whatsapp-btn whatsapp-disabled">WhatsApp</span>`}
               </div>
@@ -1640,7 +1640,7 @@ function garantirModalCliente() {
   return modal;
 }
 
-function abrirModalCliente(id, nome, email, telefone, conexoes, vencimento) {
+function abrirModalCliente(id, nome, email, telefone, conexoes, vencimento, revendedorCodigo) {
   const modal = garantirModalCliente();
 
   document.getElementById("modal-cliente-id").value = String(id);
@@ -1667,7 +1667,7 @@ function abrirModalCliente(id, nome, email, telefone, conexoes, vencimento) {
   }
 
   const revInput = document.getElementById("modal-cliente-revendedor");
-  if (revInput) revInput.value = "";
+  if (revInput) revInput.value = String(revendedorCodigo || "");
 
   modal.classList.remove("admin-hidden");
 }
