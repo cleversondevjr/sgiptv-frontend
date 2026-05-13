@@ -307,14 +307,14 @@ async function carregarPdfJsSePrecisoRevendedor() {
   if (window.pdfjsLib && window.pdfjsLib.getDocument) return window.pdfjsLib;
   await new Promise((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js";
+    s.src = "assets/vendor/pdfjs/pdf.min.js";
     s.onload = resolve;
     s.onerror = () => reject(new Error("Falha ao carregar PDF.js"));
     document.head.appendChild(s);
   });
   const lib = window.pdfjsLib;
   if (!lib || !lib.getDocument) throw new Error("PDF.js indisponivel");
-  lib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  lib.GlobalWorkerOptions.workerSrc = "assets/vendor/pdfjs/pdf.worker.min.js";
   return lib;
 }
 
