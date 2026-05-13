@@ -214,20 +214,10 @@ async function carregarClientesDoRevendedor(id) {
     const clientes = Array.isArray(dataClientes.clientes) ? dataClientes.clientes : [];
     const comissoes = Array.isArray(dataComissoes.comissoes) ? dataComissoes.comissoes : [];
 
-    // Historico e opcional: se o backend ainda nao tiver o endpoint, nao quebra a tela.
-    let histCom = [];
-    let histBonus = [];
-    try {
-      const resHistorico = await fetch(`${API}/revendedores/${id}/historico`, { headers: { Authorization: token } });
-      const dataHistorico = await resHistorico.json();
-      if (resHistorico.ok) {
-        histCom = Array.isArray(dataHistorico.comissoes) ? dataHistorico.comissoes : [];
-        histBonus = Array.isArray(dataHistorico.bonus) ? dataHistorico.bonus : [];
-      }
-    } catch {
-      histCom = [];
-      histBonus = [];
-    }
+    // Historico: usa a propria lista de comissoes (ja vem com status) para nao depender de outro endpoint.
+    // Bonus historico ainda depende do endpoint (quando existir); por enquanto mantemos vazio aqui.
+    const histCom = comissoes.filter(c => String(c.status || "").toLowerCase() === "pago");
+    const histBonus = [];
 
     const comissoesPendentes = comissoes.filter(c => String(c.status || "").toLowerCase() === "pendente");
 
