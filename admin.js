@@ -200,19 +200,24 @@ async function carregarClientesDoRevendedor(id) {
   box.innerHTML = `<td colspan="6"><div style="padding:12px;">Carregando...</div></td>`;
 
   try {
-    const [resClientes, resComissoes] = await Promise.all([
+    const [resClientes, resComissoes, resHistorico] = await Promise.all([
       fetch(`${API}/revendedores/${id}/clientes`, { headers: { Authorization: token } }),
-      fetch(`${API}/revendedores/${id}/comissoes`, { headers: { Authorization: token } })
+      fetch(`${API}/revendedores/${id}/comissoes`, { headers: { Authorization: token } }),
+      fetch(`${API}/revendedores/${id}/historico`, { headers: { Authorization: token } })
     ]);
 
     const dataClientes = await resClientes.json();
     const dataComissoes = await resComissoes.json();
+    const dataHistorico = await resHistorico.json();
 
     if (!resClientes.ok) throw new Error(dataClientes.error || "Erro ao carregar clientes.");
     if (!resComissoes.ok) throw new Error(dataComissoes.error || "Erro ao carregar comissoes.");
+    if (!resHistorico.ok) throw new Error(dataHistorico.error || "Erro ao carregar historico.");
 
     const clientes = Array.isArray(dataClientes.clientes) ? dataClientes.clientes : [];
     const comissoes = Array.isArray(dataComissoes.comissoes) ? dataComissoes.comissoes : [];
+    const histCom = Array.isArray(dataHistorico.comissoes) ? dataHistorico.comissoes : [];
+    const histBonus = Array.isArray(dataHistorico.bonus) ? dataHistorico.bonus : [];
 
     const comissoesPendentes = comissoes.filter(c => String(c.status || "").toLowerCase() === "pendente");
 
@@ -270,6 +275,68 @@ async function carregarClientesDoRevendedor(id) {
       </div>
     `;
 
+    const linhasHistCom = histCom.length === 0
+      ? `<tr><td colspan="6">Sem historico.</td></tr>`
+      : histCom.slice(0, 20).map((c) => `
+          <tr>
+            <td>${escaparHtml(formatarData(c.pago_em || c.criado_em))}</td>
+            <td>${escaparHtml(c.status || "-")}</td>
+            <td>${escaparHtml(c.tipo === "primeira_compra" ? "Primeira venda" : "Renovacao")}</td>
+            <td>${formatarDinheiro(c.valor)}</td>
+            <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
+            <td>${escaparHtml(String(c.comprovante_nome || "-"))}</td>
+          </tr>
+        `).join("");
+
+    const linhasHistBonus = histBonus.length === 0
+      ? `<tr><td colspan="5">Sem bonus pago.</td></tr>`
+      : histBonus.slice(0, 12).map((b) => `
+          <tr>
+            <td>${escaparHtml(String(b.mes || "-").slice(0, 10))}</td>
+            <td>${escaparHtml(b.status || "-")}</td>
+            <td>${formatarDinheiro(b.valor)}</td>
+            <td>${escaparHtml(String(b.transacao_id || "-"))}</td>
+            <td>${escaparHtml(String(b.comprovante_nome || "-"))}</td>
+          </tr>
+        `).join("");
+
+    const blocoHistorico = `
+      <div style="padding: 10px 0 6px 0;">
+        <strong>Historico de pagamentos</strong>
+        <div class="tabela-area" style="margin: 8px 0 12px 0;">
+          <div style="opacity:.9; font-weight:700; margin: 2px 0 6px 0;">Comissoes</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+                <th>ID/Ref</th>
+                <th>Comprovante</th>
+              </tr>
+            </thead>
+            <tbody>${linhasHistCom}</tbody>
+          </table>
+        </div>
+        <div class="tabela-area" style="margin: 8px 0 12px 0;">
+          <div style="opacity:.9; font-weight:700; margin: 2px 0 6px 0;">Bonus</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th>Status</th>
+                <th>Valor</th>
+                <th>ID/Ref</th>
+                <th>Comprovante</th>
+              </tr>
+            </thead>
+            <tbody>${linhasHistBonus}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
     const linhasClientes = clientes.length === 0
       ? `<tr><td colspan="4">Nenhum cliente vinculado.</td></tr>`
       : clientes.map((c) => `
@@ -285,6 +352,7 @@ async function carregarClientesDoRevendedor(id) {
       <td colspan="6">
         <div class="tabela-area" style="margin: 10px 0 0 0;">
           ${blocoComissoes}
+          ${blocoHistorico}
           <table>
             <thead>
               <tr>
