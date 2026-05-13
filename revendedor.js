@@ -209,7 +209,7 @@ async function carregarRevendedor() {
       if (c.total_renovacao > 0) parts.push(`Renovacao: ${formatarDinheiro(c.total_renovacao)}`);
       const tipoResumo = parts.length ? parts.join(" | ") : "-";
       const btnComprovante = (c.comprovante_nome && c.comprovante_nome !== "-")
-        ? `<button type="button" class="btn-sm" onclick="baixarComprovanteComissao(${Number(c.any_id)})">Baixar</button>`
+        ? `<button type="button" class="btn-sm" onclick="verComprovanteComissao(${Number(c.any_id)})">Ver comprovante</button>`
         : "-";
 
       return `
@@ -231,7 +231,7 @@ async function carregarRevendedor() {
   }
 }
 
-async function baixarComprovanteComissao(comissaoId) {
+async function verComprovanteComissao(comissaoId) {
   const token = getTokenRevendedor();
   if (!token) return;
   try {
@@ -240,7 +240,7 @@ async function baixarComprovanteComissao(comissaoId) {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || "Nao foi possivel baixar o comprovante.");
+      throw new Error(data.error || "Nao foi possivel abrir o comprovante.");
     }
     const blob = await res.blob();
     const dispo = res.headers.get("content-disposition") || "";
@@ -248,13 +248,52 @@ async function baixarComprovanteComissao(comissaoId) {
     const filename = match ? match[1] : `comprovante-${comissaoId}.pdf`;
 
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
+    const isImage = /^image\//i.test(blob.type || "");
+    const isPdf = /pdf/i.test(blob.type || "") || String(filename).toLowerCase().endsWith(".pdf");
+
+    const viewer = isImage
+      ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
+      : isPdf
+        ? `<iframe src="${url}" style="width:100%; height:70vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`
+        : `<iframe src="${url}" style="width:100%; height:70vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
+
+    // Modal simples (reaproveita estilos do admin)
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.style.display = "flex";
+    overlay.innerHTML = `
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Comprovante">
+        <div class="modal-top">
+          <div class="modal-title">Comprovante</div>
+          <button class="modal-close" type="button" aria-label="Fechar">X</button>
+        </div>
+        <div style="margin: 10px 0; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="opacity:.9; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ${escaparHtml(filename)}
+          </div>
+          <button type="button" class="btn-secundario" id="revBtnBaixarComprovante">Baixar</button>
+        </div>
+        ${viewer}
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const fechar = () => {
+      overlay.remove();
+      setTimeout(() => window.URL.revokeObjectURL(url), 0);
+    };
+    overlay.addEventListener("click", (ev) => {
+      if (ev.target === overlay) fechar();
+    });
+    overlay.querySelector(".modal-close")?.addEventListener("click", fechar);
+    overlay.querySelector("#revBtnBaixarComprovante")?.addEventListener("click", () => {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
   } catch (e) {
     alert(e.message || "Erro ao baixar comprovante.");
   }

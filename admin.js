@@ -805,16 +805,48 @@ async function verComprovanteComissaoAdmin(comissaoId) {
     const filename = match ? match[1] : `comprovante-${comissaoId}.pdf`;
 
     const url = window.URL.createObjectURL(blob);
-    const w = window.open(url, "_blank");
-    if (!w) {
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-    setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+
+    // Modal interno (evita abrir nova aba)
+    const isImage = /^image\//i.test(blob.type || "");
+    const isPdf = /pdf/i.test(blob.type || "") || String(filename).toLowerCase().endsWith(".pdf");
+    const viewer = isImage
+      ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
+      : isPdf
+        ? `<iframe src="${url}" style="width:100%; height:70vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`
+        : `<iframe src="${url}" style="width:100%; height:70vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
+
+    criarModalBasico({
+      titulo: "Comprovante",
+      corpoHtml: `
+        <div style="margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="opacity:.9; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ${escaparHtml(filename)}
+          </div>
+          <button type="button" class="btn-secundario" id="btnBaixarComprovante">Baixar</button>
+        </div>
+        ${viewer}
+      `,
+      onConfirmText: "Fechar",
+      onConfirm: () => {}
+    });
+
+    // handler download
+    setTimeout(() => {
+      const btn = document.getElementById("btnBaixarComprovante");
+      if (btn) {
+        btn.onclick = () => {
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        };
+      }
+    }, 0);
+
+    // revoga depois de um tempo (para nao quebrar o iframe)
+    setTimeout(() => window.URL.revokeObjectURL(url), 5 * 60_000);
   } catch (e) {
     alert(e.message || "Erro ao abrir comprovante.");
   }
