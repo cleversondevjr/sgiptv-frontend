@@ -681,7 +681,7 @@ function abrirPagarComissao(revendedorId, pendenteValorTexto, pixCpf) {
           <button type="button" class="admin-btn-secondary" data-copy="${escaparHtml(pix)}" data-copy-msg="Chave PIX copiada">Copiar chave</button>
           <button type="button" class="admin-btn-secondary" data-copy="${escaparHtml(valorStr)}" data-copy-msg="Valor copiado">Copiar valor</button>
           <button type="button" class="admin-btn-secondary" data-copy="${escaparHtml(desc)}" data-copy-msg="Descricao copiada">Copiar descricao</button>
-          <a class="admin-btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;" href="https://www.mercadopago.com.br/" target="_blank" rel="noreferrer">Abrir Mercado Pago</a>
+          <a class="admin-btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;" href="https://www.mercadopago.com.br/pix" target="_blank" rel="noreferrer">Abrir Mercado Pago (Pix)</a>
         </div>
         <label>Comprovante/ID transacao (opcional)<br>
           <input id="mpTransacaoId" class="admin-input" placeholder="Ex.: TX123, comprovante, etc" />
@@ -729,7 +729,7 @@ function abrirPagarBonus(revendedorId, bonusMes, bonusPago, bonusPendente, pixCp
           <button type="button" class="admin-btn-secondary" data-copy="${escaparHtml(pix)}" data-copy-msg="Chave PIX copiada">Copiar chave</button>
           <button type="button" class="admin-btn-secondary" data-copy="${escaparHtml(valorStr)}" data-copy-msg="Valor copiado">Copiar valor</button>
           <button type="button" class="admin-btn-secondary" data-copy="${escaparHtml(desc)}" data-copy-msg="Descricao copiada">Copiar descricao</button>
-          <a class="admin-btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;" href="https://www.mercadopago.com.br/" target="_blank" rel="noreferrer">Abrir Mercado Pago</a>
+          <a class="admin-btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;" href="https://www.mercadopago.com.br/pix" target="_blank" rel="noreferrer">Abrir Mercado Pago (Pix)</a>
         </div>
         <label>Comprovante/ID transacao (opcional)<br>
           <input id="mpBonusTransacaoId" class="admin-input" placeholder="Ex.: TX123, comprovante, etc" />
