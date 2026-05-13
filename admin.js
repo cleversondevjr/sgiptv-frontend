@@ -809,10 +809,12 @@ async function verComprovanteComissaoAdmin(comissaoId) {
     // Modal interno (evita abrir nova aba)
     const isImage = /^image\//i.test(blob.type || "");
     const isPdf = /pdf/i.test(blob.type || "") || String(filename).toLowerCase().endsWith(".pdf");
+    const pdfContainerId = `pdfViewer_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+
     const viewer = isImage
       ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
       : isPdf
-        ? `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`
+        ? `<div id="${pdfContainerId}" style="width:100%; height:78vh; border-radius:10px; background:#0b1220; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:12px;"></div>`
         : `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
 
     criarModalBasico({
@@ -839,11 +841,71 @@ async function verComprovanteComissaoAdmin(comissaoId) {
       }
     }, 0);
 
+    if (isPdf) {
+      // Renderiza o PDF como imagem (canvas) para nao mostrar botoes de imprimir/baixar do viewer nativo.
+      setTimeout(async () => {
+        const el = document.getElementById(pdfContainerId);
+        if (!el) return;
+        try {
+          await renderPdfComoImagem(blob, el);
+        } catch (e) {
+          el.innerHTML = `<div style="color:#e2e8f0; opacity:.9; padding:14px;">Nao foi possivel renderizar o PDF aqui. Tente novamente.</div>`;
+        }
+      }, 0);
+    }
+
     // revoga depois de um tempo (para nao quebrar o iframe)
     setTimeout(() => window.URL.revokeObjectURL(url), 5 * 60_000);
   } catch (e) {
     alert(e.message || "Erro ao abrir comprovante.");
   }
+}
+
+async function carregarPdfJsSePreciso() {
+  if (window.pdfjsLib && window.pdfjsLib.getDocument) return window.pdfjsLib;
+
+  // Carrega PDF.js dinamicamente (sem bundler) para rodar no GitHub Pages.
+  await new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js";
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("Falha ao carregar PDF.js"));
+    document.head.appendChild(s);
+  });
+
+  const lib = window.pdfjsLib;
+  if (!lib || !lib.getDocument) throw new Error("PDF.js indisponivel");
+  // Worker via CDN
+  lib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  return lib;
+}
+
+async function renderPdfComoImagem(pdfBlob, containerEl) {
+  const pdfjs = await carregarPdfJsSePreciso();
+  const buf = await pdfBlob.arrayBuffer();
+  const doc = await pdfjs.getDocument({ data: buf }).promise;
+  const page = await doc.getPage(1);
+
+  // Render no tamanho do container
+  const viewport1 = page.getViewport({ scale: 1 });
+  const maxW = Math.max(320, Math.min(1100, containerEl.clientWidth - 24));
+  const scale = maxW / viewport1.width;
+  const viewport = page.getViewport({ scale });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.floor(viewport.width);
+  canvas.height = Math.floor(viewport.height);
+  canvas.style.width = "100%";
+  canvas.style.height = "auto";
+  canvas.style.maxWidth = "1100px";
+  canvas.style.borderRadius = "10px";
+  canvas.style.background = "#fff";
+
+  containerEl.innerHTML = "";
+  containerEl.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d", { alpha: false });
+  await page.render({ canvasContext: ctx, viewport }).promise;
 }
 
 function mostrarInfoComissoesRevendedor() {

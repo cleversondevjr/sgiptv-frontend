@@ -250,11 +250,12 @@ async function verComprovanteComissao(comissaoId) {
     const url = window.URL.createObjectURL(blob);
     const isImage = /^image\//i.test(blob.type || "");
     const isPdf = /pdf/i.test(blob.type || "") || String(filename).toLowerCase().endsWith(".pdf");
+    const pdfContainerId = `revPdfViewer_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
 
     const viewer = isImage
       ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
       : isPdf
-        ? `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`
+        ? `<div id="${pdfContainerId}" style="width:100%; height:78vh; border-radius:10px; background:#0b1220; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:12px;"></div>`
         : `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
 
     // Modal simples (reaproveita estilos do admin)
@@ -285,9 +286,63 @@ async function verComprovanteComissao(comissaoId) {
       if (ev.target === overlay) fechar();
     });
     overlay.querySelector(".modal-close")?.addEventListener("click", fechar);
+
+    if (isPdf) {
+      setTimeout(async () => {
+        const el = document.getElementById(pdfContainerId);
+        if (!el) return;
+        try {
+          await renderPdfComoImagemRevendedor(blob, el);
+        } catch {
+          el.innerHTML = `<div style="color:#e2e8f0; opacity:.9; padding:14px;">Nao foi possivel renderizar o PDF aqui.</div>`;
+        }
+      }, 0);
+    }
   } catch (e) {
     alert(e.message || "Erro ao baixar comprovante.");
   }
+}
+
+async function carregarPdfJsSePrecisoRevendedor() {
+  if (window.pdfjsLib && window.pdfjsLib.getDocument) return window.pdfjsLib;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js";
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("Falha ao carregar PDF.js"));
+    document.head.appendChild(s);
+  });
+  const lib = window.pdfjsLib;
+  if (!lib || !lib.getDocument) throw new Error("PDF.js indisponivel");
+  lib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  return lib;
+}
+
+async function renderPdfComoImagemRevendedor(pdfBlob, containerEl) {
+  const pdfjs = await carregarPdfJsSePrecisoRevendedor();
+  const buf = await pdfBlob.arrayBuffer();
+  const doc = await pdfjs.getDocument({ data: buf }).promise;
+  const page = await doc.getPage(1);
+
+  const viewport1 = page.getViewport({ scale: 1 });
+  const maxW = Math.max(320, Math.min(1100, containerEl.clientWidth - 24));
+  const scale = maxW / viewport1.width;
+  const viewport = page.getViewport({ scale });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.floor(viewport.width);
+  canvas.height = Math.floor(viewport.height);
+  canvas.style.width = "100%";
+  canvas.style.height = "auto";
+  canvas.style.maxWidth = "1100px";
+  canvas.style.borderRadius = "10px";
+  canvas.style.background = "#fff";
+
+  containerEl.innerHTML = "";
+  containerEl.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d", { alpha: false });
+  await page.render({ canvasContext: ctx, viewport }).promise;
 }
 
 function sairRevendedor() {
