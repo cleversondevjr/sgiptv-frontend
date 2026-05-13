@@ -501,6 +501,10 @@ function criarModalBasico({ titulo, corpoHtml, onConfirmText = "Confirmar", onCo
 
 function abrirPagarComissao(revendedorId, pendenteValorTexto, pixCpf) {
   const valor = String(pendenteValorTexto || "").trim();
+  const desc = `SG IPTV - Comissao revendedor ${revendedorId} - ${new Date().toLocaleDateString("pt-BR")}`;
+  const pixJson = JSON.stringify(String(pixCpf || ""));
+  const valorJson = JSON.stringify(`R$ ${valor || "0,00"}`);
+  const descJson = JSON.stringify(desc);
   criarModalBasico({
     titulo: "Marcar Comissao Como Paga",
     corpoHtml: `
@@ -508,6 +512,12 @@ function abrirPagarComissao(revendedorId, pendenteValorTexto, pixCpf) {
         <div><strong>Revendedor ID:</strong> ${escaparHtml(String(revendedorId))}</div>
         <div><strong>Chave PIX/CPF:</strong> ${escaparHtml(String(pixCpf || "-"))}</div>
         <div><strong>Valor pendente:</strong> R$ ${escaparHtml(valor || "0,00")}</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" class="admin-btn-secondary" onclick="copiarTexto(${pixJson}, 'Chave PIX copiada')">Copiar chave</button>
+          <button type="button" class="admin-btn-secondary" onclick="copiarTexto(${valorJson}, 'Valor copiado')">Copiar valor</button>
+          <button type="button" class="admin-btn-secondary" onclick="copiarTexto(${descJson}, 'Descricao copiada')">Copiar descricao</button>
+          <a class="admin-btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;" href="https://www.mercadopago.com.br/" target="_blank" rel="noreferrer">Abrir Mercado Pago</a>
+        </div>
         <label>Comprovante/ID transacao (opcional)<br>
           <input id="mpTransacaoId" class="admin-input" placeholder="Ex.: TX123, comprovante, etc" />
         </label>
@@ -532,6 +542,10 @@ function abrirPagarComissao(revendedorId, pendenteValorTexto, pixCpf) {
 }
 
 function abrirPagarBonus(revendedorId, bonusMes, bonusPago, bonusPendente, pixCpf) {
+  const desc = `SG IPTV - Bonus revendedor ${revendedorId} - ${new Date().toLocaleDateString("pt-BR")}`;
+  const pixJson = JSON.stringify(String(pixCpf || ""));
+  const valorJson = JSON.stringify(String(formatarDinheiro(bonusPendente || 0)));
+  const descJson = JSON.stringify(desc);
   criarModalBasico({
     titulo: "Marcar Bonus Como Pago",
     corpoHtml: `
@@ -541,6 +555,12 @@ function abrirPagarBonus(revendedorId, bonusMes, bonusPago, bonusPendente, pixCp
         <div><strong>Bonus do mes:</strong> ${formatarDinheiro(bonusMes || 0)}</div>
         <div><strong>Bonus ja pago no mes:</strong> ${formatarDinheiro(bonusPago || 0)}</div>
         <div><strong>Bonus pendente:</strong> ${formatarDinheiro(bonusPendente || 0)}</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" class="admin-btn-secondary" onclick="copiarTexto(${pixJson}, 'Chave PIX copiada')">Copiar chave</button>
+          <button type="button" class="admin-btn-secondary" onclick="copiarTexto(${valorJson}, 'Valor copiado')">Copiar valor</button>
+          <button type="button" class="admin-btn-secondary" onclick="copiarTexto(${descJson}, 'Descricao copiada')">Copiar descricao</button>
+          <a class="admin-btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;" href="https://www.mercadopago.com.br/" target="_blank" rel="noreferrer">Abrir Mercado Pago</a>
+        </div>
         <label>Comprovante/ID transacao (opcional)<br>
           <input id="mpBonusTransacaoId" class="admin-input" placeholder="Ex.: TX123, comprovante, etc" />
         </label>
@@ -562,6 +582,36 @@ function abrirPagarBonus(revendedorId, bonusMes, bonusPago, bonusPendente, pixCp
       await carregarRevendedores();
     }
   });
+}
+
+async function copiarTexto(texto, msgOk) {
+  const t = String(texto || "");
+  if (!t) return;
+  try {
+    await navigator.clipboard.writeText(t);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = t;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  }
+
+  const box = document.getElementById("adminModalMsg");
+  if (box && msgOk) {
+    box.style.color = "#22c55e";
+    box.textContent = msgOk;
+    setTimeout(() => {
+      if (box.textContent === msgOk) {
+        box.textContent = "";
+        box.style.color = "#ef4444";
+      }
+    }, 2000);
+  }
 }
 
 function mostrarInfoComissoesRevendedor() {
