@@ -24,14 +24,19 @@ function formatarDinheiro(valor) {
 }
 
 function getTokenRevendedor() {
-  return localStorage.getItem("rev_token");
+  // Padrao atual: "revendedor_token". Compat: builds antigos usavam "rev_token".
+  return localStorage.getItem("revendedor_token") || localStorage.getItem("rev_token");
 }
 
 function setTokenRevendedor(token) {
-  if (token) localStorage.setItem("rev_token", token);
+  if (!token) return;
+  // Mantem ambas as chaves para compatibilidade.
+  localStorage.setItem("revendedor_token", token);
+  localStorage.setItem("rev_token", token);
 }
 
 function limparTokenRevendedor() {
+  localStorage.removeItem("revendedor_token");
   localStorage.removeItem("rev_token");
 }
 
