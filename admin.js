@@ -341,15 +341,20 @@ async function carregarClientesDoRevendedor(id) {
 
     const linhasHistBonus = histBonus.length === 0
       ? `<tr><td colspan="5">Sem bonus pago.</td></tr>`
-      : histBonus.slice(0, 12).map((b) => `
-          <tr>
-            <td>${escaparHtml(String(b.mes || "-").slice(0, 10))}</td>
-            <td>${escaparHtml(b.status || "-")}</td>
-            <td>${formatarDinheiro(b.valor)}</td>
-            <td>${escaparHtml(String(b.transacao_id || "-"))}</td>
-            <td>${escaparHtml(String(b.comprovante_nome || "-"))}</td>
-          </tr>
-        `).join("");
+      : histBonus.slice(0, 12).map((b) => {
+          const btn = (b.comprovante_nome && b.comprovante_nome !== "-" && b.id)
+            ? `<button type="button" class="btn-sm" onclick="verComprovanteBonusAdmin(${Number(b.id)})">Ver comprovante</button>`
+            : "";
+          return `
+            <tr>
+              <td>${escaparHtml(String(b.mes || "-").slice(0, 10))}</td>
+              <td>${escaparHtml(b.status || "-")}</td>
+              <td>${formatarDinheiro(b.valor)}</td>
+              <td>${escaparHtml(String(b.transacao_id || "-"))}</td>
+              <td>${btn} ${escaparHtml(String(b.comprovante_nome || "-"))}</td>
+            </tr>
+          `;
+        }).join("");
 
     const blocoHistorico = `
       <div style="padding: 10px 0 6px 0;">
@@ -907,6 +912,74 @@ async function renderPdfComoImagem(pdfBlob, containerEl) {
 
   const ctx = canvas.getContext("2d", { alpha: false });
   await page.render({ canvasContext: ctx, viewport }).promise;
+}
+
+async function verComprovanteBonusAdmin(bonusId) {
+  try {
+    const token = "Bearer " + (localStorage.getItem("admin_token") || "");
+    if (token === "Bearer ") throw new Error("Token admin ausente.");
+
+    const res = await fetch(`${API}/admin/bonus/${bonusId}/comprovante`, {
+      headers: { Authorization: token }
+    });
+    const err = !res.ok ? await res.json().catch(() => ({})) : null;
+    if (!res.ok) throw new Error(err?.error || "Nao foi possivel abrir o comprovante.");
+
+    const blob = await res.blob();
+    const dispo = res.headers.get("content-disposition") || "";
+    const match = dispo.match(/filename=\"?([^\";]+)\"?/i);
+    const filename = match ? match[1] : `bonus-${bonusId}.pdf`;
+
+    const url = window.URL.createObjectURL(blob);
+    const isImage = /^image\//i.test(blob.type || "");
+    const isPdf = /pdf/i.test(blob.type || "") || String(filename).toLowerCase().endsWith(".pdf");
+    const pdfContainerId = `pdfViewerB_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+
+    const viewer = isImage
+      ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
+      : isPdf
+        ? `<div id="${pdfContainerId}" style="width:100%; height:78vh; border-radius:10px; background:#0b1220; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:12px;"></div>`
+        : `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
+
+    criarModalBasico({
+      titulo: "Comprovante (Bonus)",
+      corpoHtml: `
+        <div style="margin-bottom:10px;">
+          <div style="opacity:.9; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ${escaparHtml(filename)}
+          </div>
+        </div>
+        ${viewer}
+      `,
+      onConfirmText: "Fechar",
+      onConfirm: () => {}
+    });
+
+    setTimeout(() => {
+      const modal = document.getElementById("adminModalBase");
+      const card = modal ? modal.querySelector(".admin-modal") : null;
+      if (card) {
+        card.style.maxWidth = "1200px";
+        card.style.width = "min(1200px, 96vw)";
+      }
+    }, 0);
+
+    if (isPdf) {
+      setTimeout(async () => {
+        const el = document.getElementById(pdfContainerId);
+        if (!el) return;
+        try {
+          await renderPdfComoImagem(blob, el);
+        } catch {
+          el.innerHTML = `<div style="color:#e2e8f0; opacity:.9; padding:14px;">Nao foi possivel renderizar o PDF aqui. Tente novamente.</div>`;
+        }
+      }, 0);
+    }
+
+    setTimeout(() => window.URL.revokeObjectURL(url), 5 * 60_000);
+  } catch (e) {
+    alert(e.message || "Erro ao abrir comprovante.");
+  }
 }
 
 function mostrarInfoComissoesRevendedor() {

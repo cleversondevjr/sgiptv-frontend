@@ -226,6 +226,35 @@ async function carregarRevendedor() {
 
     const html = `${linhasPendentes}${linhasPagas}`;
     lista.innerHTML = html || `<tr><td colspan="6">Nenhuma comissao ainda.</td></tr>`;
+
+    // Bonus
+    const listaBonus = document.getElementById("revListaBonus");
+    if (listaBonus) {
+      listaBonus.innerHTML = `<tr><td colspan="5">Carregando...</td></tr>`;
+      const resB = await fetch(`${API}/revendedor/bonus`, { headers: { Authorization: token } });
+      const dataB = await resB.json().catch(() => ({}));
+      if (!resB.ok) throw new Error(dataB.error || "Erro ao carregar bonus.");
+
+      const bonus = Array.isArray(dataB.bonus) ? dataB.bonus : [];
+      if (bonus.length === 0) {
+        listaBonus.innerHTML = `<tr><td colspan="5">Sem bonus pago.</td></tr>`;
+      } else {
+        listaBonus.innerHTML = bonus.slice(0, 24).map((b) => {
+          const btn = (b.comprovante_nome && b.comprovante_nome !== "-" && b.id)
+            ? `<button type="button" class="btn-sm" onclick="verComprovanteBonus(${Number(b.id)})">Ver comprovante</button>`
+            : "";
+          return `
+            <tr>
+              <td>${escaparHtml(String(b.mes || "-").slice(0, 10))}</td>
+              <td>${escaparHtml(b.status || "-")}</td>
+              <td><strong>${formatarDinheiro(b.valor)}</strong></td>
+              <td>${escaparHtml(String(b.transacao_id || "-"))}</td>
+              <td>${btn} ${escaparHtml(String(b.comprovante_nome || "-"))}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
   } catch (e) {
     limparTokenRevendedor();
   }
@@ -300,6 +329,78 @@ async function verComprovanteComissao(comissaoId) {
     }
   } catch (e) {
     alert(e.message || "Erro ao baixar comprovante.");
+  }
+}
+
+async function verComprovanteBonus(bonusId) {
+  const token = getTokenRevendedor();
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/revendedor/bonus/${bonusId}/comprovante`, {
+      headers: { Authorization: token }
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Nao foi possivel abrir o comprovante.");
+    }
+
+    const blob = await res.blob();
+    const dispo = res.headers.get("content-disposition") || "";
+    const match = dispo.match(/filename=\"?([^\";]+)\"?/i);
+    const filename = match ? match[1] : `bonus-${bonusId}.pdf`;
+
+    const url = window.URL.createObjectURL(blob);
+    const isImage = /^image\//i.test(blob.type || "");
+    const isPdf = /pdf/i.test(blob.type || "") || String(filename).toLowerCase().endsWith(".pdf");
+    const pdfContainerId = `revPdfViewerB_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+
+    const viewer = isImage
+      ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
+      : isPdf
+        ? `<div id="${pdfContainerId}" style="width:100%; height:78vh; border-radius:10px; background:#0b1220; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:12px;"></div>`
+        : `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
+
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.style.display = "flex";
+    overlay.innerHTML = `
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Comprovante" style="max-width: 1250px; width: min(1250px, 96vw);">
+        <div class="modal-top">
+          <div class="modal-title">Comprovante (Bonus)</div>
+          <button class="modal-close" type="button" aria-label="Fechar">X</button>
+        </div>
+        <div style="margin: 10px 0;">
+          <div style="opacity:.9; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ${escaparHtml(filename)}
+          </div>
+        </div>
+        ${viewer}
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const fechar = () => {
+      overlay.remove();
+      setTimeout(() => window.URL.revokeObjectURL(url), 0);
+    };
+    overlay.addEventListener("click", (ev) => {
+      if (ev.target === overlay) fechar();
+    });
+    overlay.querySelector(".modal-close")?.addEventListener("click", fechar);
+
+    if (isPdf) {
+      setTimeout(async () => {
+        const el = document.getElementById(pdfContainerId);
+        if (!el) return;
+        try {
+          await renderPdfComoImagemRevendedor(blob, el);
+        } catch {
+          el.innerHTML = `<div style="color:#e2e8f0; opacity:.9; padding:14px;">Nao foi possivel renderizar o PDF aqui.</div>`;
+        }
+      }, 0);
+    }
+  } catch (e) {
+    alert(e.message || "Erro ao abrir comprovante.");
   }
 }
 
