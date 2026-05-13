@@ -144,20 +144,119 @@ async function carregarRevendedor() {
 
     const itens = Array.isArray(data2.comissoes) ? data2.comissoes : [];
     if (itens.length === 0) {
-      lista.innerHTML = `<tr><td colspan="4">Nenhuma comissao ainda.</td></tr>`;
+      lista.innerHTML = `<tr><td colspan="6">Nenhuma comissao ainda.</td></tr>`;
       return;
     }
 
-    lista.innerHTML = itens.map((c) => `
-      <tr>
-        <td>${escaparHtml(formatarData(c.criado_em))}</td>
-        <td>${escaparHtml(c.tipo)}</td>
-        <td><strong>${formatarDinheiro(c.valor)}</strong></td>
-        <td>${escaparHtml(c.status)}</td>
-      </tr>
-    `).join("");
+    // Agrupa comissoes pagas por (transacao_id + comprovante) para aparecer 1 linha por comprovante.
+    // As pendentes ficam 1 por linha (ainda nao tem comprovante).
+    const pendentes = itens.filter((c) => c.status !== "pago");
+    const pagas = itens.filter((c) => c.status === "pago");
+
+    const pagasAgrupadas = (() => {
+      const map = new Map();
+      for (const c of pagas) {
+        const transacaoId = c && c.transacao_id ? String(c.transacao_id) : "-";
+        const comprovante = c && c.comprovante_nome ? String(c.comprovante_nome) : "-";
+        const key = `${transacaoId}||${comprovante}`;
+        const atual = map.get(key) || {
+          pago_em: c.pago_em || c.criado_em,
+          status: c.status || "pago",
+          transacao_id: transacaoId,
+          comprovante_nome: comprovante,
+          total: 0,
+          total_primeira: 0,
+          total_renovacao: 0,
+          // usamos um id do grupo para baixar comprovante
+          any_id: c.id,
+        };
+
+        const v = Number(c.valor) || 0;
+        atual.total += v;
+        if (c.tipo === "primeira_compra") atual.total_primeira += v;
+        else if (c.tipo === "renovacao") atual.total_renovacao += v;
+
+        const tsAtual = new Date(atual.pago_em || 0).getTime();
+        const tsNovo = new Date(c.pago_em || c.criado_em || 0).getTime();
+        if (Number.isFinite(tsNovo) && (!Number.isFinite(tsAtual) || tsNovo > tsAtual)) {
+          atual.pago_em = c.pago_em || c.criado_em;
+        }
+
+        map.set(key, atual);
+      }
+      const arr = Array.from(map.values());
+      arr.sort((a, b) => new Date(b.pago_em || 0).getTime() - new Date(a.pago_em || 0).getTime());
+      return arr;
+    })();
+
+    const linhasPendentes = pendentes.map((c) => {
+      const tipo = c.tipo === "primeira_compra" ? "primeira_compra" : (c.tipo || "-");
+      return `
+        <tr>
+          <td>${escaparHtml(formatarData(c.criado_em))}</td>
+          <td>${escaparHtml(tipo)}</td>
+          <td><strong>${formatarDinheiro(c.valor)}</strong></td>
+          <td>${escaparHtml(c.status || "-")}</td>
+          <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
+          <td>-</td>
+        </tr>
+      `;
+    }).join("");
+
+    const linhasPagas = pagasAgrupadas.map((c) => {
+      const parts = [];
+      if (c.total_primeira > 0) parts.push(`Primeira venda: ${formatarDinheiro(c.total_primeira)}`);
+      if (c.total_renovacao > 0) parts.push(`Renovacao: ${formatarDinheiro(c.total_renovacao)}`);
+      const tipoResumo = parts.length ? parts.join(" | ") : "-";
+      const btnComprovante = (c.comprovante_nome && c.comprovante_nome !== "-")
+        ? `<button type="button" class="btn-sm" onclick="baixarComprovanteComissao(${Number(c.any_id)})">Baixar</button>`
+        : "-";
+
+      return `
+        <tr>
+          <td>${escaparHtml(formatarData(c.pago_em))}</td>
+          <td>${escaparHtml(tipoResumo)}</td>
+          <td><strong>${formatarDinheiro(c.total)}</strong></td>
+          <td>${escaparHtml(c.status || "pago")}</td>
+          <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
+          <td>${escaparHtml(String(c.comprovante_nome || "-"))} ${btnComprovante}</td>
+        </tr>
+      `;
+    }).join("");
+
+    const html = `${linhasPendentes}${linhasPagas}`;
+    lista.innerHTML = html || `<tr><td colspan="6">Nenhuma comissao ainda.</td></tr>`;
   } catch (e) {
     limparTokenRevendedor();
+  }
+}
+
+async function baixarComprovanteComissao(comissaoId) {
+  const token = getTokenRevendedor();
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/revendedor/comissoes/${comissaoId}/comprovante`, {
+      headers: { Authorization: token }
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Nao foi possivel baixar o comprovante.");
+    }
+    const blob = await res.blob();
+    const dispo = res.headers.get("content-disposition") || "";
+    const match = dispo.match(/filename=\"?([^\";]+)\"?/i);
+    const filename = match ? match[1] : `comprovante-${comissaoId}.pdf`;
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (e) {
+    alert(e.message || "Erro ao baixar comprovante.");
   }
 }
 
