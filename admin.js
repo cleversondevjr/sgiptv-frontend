@@ -602,17 +602,27 @@ async function copiarTexto(texto, msgOk) {
   const t = String(texto || "");
   if (!t) return;
   try {
+    // Ajuda o Chrome a liberar a area de transferencia quando o modal/aba perdeu foco.
+    window.focus?.();
+    document.body?.focus?.();
     await navigator.clipboard.writeText(t);
   } catch {
-    const ta = document.createElement("textarea");
-    ta.value = t;
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = t;
+      ta.setAttribute("readonly", "readonly");
+      ta.style.position = "fixed";
+      ta.style.top = "0";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch {
+      // Ultimo fallback: abre prompt com o texto para o usuario copiar manualmente.
+      window.prompt("Copie o texto abaixo:", t);
+    }
   }
 
   const box = document.getElementById("adminModalMsg");
