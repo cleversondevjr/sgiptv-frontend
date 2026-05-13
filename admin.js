@@ -456,6 +456,10 @@ function criarModalBasico({ titulo, corpoHtml, onConfirmText = "Confirmar", onCo
             <input type="checkbox" id="adminModalConfirmCheck" />
             Confirmo esta acao
           </label>
+          <label class="admin-modal-check">
+            <input type="checkbox" id="adminModalNotifyCheck" checked />
+            Enviar email ao revendedor
+          </label>
           <div class="admin-modal-actions">
             <button type="button" class="admin-btn-secondary" id="adminModalCancelBtn">Cancelar</button>
             <button type="button" class="admin-btn-primary" id="adminModalOkBtn">${onConfirmText}</button>
@@ -476,6 +480,7 @@ function criarModalBasico({ titulo, corpoHtml, onConfirmText = "Confirmar", onCo
   modal.querySelector(".admin-modal-title").textContent = titulo || "Confirmar";
   modal.querySelector(".admin-modal-body").innerHTML = corpoHtml || "";
   modal.querySelector("#adminModalConfirmCheck").checked = false;
+  modal.querySelector("#adminModalNotifyCheck").checked = true;
   modal.querySelector("#adminModalMsg").textContent = "";
 
   const okBtn = modal.querySelector("#adminModalOkBtn");
@@ -529,10 +534,11 @@ function abrirPagarComissao(revendedorId, pendenteValorTexto, pixCpf) {
       const token = verificarAdminLogado();
       if (!token) throw new Error("Admin nao logado.");
       const transacao_id = document.getElementById("mpTransacaoId")?.value?.trim() || null;
+      const notificar = !!document.getElementById("adminModalNotifyCheck")?.checked;
       const res = await fetch(`${API}/revendedores/${revendedorId}/comissoes/pagar`, {
         method: "POST",
         headers: { Authorization: token, "Content-Type": "application/json" },
-        body: JSON.stringify({ transacao_id })
+        body: JSON.stringify({ transacao_id, notificar })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Erro ao marcar comissao.");
@@ -572,10 +578,11 @@ function abrirPagarBonus(revendedorId, bonusMes, bonusPago, bonusPendente, pixCp
       const token = verificarAdminLogado();
       if (!token) throw new Error("Admin nao logado.");
       const transacao_id = document.getElementById("mpBonusTransacaoId")?.value?.trim() || null;
+      const notificar = !!document.getElementById("adminModalNotifyCheck")?.checked;
       const res = await fetch(`${API}/revendedores/${revendedorId}/bonus/pagar`, {
         method: "POST",
         headers: { Authorization: token, "Content-Type": "application/json" },
-        body: JSON.stringify({ transacao_id })
+        body: JSON.stringify({ transacao_id, notificar })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Erro ao marcar bonus.");
