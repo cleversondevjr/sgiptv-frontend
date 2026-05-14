@@ -387,8 +387,8 @@ async function carregarClientesDoRevendedor(id) {
           const dataRef = b.pago_em || b.criado_em || b.mes || "-";
           return `
             <tr>
-              <td>${escaparHtml(b.status || "-")}</td>
               <td>${escaparHtml(formatarData(dataRef))}</td>
+              <td>${escaparHtml(b.status || "-")}</td>
               <td>${escaparHtml("Bonus")}</td>
               <td>${formatarDinheiro(b.valor)}</td>
               <td>${escaparHtml(String(b.transacao_id || "-"))}</td>
@@ -426,8 +426,8 @@ async function carregarClientesDoRevendedor(id) {
           <table>
             <thead>
               <tr>
-                <th>Status</th>
                 <th>Data</th>
+                <th>Status</th>
                 <th>Tipo</th>
                 <th>Valor</th>
                 <th>ID/Ref</th>

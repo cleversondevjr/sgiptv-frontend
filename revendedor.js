@@ -220,14 +220,14 @@ async function carregarRevendedor() {
       return `
         <tr>
           <td>${escaparHtml(formatarData(c.pago_em))}</td>
+          <td>${escaparHtml(c.status || "pago")}</td>
           <td>${escaparHtml(tipoResumo)}</td>
           <td><strong>${formatarDinheiro(c.total)}</strong></td>
-          <td>${escaparHtml(c.status || "pago")}</td>
           <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
           <td>
             <div class="comprovante-cell">
-              <span class="comprovante-name">${escaparHtml(String(c.comprovante_nome || "-"))}</span>
               ${btnComprovante === "-" ? "" : btnComprovante}
+              <span class="comprovante-name">${escaparHtml(String(c.comprovante_nome || "-"))}</span>
             </div>
           </td>
         </tr>
@@ -256,8 +256,8 @@ async function carregarRevendedor() {
           const dataRef = b.pago_em || b.criado_em || b.mes || "-";
           return `
             <tr>
-              <td>${escaparHtml(b.status || "-")}</td>
               <td>${escaparHtml(formatarData(dataRef))}</td>
+              <td>${escaparHtml(b.status || "-")}</td>
               <td>${escaparHtml("Bonus")}</td>
               <td><strong>${formatarDinheiro(b.valor)}</strong></td>
               <td>${escaparHtml(String(b.transacao_id || "-"))}</td>
