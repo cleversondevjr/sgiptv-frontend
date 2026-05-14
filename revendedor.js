@@ -431,8 +431,11 @@ async function renderPdfComoImagemRevendedor(pdfBlob, containerEl) {
   const page = await doc.getPage(1);
 
   const viewport1 = page.getViewport({ scale: 1 });
-  const maxW = Math.max(320, Math.min(1100, containerEl.clientWidth - 24));
-  const scale = maxW / viewport1.width;
+  const maxW = Math.max(320, Math.min(1200, (containerEl.clientWidth || 0) - 24));
+  const maxH = Math.max(240, (containerEl.clientHeight || window.innerHeight * 0.78) - 24);
+  const scaleW = maxW / viewport1.width;
+  const scaleH = maxH / viewport1.height;
+  const scale = Math.max(0.1, Math.min(scaleW, scaleH));
   const viewport = page.getViewport({ scale });
 
   const canvas = document.createElement("canvas");
@@ -440,7 +443,7 @@ async function renderPdfComoImagemRevendedor(pdfBlob, containerEl) {
   canvas.height = Math.floor(viewport.height);
   canvas.style.width = "100%";
   canvas.style.height = "auto";
-  canvas.style.maxWidth = "1100px";
+  canvas.style.maxWidth = "1200px";
   canvas.style.borderRadius = "10px";
   canvas.style.background = "#fff";
 

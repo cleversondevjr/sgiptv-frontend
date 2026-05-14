@@ -228,24 +228,30 @@ async function carregarClientesDoRevendedor(id) {
   box.innerHTML = `<td colspan="6"><div style="padding:12px;">Carregando...</div></td>`;
 
   try {
-    const [resClientes, resComissoes] = await Promise.all([
+    const [resClientes, resComissoes, resHistorico] = await Promise.all([
       fetch(`${API}/revendedores/${id}/clientes`, { headers: { Authorization: token } }),
-      fetch(`${API}/revendedores/${id}/comissoes`, { headers: { Authorization: token } })
+      fetch(`${API}/revendedores/${id}/comissoes`, { headers: { Authorization: token } }),
+      fetch(`${API}/revendedores/${id}/historico`, { headers: { Authorization: token } })
     ]);
 
     const dataClientes = await resClientes.json();
     const dataComissoes = await resComissoes.json();
+    const dataHistorico = await resHistorico.json();
 
     if (!resClientes.ok) throw new Error(dataClientes.error || "Erro ao carregar clientes.");
     if (!resComissoes.ok) throw new Error(dataComissoes.error || "Erro ao carregar comissoes.");
+    if (!resHistorico.ok) throw new Error(dataHistorico.error || "Erro ao carregar historico.");
 
     const clientes = Array.isArray(dataClientes.clientes) ? dataClientes.clientes : [];
     const comissoes = Array.isArray(dataComissoes.comissoes) ? dataComissoes.comissoes : [];
 
-    // Historico: usa a propria lista de comissoes (ja vem com status) para nao depender de outro endpoint.
-    // Bonus historico ainda depende do endpoint (quando existir); por enquanto mantemos vazio aqui.
-    const histCom = comissoes.filter(c => String(c.status || "").toLowerCase() === "pago");
-    const histBonus = [];
+    // Historico: usamos o endpoint /historico (comissoes + bonus) para exibir tambem bonus pagos.
+    const histCom = Array.isArray(dataHistorico.comissoes)
+      ? dataHistorico.comissoes.filter(c => String(c.status || "").toLowerCase() === "pago")
+      : comissoes.filter(c => String(c.status || "").toLowerCase() === "pago");
+    const histBonus = Array.isArray(dataHistorico.bonus)
+      ? dataHistorico.bonus.filter(b => String(b.status || "").toLowerCase() === "pago")
+      : [];
 
     const comissoesPendentes = comissoes.filter(c => String(c.status || "").toLowerCase() === "pendente");
 
@@ -920,10 +926,13 @@ async function renderPdfComoImagem(pdfBlob, containerEl) {
   const doc = await pdfjs.getDocument({ data: buf }).promise;
   const page = await doc.getPage(1);
 
-  // Render no tamanho do container
+  // Render ajustando para caber (largura e altura) no container visivel.
   const viewport1 = page.getViewport({ scale: 1 });
-  const maxW = Math.max(320, Math.min(1100, containerEl.clientWidth - 24));
-  const scale = maxW / viewport1.width;
+  const maxW = Math.max(320, Math.min(1200, (containerEl.clientWidth || 0) - 24));
+  const maxH = Math.max(240, (containerEl.clientHeight || window.innerHeight * 0.78) - 24);
+  const scaleW = maxW / viewport1.width;
+  const scaleH = maxH / viewport1.height;
+  const scale = Math.max(0.1, Math.min(scaleW, scaleH));
   const viewport = page.getViewport({ scale });
 
   const canvas = document.createElement("canvas");
@@ -931,7 +940,7 @@ async function renderPdfComoImagem(pdfBlob, containerEl) {
   canvas.height = Math.floor(viewport.height);
   canvas.style.width = "100%";
   canvas.style.height = "auto";
-  canvas.style.maxWidth = "1100px";
+  canvas.style.maxWidth = "1200px";
   canvas.style.borderRadius = "10px";
   canvas.style.background = "#fff";
 
