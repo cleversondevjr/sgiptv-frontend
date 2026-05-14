@@ -224,7 +224,12 @@ async function carregarRevendedor() {
           <td><strong>${formatarDinheiro(c.total)}</strong></td>
           <td>${escaparHtml(c.status || "pago")}</td>
           <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
-          <td>${escaparHtml(String(c.comprovante_nome || "-"))} ${btnComprovante}</td>
+          <td>
+            <div class="comprovante-cell">
+              <span class="comprovante-name">${escaparHtml(String(c.comprovante_nome || "-"))}</span>
+              ${btnComprovante === "-" ? "" : btnComprovante}
+            </div>
+          </td>
         </tr>
       `;
     }).join("");
@@ -235,26 +240,33 @@ async function carregarRevendedor() {
     // Bonus
     const listaBonus = document.getElementById("revListaBonus");
     if (listaBonus) {
-      listaBonus.innerHTML = `<tr><td colspan="5">Carregando...</td></tr>`;
+      listaBonus.innerHTML = `<tr><td colspan="6">Carregando...</td></tr>`;
       const resB = await fetch(`${API}/revendedor/bonus`, { headers: { Authorization: token } });
       const dataB = await resB.json().catch(() => ({}));
       if (!resB.ok) throw new Error(dataB.error || "Erro ao carregar bonus.");
 
       const bonus = Array.isArray(dataB.bonus) ? dataB.bonus : [];
       if (bonus.length === 0) {
-        listaBonus.innerHTML = `<tr><td colspan="5">Sem bonus pago.</td></tr>`;
+        listaBonus.innerHTML = `<tr><td colspan="6">Sem bonus pago.</td></tr>`;
       } else {
         listaBonus.innerHTML = bonus.slice(0, 24).map((b) => {
           const btn = (b.comprovante_nome && b.comprovante_nome !== "-" && b.id)
             ? `<button type="button" class="btn-sm" onclick="verComprovanteBonus(${Number(b.id)})">Ver comprovante</button>`
             : "";
+          const dataRef = b.pago_em || b.criado_em || b.mes || "-";
           return `
             <tr>
-              <td>${escaparHtml(String(b.mes || "-").slice(0, 10))}</td>
               <td>${escaparHtml(b.status || "-")}</td>
+              <td>${escaparHtml(formatarData(dataRef))}</td>
+              <td>${escaparHtml("Bonus")}</td>
               <td><strong>${formatarDinheiro(b.valor)}</strong></td>
               <td>${escaparHtml(String(b.transacao_id || "-"))}</td>
-              <td>${btn} ${escaparHtml(String(b.comprovante_nome || "-"))}</td>
+              <td>
+                <div class="comprovante-cell">
+                  ${btn}
+                  <span class="comprovante-name">${escaparHtml(String(b.comprovante_nome || "-"))}</span>
+                </div>
+              </td>
             </tr>
           `;
         }).join("");

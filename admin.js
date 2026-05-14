@@ -368,24 +368,36 @@ async function carregarClientesDoRevendedor(id) {
               <td>${escaparHtml(tipoResumo)}</td>
               <td>${formatarDinheiro(c.total)}</td>
               <td>${escaparHtml(String(c.transacao_id || "-"))}</td>
-              <td>${btn} ${escaparHtml(String(c.comprovante_nome || "-"))}</td>
+              <td>
+                <div class="comprovante-cell">
+                  ${btn}
+                  <span class="comprovante-name">${escaparHtml(String(c.comprovante_nome || "-"))}</span>
+                </div>
+              </td>
             </tr>
           `;
         }).join("");
 
     const linhasHistBonus = histBonus.length === 0
-      ? `<tr><td colspan="5">Sem bonus pago.</td></tr>`
+      ? `<tr><td colspan="6">Sem bonus pago.</td></tr>`
       : histBonus.slice(0, 12).map((b) => {
           const btn = (b.comprovante_nome && b.comprovante_nome !== "-" && b.id)
             ? `<button type="button" class="btn-sm" onclick="verComprovanteBonusAdmin(${Number(b.id)})">Ver comprovante</button>`
             : "";
+          const dataRef = b.pago_em || b.criado_em || b.mes || "-";
           return `
             <tr>
-              <td>${escaparHtml(String(b.mes || "-").slice(0, 10))}</td>
               <td>${escaparHtml(b.status || "-")}</td>
+              <td>${escaparHtml(formatarData(dataRef))}</td>
+              <td>${escaparHtml("Bonus")}</td>
               <td>${formatarDinheiro(b.valor)}</td>
               <td>${escaparHtml(String(b.transacao_id || "-"))}</td>
-              <td>${btn} ${escaparHtml(String(b.comprovante_nome || "-"))}</td>
+              <td>
+                <div class="comprovante-cell">
+                  ${btn}
+                  <span class="comprovante-name">${escaparHtml(String(b.comprovante_nome || "-"))}</span>
+                </div>
+              </td>
             </tr>
           `;
         }).join("");
@@ -414,8 +426,9 @@ async function carregarClientesDoRevendedor(id) {
           <table>
             <thead>
               <tr>
-                <th>Mes</th>
                 <th>Status</th>
+                <th>Data</th>
+                <th>Tipo</th>
                 <th>Valor</th>
                 <th>ID/Ref</th>
                 <th>Comprovante</th>

@@ -526,6 +526,21 @@ button:hover {
   text-decoration: none;
 }
 
+.comprovante-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.comprovante-name {
+  display: inline-block;
+  max-width: 520px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .erro {
   color: #ef4444;
   margin-top: 15px;
