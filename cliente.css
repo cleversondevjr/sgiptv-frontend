@@ -586,6 +586,47 @@ table {
   table-layout: auto;
 }
 
+.hist-table {
+  table-layout: fixed;
+  min-width: 920px;
+}
+
+.hist-table th:nth-child(1),
+.hist-table td:nth-child(1) {
+  width: 170px;
+}
+
+.hist-table th:nth-child(2),
+.hist-table td:nth-child(2) {
+  width: 100px;
+}
+
+.hist-table th:nth-child(3),
+.hist-table td:nth-child(3) {
+  width: 280px;
+}
+
+.hist-table th:nth-child(4),
+.hist-table td:nth-child(4) {
+  width: 130px;
+}
+
+.hist-table th:nth-child(5),
+.hist-table td:nth-child(5) {
+  width: 190px;
+}
+
+.hist-table th:nth-child(6),
+.hist-table td:nth-child(6) {
+  width: auto;
+}
+
+.hist-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 th,
 td {
   padding: 12px;

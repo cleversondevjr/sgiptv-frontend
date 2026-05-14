@@ -407,7 +407,7 @@ async function carregarClientesDoRevendedor(id) {
         <strong>Historico de pagamentos</strong>
         <div class="tabela-area" style="margin: 8px 0 12px 0;">
           <div style="opacity:.9; font-weight:700; margin: 2px 0 6px 0;">Comissoes</div>
-          <table>
+          <table class="hist-table">
             <thead>
               <tr>
                 <th>Data</th>
@@ -423,7 +423,7 @@ async function carregarClientesDoRevendedor(id) {
         </div>
         <div class="tabela-area" style="margin: 8px 0 12px 0;">
           <div style="opacity:.9; font-weight:700; margin: 2px 0 6px 0;">Bonus</div>
-          <table>
+          <table class="hist-table">
             <thead>
               <tr>
                 <th>Data</th>
