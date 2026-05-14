@@ -853,8 +853,8 @@ async function verComprovanteComissaoAdmin(comissaoId) {
     const viewer = isImage
       ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
       : isPdf
-        ? `<div id="${pdfContainerId}" style="width:100%; height:78vh; border-radius:10px; background:#0b1220; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:12px;"></div>`
-        : `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
+        ? `<div id="${pdfContainerId}" style="width:100%; height:82vh; border-radius:10px; background:#0b1220; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:12px;"></div>`
+        : `<iframe src="${url}" style="width:100%; height:82vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
 
     criarModalBasico({
       titulo: "Comprovante",
@@ -875,8 +875,8 @@ async function verComprovanteComissaoAdmin(comissaoId) {
       const modal = document.getElementById("adminModalBase");
       const card = modal ? modal.querySelector(".admin-modal") : null;
       if (card) {
-        card.style.maxWidth = "1200px";
-        card.style.width = "min(1200px, 96vw)";
+        card.style.maxWidth = "1400px";
+        card.style.width = "min(1400px, 98vw)";
       }
     }, 0);
 
@@ -928,8 +928,8 @@ async function renderPdfComoImagem(pdfBlob, containerEl) {
 
   // Render ajustando para caber (largura e altura) no container visivel.
   const viewport1 = page.getViewport({ scale: 1 });
-  const maxW = Math.max(320, Math.min(1200, (containerEl.clientWidth || 0) - 24));
-  const maxH = Math.max(240, (containerEl.clientHeight || window.innerHeight * 0.78) - 24);
+  const maxW = Math.max(320, Math.min(1400, (containerEl.clientWidth || 0) - 24));
+  const maxH = Math.max(240, (containerEl.clientHeight || window.innerHeight * 0.82) - 24);
   const scaleW = maxW / viewport1.width;
   const scaleH = maxH / viewport1.height;
   const scale = Math.max(0.1, Math.min(scaleW, scaleH));
@@ -938,9 +938,11 @@ async function renderPdfComoImagem(pdfBlob, containerEl) {
   const canvas = document.createElement("canvas");
   canvas.width = Math.floor(viewport.width);
   canvas.height = Math.floor(viewport.height);
-  canvas.style.width = "100%";
-  canvas.style.height = "auto";
-  canvas.style.maxWidth = "1200px";
+  // Nao force 100% width, senao o browser estica e parece "zoomado".
+  canvas.style.width = `${canvas.width}px`;
+  canvas.style.height = `${canvas.height}px`;
+  canvas.style.maxWidth = "100%";
+  canvas.style.maxHeight = "100%";
   canvas.style.borderRadius = "10px";
   canvas.style.background = "#fff";
 
@@ -975,8 +977,8 @@ async function verComprovanteBonusAdmin(bonusId) {
     const viewer = isImage
       ? `<img src="${url}" alt="Comprovante" style="max-width:100%; height:auto; border-radius:10px; display:block; margin:0 auto;" />`
       : isPdf
-        ? `<div id="${pdfContainerId}" style="width:100%; height:78vh; border-radius:10px; background:#0b1220; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:12px;"></div>`
-        : `<iframe src="${url}" style="width:100%; height:78vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
+        ? `<div id="${pdfContainerId}" style="width:100%; height:82vh; border-radius:10px; background:#0b1220; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:12px;"></div>`
+        : `<iframe src="${url}" style="width:100%; height:82vh; border:0; border-radius:10px; background:#0b1220;"></iframe>`;
 
     criarModalBasico({
       titulo: "Comprovante (Bonus)",

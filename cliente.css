@@ -72,7 +72,8 @@ html {
 }
 
 .painel-card {
-  max-width: 980px;
+  /* Mantem o mesmo "tamanho" do painel admin (mais amplo) */
+  max-width: 1680px;
 }
 
 .admin-card {
