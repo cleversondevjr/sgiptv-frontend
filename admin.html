@@ -32,6 +32,7 @@
       <button id="btnTestes" onclick="mostrarSecaoAdmin('testes')">Testes IPTV</button>
       <button id="btnClientes" onclick="mostrarSecaoAdmin('clientes')">Clientes</button>
       <button id="btnRevendedores" onclick="mostrarSecaoAdmin('revendedores')">Revendedores</button>
+      <button id="btnFarm" onclick="mostrarSecaoAdmin('farm')">FARM</button>
       <button onclick="atualizarDadosAdmin()">Atualizar Dados</button>
     </div>
 
@@ -145,6 +146,20 @@
           </thead>
           <tbody id="listaRevendedores"></tbody>
         </table>
+      </div>
+    </section>
+
+    <section id="farm" class="renovar-box admin-section admin-hidden">
+      <h2>FARM</h2>
+      <p style="margin-top:-6px;">Sport Games Fazendinha (acesso administrativo).</p>
+
+      <div class="tabela-area" style="padding:0;">
+        <iframe
+          id="farmFrame"
+          title="Sport Games Fazendinha"
+          src="/farm"
+          style="width:100%; height:78vh; border:1px solid rgba(126,34,206,.55); border-radius:14px; background:#05000f;"
+        ></iframe>
       </div>
     </section>
 

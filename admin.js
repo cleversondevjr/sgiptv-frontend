@@ -145,27 +145,32 @@ function mostrarSecaoAdmin(secao) {
   const testes = document.getElementById("testes");
   const clientes = document.getElementById("clientes");
   const revendedores = document.getElementById("revendedores");
+  const farm = document.getElementById("farm");
   const btnPagamentos = document.getElementById("btnPagamentos");
   const btnTestes = document.getElementById("btnTestes");
   const btnClientes = document.getElementById("btnClientes");
   const btnRevendedores = document.getElementById("btnRevendedores");
+  const btnFarm = document.getElementById("btnFarm");
 
-  if (!pagamentos || !testes || !clientes || !revendedores) return;
-  if (!btnPagamentos || !btnTestes || !btnClientes || !btnRevendedores) return;
+  if (!pagamentos || !testes || !clientes || !revendedores || !farm) return;
+  if (!btnPagamentos || !btnTestes || !btnClientes || !btnRevendedores || !btnFarm) return;
 
   const mostrarPagamentos = secao === "pagamentos";
   const mostrarTestes = secao === "testes";
   const mostrarClientes = secao === "clientes";
   const mostrarRevendedores = secao === "revendedores";
+  const mostrarFarm = secao === "farm";
 
   pagamentos.classList.toggle("admin-hidden", !mostrarPagamentos);
   testes.classList.toggle("admin-hidden", !mostrarTestes);
   clientes.classList.toggle("admin-hidden", !mostrarClientes);
   revendedores.classList.toggle("admin-hidden", !mostrarRevendedores);
+  farm.classList.toggle("admin-hidden", !mostrarFarm);
   btnPagamentos.classList.toggle("nav-active", mostrarPagamentos);
   btnTestes.classList.toggle("nav-active", mostrarTestes);
   btnClientes.classList.toggle("nav-active", mostrarClientes);
   btnRevendedores.classList.toggle("nav-active", mostrarRevendedores);
+  btnFarm.classList.toggle("nav-active", mostrarFarm);
 
   if (mostrarClientes) {
     carregarClientes();
