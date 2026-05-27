@@ -150,33 +150,28 @@
     </section>
 
     <section id="farm" class="renovar-box admin-section admin-hidden">
-        <h2>FARM</h2>
-        <p style="margin-top:-6px;">Fazendinha Online (administracao).</p>
+      <h2>FARM</h2>
+      <p style="margin-top:-6px;">Sport Games Fazendinha (acesso administrativo).</p>
 
-        <div class="admin-nav" style="margin-top: 0;">
-          <button type="button" onclick="abrirFarm()">Abrir Jogo</button>
-          <button type="button" onclick="abrirFarmTerms()">Termos</button>
-          <button type="button" onclick="abrirFarmLogin()">Login</button>
-          <button type="button" onclick="abrirFarmRegister()">Criar conta</button>
-        </div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin: 10px 0 12px;">
+        <a
+          href="/farm/download/fazendinha-online-latest.apk"
+          target="_blank"
+          rel="noopener"
+          style="display:inline-block; padding:10px 14px; border-radius:12px; background:#facc15; color:#0b0018; font-weight:900; text-decoration:none; border:1px solid rgba(0,0,0,.25);"
+        >Baixar APK (teste)</a>
+        <span style="color:rgba(255,255,255,.7); font-size:13px;">APK de testes (somente você). Se der 404, ainda não foi enviado para o servidor.</span>
+      </div>
 
-        <div class="admin-report" style="margin-top: 14px;">
-          <h3>APK</h3>
-          <p style="margin-top:-6px;">Nome do arquivo (precisa existir em <code>/farm/download/</code>).</p>
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px;">
-            <input id="farmApkFile" value="fazendinha-online-latest.apk" style="min-width:280px; padding:10px 12px; border-radius:12px; border:1px solid rgba(126,34,206,.55); background:#05000f; color:#fff; font-weight:900;" />
-            <button type="button" onclick="baixarFarmApk()">Baixar APK</button>
-          </div>
-          <div style="margin-top:10px; color:rgba(255,255,255,.75); font-size:13px;">
-            URL: <code id="farmApkUrl">https://sgiptv.com.br/farm/download/fazendinha-online-latest.apk</code>
-          </div>
-        </div>
-
-        <div class="admin-report" style="margin-top: 14px;">
-          <h3>Em breve</h3>
-          <p style="margin-top:-6px;">Plantas, Loja, Jogadores, Diamantes, Banimentos e Logs (quando conectarmos a API do Farm).</p>
-        </div>
-      </section>
+      <div class="tabela-area" style="padding:0;">
+        <iframe
+          id="farmFrame"
+          title="Sport Games Fazendinha"
+          src="/farm"
+          style="width:100%; height:78vh; border:1px solid rgba(126,34,206,.55); border-radius:14px; background:#05000f;"
+        ></iframe>
+      </div>
+    </section>
 
   </div>
 </div>

@@ -2321,3 +2321,19 @@ function baixarFarmApk() {
   if (box) box.textContent = url;
   window.open(url, "_blank");
 }
+
+// ===== FARM (Fazendinha Online) =====
+function abrirFarm() { window.open("https://sgiptv.com.br/farm/", "_blank"); }
+function abrirFarmTerms() { window.open("https://sgiptv.com.br/farm/terms", "_blank"); }
+function abrirFarmLogin() { window.open("https://sgiptv.com.br/farm/login", "_blank"); }
+function abrirFarmRegister() { window.open("https://sgiptv.com.br/farm/register", "_blank"); }
+
+function baixarFarmApk() {
+  const el = document.getElementById("farmApkFile");
+  const file = (el && el.value ? String(el.value) : "fazendinha-online-latest.apk").trim();
+  const safe = /^[a-z0-9._-]+$/i.test(file) ? file : "fazendinha-online-latest.apk";
+  const url = "https://sgiptv.com.br/farm/download/" + safe;
+  const box = document.getElementById("farmApkUrl");
+  if (box) box.textContent = url;
+  window.open(url, "_blank");
+}
