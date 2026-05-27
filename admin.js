@@ -2313,6 +2313,11 @@ function abrirFarmRegister() {
   window.open("https://sgiptv.com.br/farm/register", "_blank");
 }
 function baixarFarmApk() {
-  const url = "https://sgiptv.com.br/farm/download/fazendinha-online.apk";
+  const el = document.getElementById("farmApkFile");
+  const file = (el && el.value ? String(el.value) : "fazendinha-online.apk").trim();
+  const safe = /^[a-z0-9._-]+i.test(file) ? file : "fazendinha-online.apk";
+  const url = "https://sgiptv.com.br/farm/download/" + safe;
+  const box = document.getElementById("farmApkUrl");
+  if (box) box.textContent = url;
   window.open(url, "_blank");
 }
