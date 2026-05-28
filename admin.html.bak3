@@ -154,7 +154,10 @@
         <p style="margin-top:-6px;">Fazendinha Online (administracao).</p>
 
         <div class="admin-nav" style="margin-top: 0;">
+          <button type="button" onclick="abrirFarm()">Abrir Jogo</button>
+          <button type="button" onclick="abrirFarmTerms()">Termos</button>
           <button type="button" onclick="abrirFarmLogin()">Login</button>
+          <button type="button" onclick="abrirFarmRegister()">Criar conta</button>
         </div>
 
         <div class="admin-report" style="margin-top: 14px;">

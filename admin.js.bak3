@@ -2300,28 +2300,17 @@ window.addEventListener("load", () => {
 });
 
 // ===== FARM (Fazendinha Online) =====
+function abrirFarm() { window.open("https://sgiptv.com.br/farm/", "_blank"); }
+function abrirFarmTerms() { window.open("https://sgiptv.com.br/farm/terms", "_blank"); }
 function abrirFarmLogin() { window.open("https://sgiptv.com.br/farm/login", "_blank"); }
+function abrirFarmRegister() { window.open("https://sgiptv.com.br/farm/register", "_blank"); }
 
 function baixarFarmApk() {
   const el = document.getElementById("farmApkFile");
   const file = (el && el.value ? String(el.value) : "fazendinha-online-latest.apk").trim();
   const safe = /^[a-z0-9._-]+$/i.test(file) ? file : "fazendinha-online-latest.apk";
   const url = "https://sgiptv.com.br/farm/download/" + safe;
-
   const box = document.getElementById("farmApkUrl");
   if (box) box.textContent = url;
-
-  // Verifica se existe antes de abrir (melhor UX)
-  fetch(url, { method: "HEAD", cache: "no-store" })
-    .then((r) => {
-      if (!r.ok) {
-        alert("APK ainda nao esta no servidor (HTTP " + r.status + ").\\n\\nEnvie o arquivo para /farm/download/ com esse nome.");
-        return;
-      }
-      window.open(url, "_blank");
-    })
-    .catch(() => {
-      // fallback: tenta abrir mesmo assim
-      window.open(url, "_blank");
-    });
+  window.open(url, "_blank");
 }
