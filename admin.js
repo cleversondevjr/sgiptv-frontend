@@ -2346,7 +2346,7 @@ async function carregarFarmUsuarios() {
       const safeEmail = escaparHtml(u.email);
       const btn = banido
         ? `<button type="button" onclick="farmUnbanUser(${Number(u.id)})">Desbanir</button>`
-        : `<button type="button" onclick="farmBanUserPrompt(${Number(u.id)}, '${safeLogin.replace(/'/g, \"&#39;\")}')">Banir</button>`;
+        : `<button type="button" onclick="farmBanUserPrompt(${Number(u.id)}, '${safeLogin.replace(/'/g, "&#39;")}')">Banir</button>`;
       return `
         <tr>
           <td>${Number(u.id)}</td>
