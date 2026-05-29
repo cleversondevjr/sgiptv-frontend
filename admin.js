@@ -2339,14 +2339,30 @@ async function carregarFarmUsuarios() {
     const users = Array.isArray(data.users) ? data.users : [];
     const rows = users.map((u) => {
       const banido = Boolean(u.banido_em);
-      const status = banido ? `<span style="color:#ef4444; font-weight:900;">BANIDO</span>` : `<span style="color:#22c55e; font-weight:900;">OK</span>`;
-      const created = u.criado_em ? new Date(u.criado_em).toLocaleString("pt-BR") : "-";
-      const last = u.ultimo_login_em ? new Date(u.ultimo_login_em).toLocaleString("pt-BR") : "-";
-      const safeLogin = escaparHtml(u.login);
-      const safeEmail = escaparHtml(u.email);
-      const btn = banido
-        ? `<button type="button" onclick="farmUnbanUser(${Number(u.id)})">Desbanir</button>`
-        : `<button type="button" onclick="farmBanUserPrompt(${Number(u.id)}, '${safeLogin.replace(/'/g, "&#39;")}')">Banir</button>`;
+        const isAdmin = Boolean(u.is_admin);
+        const online = Boolean(u.online);
+
+        const status = isAdmin
+          ? `<span style="color:#60a5fa; font-weight:900;">ADMIN</span>`
+          : banido
+            ? `<span style="color:#ef4444; font-weight:900;">BANIDO</span>`
+            : online
+              ? `<span style="color:#22c55e; font-weight:900;">ON</span>`
+              : `<span style="color:#94a3b8; font-weight:900;">OFF</span>`;
+
+        const loginRaw = String(u.login || "");
+        const safeLoginJs = loginRaw
+          .replace(/\\/g, "\\\\")
+          .replace(/\r/g, "\\r")
+          .replace(/\n/g, "\\n")
+          .replace(/'/g, "\\'");
+
+        const btn = isAdmin
+          ? `<span style="opacity:.7;">-</span>`
+          : banido
+            ? `<button type="button" onclick="farmUnbanUser(${id})">Desbanir</button>`
+            : `<button type="button" onclick="farmBanUserPrompt(${id}, '${safeLoginJs}')">Banir</button>`;
+")}')">Banir</button>`;
       return `
         <tr>
           <td>${Number(u.id)}</td>
@@ -2397,7 +2413,7 @@ async function farmBanUserPrompt(id, login) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    await carregarFarmUsuarios();
+    await farmRefreshAll();
   } catch (e) {
     alert(e.message || "Erro ao banir");
   }
@@ -2412,7 +2428,7 @@ async function farmUnbanUser(id) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    await carregarFarmUsuarios();
+    await farmRefreshAll();
   } catch (e) {
     alert(e.message || "Erro ao desbanir");
   }
