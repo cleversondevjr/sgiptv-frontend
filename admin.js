@@ -2420,7 +2420,6 @@ async function farmUnbanUser(id) {
 
 
 // ===== FARM Admin (Fazendinha Online) =====
-var FARM_TODAY_ONLY = false;
 
 async function farmFetchJson(url, opts) {
   const res = await fetch(url, Object.assign({ credentials: "include", cache: "no-store" }, (opts || {})));
@@ -2429,11 +2428,24 @@ async function farmFetchJson(url, opts) {
   return data;
 }
 
-function farmToggleToday() {
-  FARM_TODAY_ONLY = !FARM_TODAY_ONLY;
-  const b = document.getElementById("farmBtnToday");
-  if (b) b.textContent = "Criados Hoje: " + (FARM_TODAY_ONLY ? "ON" : "OFF");
-  farmLoadUsers();
+function farmToggleMaintenance() {
+  (async () => {
+    try {
+      const cur = await farmFetchJson("https://sgiptv.com.br/farm/api/admin/maintenance");
+      const enabled = !Boolean(cur.enabled);
+
+      await farmFetchJson("https://sgiptv.com.br/farm/api/admin/maintenance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled })
+      });
+
+      const b = document.getElementById("farmBtnMaintenance");
+      if (b) b.textContent = "Manutencao: " + (enabled ? "ON" : "OFF");
+    } catch (e) {
+      alert(e.message || "Erro ao alternar manutencao");
+    }
+  })();
 }
 
 async function farmRefreshAll() {
@@ -2446,7 +2458,7 @@ async function farmLoadUsers() {
   box.textContent = "Carregando...";
 
   try {
-    const url = "https://sgiptv.com.br/farm/api/admin/users" + (FARM_TODAY_ONLY ? "?today=1" : "");
+    const url = "https://sgiptv.com.br/farm/api/admin/users";
     const data = await farmFetchJson(url);
 
     const users = Array.isArray(data.users) ? data.users : [];
@@ -2667,7 +2679,16 @@ if (_origMostrarSecaoAdmin) {
   mostrarSecaoAdmin = function(secao) {
     _origMostrarSecaoAdmin(secao);
     if (secao === "farm") {
-      farmRefreshAll();
+      farmRefreshAll(); farmSyncMaintenanceButton();
     }
   };
+}
+
+
+async function farmSyncMaintenanceButton() {
+  try {
+    const cur = await farmFetchJson("https://sgiptv.com.br/farm/api/admin/maintenance");
+    const b = document.getElementById("farmBtnMaintenance");
+    if (b) b.textContent = "Manutencao: " + (cur.enabled ? "ON" : "OFF");
+  } catch {}
 }
