@@ -150,39 +150,31 @@
     </section>
 
     <section id="farm" class="renovar-box admin-section admin-hidden">
-        <h2>FARM</h2>
-        <p style="margin-top:-6px;">Fazendinha Online (administracao).</p>
+  <h2>FARM</h2>
+  <p style="margin-top:-6px;">Fazendinha Online (administracao).</p>
 
-        <div class="admin-nav" style="margin-top: 0;">
-          <button type="button" onclick="abrirFarmLogin()">Login</button>
-        </div>
+  <div class="admin-nav" style="margin-top: 0;">
+    <button id="farmBtnRefresh" type="button" onclick="farmRefreshAll()">Atualizar</button>
+    <button id="farmBtnToday" type="button" onclick="farmToggleToday()">Criados Hoje: OFF</button>
+    <button type="button" onclick="window.open('https://sgiptv.com.br/farm/login','_blank')">Login</button>
+    <button type="button" onclick="window.open('https://sgiptv.com.br/farm/download/fazendinha-online-latest.apk','_blank')">Baixar APK</button>
+  </div>
 
-        <div class="admin-report" style="margin-top: 14px;">
-          <h3>APK</h3>
-          <p style="margin-top:-6px;">Nome do arquivo (precisa existir em <code>/farm/download/</code>).</p>
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px;">
-            <input id="farmApkFile" value="fazendinha-online-latest.apk" style="min-width:280px; padding:10px 12px; border-radius:12px; border:1px solid rgba(126,34,206,.55); background:#05000f; color:#fff; font-weight:900;" />
-            <button type="button" onclick="baixarFarmApk()">Baixar APK</button>
-          </div>
-          <div style="margin-top:10px; color:rgba(255,255,255,.75); font-size:13px;">
-            URL: <code id="farmApkUrl">https://sgiptv.com.br/farm/download/fazendinha-online-latest.apk</code>
-          </div>
-        </div>
+  <div class="admin-report" style="margin-top:14px;">
+    <h3>Jogadores</h3>
+    <div id="farmUsersBox" style="margin-top:10px; color:rgba(255,255,255,.8);">Carregando...</div>
+  </div>
 
-        <div class="admin-report" style="margin-top: 14px;">
-          <h3>Jogadores</h3>
-          <p style="margin-top:-6px;">Lista de contas (max 500). Banir impede login.</p>
-          <div class="admin-nav" style="margin-top: 0;">
-            <button type="button" onclick="carregarFarmUsuarios()">Atualizar lista</button>
-          </div>
-          <div id="farmJogadores" style="margin-top:12px;"></div>
-        </div>
+  <div class="admin-report" style="margin-top:14px;">
+    <h3>Loja - Itens</h3>
+    <div id="farmItemsBox" style="margin-top:10px; color:rgba(255,255,255,.8);">Carregando...</div>
+  </div>
 
-        <div class="admin-report" style="margin-top: 14px;">
-          <h3>Em breve</h3>
-          <p style="margin-top:-6px;">Plantas, Loja, Jogadores, Diamantes, Banimentos e Logs (quando conectarmos a API do Farm).</p>
-        </div>
-      </section>
+  <div class="admin-report" style="margin-top:14px;">
+    <h3>Loja - Plantas</h3>
+    <div id="farmPlantsBox" style="margin-top:10px; color:rgba(255,255,255,.8);">Carregando...</div>
+  </div>
+</section>
 
   </div>
 </div>

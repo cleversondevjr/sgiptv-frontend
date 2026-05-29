@@ -2417,3 +2417,257 @@ async function farmUnbanUser(id) {
     alert(e.message || "Erro ao desbanir");
   }
 }
+
+
+// ===== FARM Admin (Fazendinha Online) =====
+var FARM_TODAY_ONLY = false;
+
+async function farmFetchJson(url, opts) {
+  const res = await fetch(url, Object.assign({ credentials: "include", cache: "no-store" }, (opts || {})));
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+  return data;
+}
+
+function farmToggleToday() {
+  FARM_TODAY_ONLY = !FARM_TODAY_ONLY;
+  const b = document.getElementById("farmBtnToday");
+  if (b) b.textContent = "Criados Hoje: " + (FARM_TODAY_ONLY ? "ON" : "OFF");
+  farmLoadUsers();
+}
+
+async function farmRefreshAll() {
+  await Promise.allSettled([farmLoadUsers(), farmLoadShopItems(), farmLoadShopPlants()]);
+}
+
+async function farmLoadUsers() {
+  const box = document.getElementById("farmUsersBox");
+  if (!box) return;
+  box.textContent = "Carregando...";
+
+  try {
+    const url = "https://sgiptv.com.br/farm/api/admin/users" + (FARM_TODAY_ONLY ? "?today=1" : "");
+    const data = await farmFetchJson(url);
+
+    const users = Array.isArray(data.users) ? data.users : [];
+    const rows = users.map((u) => {
+      const id = Number(u.id);
+      const login = escaparHtml(u.login);
+      const email = escaparHtml(u.email);
+      const created = u.criado_em ? new Date(u.criado_em).toLocaleString("pt-BR") : "-";
+      const last = u.ultimo_login_em ? new Date(u.ultimo_login_em).toLocaleString("pt-BR") : "-";
+      const banido = Boolean(u.banido_em);
+      const status = banido
+        ? `<span style="color:#ef4444; font-weight:900;">BANIDO</span>`
+        : `<span style="color:#22c55e; font-weight:900;">OK</span>`;
+
+      const btn = banido
+        ? `<button type="button" onclick="farmUnbanUser(${id})">Desbanir</button>`
+        : `<button type="button" onclick="farmBanUserPrompt(${id}, '${login.replace(/'/g, "&#39;")}')">Banir</button>`;
+
+      return `
+        <tr>
+          <td>${id}</td>
+          <td>${login}</td>
+          <td>${email}</td>
+          <td>${created}</td>
+          <td>${last}</td>
+          <td>${status}</td>
+          <td>${btn}</td>
+        </tr>
+      `;
+    }).join("");
+
+    box.innerHTML = `
+      <div class="tabela-area" style="margin-top:0;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Login</th>
+              <th>Email</th>
+              <th>Criado em</th>
+              <th>Ultimo login</th>
+              <th>Status</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>${rows || `<tr><td colspan="7" style="padding:12px; opacity:.8;">Nenhum usuario.</td></tr>`}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    box.innerHTML = `<div style="color:#ef4444;">Erro: ${escaparHtml(e.message || "falha")}</div>`;
+  }
+}
+
+function farmBanUserPrompt(id, login) {
+  const motivo = window.prompt("Motivo do banimento para " + login + " (opcional):", "");
+  farmBanUser(id, motivo || "");
+}
+
+async function farmBanUser(id, motivo) {
+  try {
+    await farmFetchJson("https://sgiptv.com.br/farm/api/admin/users/" + encodeURIComponent(id) + "/ban", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ motivo: String(motivo || "") })
+    });
+    await farmLoadUsers();
+  } catch (e) {
+    alert(e.message || "Erro ao banir");
+  }
+}
+
+async function farmUnbanUser(id) {
+  try {
+    await farmFetchJson("https://sgiptv.com.br/farm/api/admin/users/" + encodeURIComponent(id) + "/unban", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+    await farmLoadUsers();
+  } catch (e) {
+    alert(e.message || "Erro ao desbanir");
+  }
+}
+
+async function farmLoadShopItems() {
+  const box = document.getElementById("farmItemsBox");
+  if (!box) return;
+  box.textContent = "Carregando...";
+
+  try {
+    const data = await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/items");
+    const items = Array.isArray(data.items) ? data.items : [];
+
+    const rows = items.map((it) => {
+      const id = Number(it.id);
+      const codigo = escaparHtml(it.codigo);
+      const nome = escaparHtml(it.nome);
+      const preco = Number(it.preco_ouro || 0);
+      const ativo = Boolean(it.ativo);
+
+      return `
+        <tr>
+          <td>${codigo}</td>
+          <td><input id="item_nome_${id}" value="${nome}" style="width:100%; min-width:180px;" /></td>
+          <td><input id="item_preco_${id}" value="${preco}" type="number" min="0" step="1" style="width:140px;" /></td>
+          <td><input id="item_ativo_${id}" type="checkbox" ${ativo ? "checked" : ""} /></td>
+          <td><button type="button" onclick="farmSaveItem(${id}, '${codigo.replace(/'/g, "&#39;")}')">Salvar</button></td>
+        </tr>
+      `;
+    }).join("");
+
+    box.innerHTML = `
+      <div class="tabela-area" style="margin-top:0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Codigo</th>
+              <th>Nome</th>
+              <th>Preco (Ouro)</th>
+              <th>Ativo</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>${rows || `<tr><td colspan="5" style="padding:12px; opacity:.8;">Sem itens.</td></tr>`}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    box.innerHTML = `<div style="color:#ef4444;">Erro: ${escaparHtml(e.message || "falha")}</div>`;
+  }
+}
+
+async function farmSaveItem(id, codigo) {
+  try {
+    const nome = String(document.getElementById("item_nome_" + id)?.value || "").trim();
+    const preco = Number(document.getElementById("item_preco_" + id)?.value || 0);
+    const ativo = Boolean(document.getElementById("item_ativo_" + id)?.checked);
+
+    await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo: codigo, nome: nome, preco_ouro: Math.max(0, Math.trunc(preco)), ativo: ativo })
+    });
+    await farmLoadShopItems();
+  } catch (e) {
+    alert(e.message || "Erro ao salvar item");
+  }
+}
+
+async function farmLoadShopPlants() {
+  const box = document.getElementById("farmPlantsBox");
+  if (!box) return;
+  box.textContent = "Carregando...";
+
+  try {
+    const data = await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/plants");
+    const plants = Array.isArray(data.plants) ? data.plants : [];
+
+    const rows = plants.map((pl) => {
+      const id = Number(pl.id);
+      const codigo = escaparHtml(pl.codigo);
+      const nome = escaparHtml(pl.nome);
+      const preco = Number(pl.preco_ouro || 0);
+      const ativo = Boolean(pl.ativo);
+
+      return `
+        <tr>
+          <td>${codigo}</td>
+          <td><input id="pl_nome_${id}" value="${nome}" style="width:100%; min-width:180px;" /></td>
+          <td><input id="pl_preco_${id}" value="${preco}" type="number" min="0" step="1" style="width:140px;" /></td>
+          <td><input id="pl_ativo_${id}" type="checkbox" ${ativo ? "checked" : ""} /></td>
+          <td><button type="button" onclick="farmSavePlant(${id}, '${codigo.replace(/'/g, "&#39;")}')">Salvar</button></td>
+        </tr>
+      `;
+    }).join("");
+
+    box.innerHTML = `
+      <div class="tabela-area" style="margin-top:0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Codigo</th>
+              <th>Nome</th>
+              <th>Preco (Ouro)</th>
+              <th>Ativo</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>${rows || `<tr><td colspan="5" style="padding:12px; opacity:.8;">Sem plantas.</td></tr>`}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    box.innerHTML = `<div style="color:#ef4444;">Erro: ${escaparHtml(e.message || "falha")}</div>`;
+  }
+}
+
+async function farmSavePlant(id, codigo) {
+  try {
+    const nome = String(document.getElementById("pl_nome_" + id)?.value || "").trim();
+    const preco = Number(document.getElementById("pl_preco_" + id)?.value || 0);
+    const ativo = Boolean(document.getElementById("pl_ativo_" + id)?.checked);
+
+    await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/plants", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo: codigo, nome: nome, preco_ouro: Math.max(0, Math.trunc(preco)), ativo: ativo })
+    });
+    await farmLoadShopPlants();
+  } catch (e) {
+    alert(e.message || "Erro ao salvar planta");
+  }
+}
+
+// Auto-carrega quando entrar na secao farm
+const _origMostrarSecaoAdmin = typeof mostrarSecaoAdmin === "function" ? mostrarSecaoAdmin : null;
+if (_origMostrarSecaoAdmin) {
+  mostrarSecaoAdmin = function(secao) {
+    _origMostrarSecaoAdmin(secao);
+    if (secao === "farm") {
+      farmRefreshAll();
+    }
+  };
+}
