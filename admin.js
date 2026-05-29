@@ -2325,3 +2325,95 @@ function baixarFarmApk() {
       window.open(url, "_blank");
     });
 }
+
+async function carregarFarmUsuarios() {
+  const box = document.getElementById("farmJogadores");
+  if (!box) return;
+  box.innerHTML = `<div style="padding:12px; color:rgba(255,255,255,.75);">Carregando...</div>`;
+
+  try {
+    const res = await fetch("https://sgiptv.com.br/farm/api/admin/users", { credentials: "include", cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    const users = Array.isArray(data.users) ? data.users : [];
+    const rows = users.map((u) => {
+      const banido = Boolean(u.banido_em);
+      const status = banido ? `<span style="color:#ef4444; font-weight:900;">BANIDO</span>` : `<span style="color:#22c55e; font-weight:900;">OK</span>`;
+      const created = u.criado_em ? new Date(u.criado_em).toLocaleString("pt-BR") : "-";
+      const last = u.ultimo_login_em ? new Date(u.ultimo_login_em).toLocaleString("pt-BR") : "-";
+      const safeLogin = escaparHtml(u.login);
+      const safeEmail = escaparHtml(u.email);
+      const btn = banido
+        ? `<button type="button" onclick="farmUnbanUser(${Number(u.id)})">Desbanir</button>`
+        : `<button type="button" onclick="farmBanUserPrompt(${Number(u.id)}, '${safeLogin.replace(/'/g, \"&#39;\")}')">Banir</button>`;
+      return `
+        <tr>
+          <td>${Number(u.id)}</td>
+          <td>${safeLogin}</td>
+          <td>${safeEmail}</td>
+          <td>${created}</td>
+          <td>${last}</td>
+          <td>${status}</td>
+          <td>${btn}</td>
+        </tr>
+      `;
+    }).join("");
+
+    box.innerHTML = `
+      <div class="tabela-area" style="margin-top:0;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Login</th>
+              <th>Email</th>
+              <th>Criado</th>
+              <th>Ultimo login</th>
+              <th>Status</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>${rows || `<tr><td colspan="7" style="padding:12px; opacity:.8;">Nenhum jogador.</td></tr>`}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    box.innerHTML = `<div style="padding:12px; color:#ef4444; font-weight:900;">Erro ao carregar jogadores: ${escaparHtml(e.message)}</div>`;
+  }
+}
+
+async function farmBanUserPrompt(id, login) {
+  const motivo = window.prompt(`Banir \"${login}\"? Motivo (opcional):`, "");
+  if (motivo === null) return;
+  try {
+    const body = new URLSearchParams();
+    if (motivo) body.set("motivo", motivo);
+    const res = await fetch(`https://sgiptv.com.br/farm/api/admin/users/${encodeURIComponent(id)}/ban`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    await carregarFarmUsuarios();
+  } catch (e) {
+    alert(e.message || "Erro ao banir");
+  }
+}
+
+async function farmUnbanUser(id) {
+  if (!confirm("Desbanir este jogador?")) return;
+  try {
+    const res = await fetch(`https://sgiptv.com.br/farm/api/admin/users/${encodeURIComponent(id)}/unban`, {
+      method: "POST",
+      credentials: "include"
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    await carregarFarmUsuarios();
+  } catch (e) {
+    alert(e.message || "Erro ao desbanir");
+  }
+}
