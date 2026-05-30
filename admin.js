@@ -1835,7 +1835,7 @@ async function carregarClientes() {
 
   } catch (error) {
     console.error(error);
-    lista.innerHTML = `<tr><td colspan="7">Erro ao carregar clientes.</td></tr>`;
+    lista.innerHTML = `<tr><td colspan="9">Erro ao carregar clientes.</td></tr>`;
   }
 }
 
@@ -2467,6 +2467,8 @@ async function farmLoadUsers() {
           <td>${escaparHtml(rawId)}</td>
           <td>${login}</td>
           <td>${email}</td>
+          <td>${escaparHtml(String(u.ouro ?? 0))}</td>
+          <td>${escaparHtml(String(u.diamantes ?? 0))}</td>
           <td>${created}</td>
           <td>${last}</td>
           <td>${status}</td>
@@ -2476,6 +2478,68 @@ async function farmLoadUsers() {
     }).join("");
 
     box.innerHTML = `
+      <div class="admin-report" style="margin:0 0 12px 0; padding:12px; border:1px solid rgba(255,255,255,.12); border-radius:10px;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Evento (ult. 48h)</div>
+            <div style="font-size:12px; opacity:.8;">Adiciona saldo para usuarios ativos</div>
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Ouro</label><br/>
+            <input id="farmEvtOuro" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Diamantes</label><br/>
+            <input id="farmEvtDiam" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Horas</label><br/>
+            <input id="farmEvtHoras" type="number" value="48" min="1" step="1" style="width:120px;" />
+          </div>
+          <button type="button" onclick="farmGrantEvent()">Aplicar</button>
+        </div>
+
+        <div style="height:10px;"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Cupom</div>
+            <div style="font-size:12px; opacity:.8;">Cria/atualiza cupom</div>
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Codigo</label><br/>
+            <input id="farmCupomCodigo" value="" style="width:160px;" placeholder="EVENTO10" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">% desconto</label><br/>
+            <input id="farmCupomDesc" type="number" value="0" min="0" max="100" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Bonus diam</label><br/>
+            <input id="farmCupomBonus" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Max usos</label><br/>
+            <input id="farmCupomMax" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <button type="button" onclick="farmCreateCoupon()">Salvar Cupom</button>
+        </div>
+
+        <div style="height:10px;"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Mensagem Admin</div>
+            <div style="font-size:12px; opacity:.8;">Aparece no jogo</div>
+          </div>
+          <div style="flex:1; min-width:240px;">
+            <label style="font-size:12px; opacity:.8;">Texto</label><br/>
+            <input id="farmMsgTexto" value="" style="width:100%;" placeholder="Manutencao as 22h" />
+          </div>
+          <button type="button" onclick="farmSendMessage()">Enviar</button>
+        </div>
+      </div>
+
       <div class="tabela-area" style="margin-top:0;">
         <table>
           <thead>
@@ -2483,13 +2547,15 @@ async function farmLoadUsers() {
               <th>ID</th>
               <th>Login</th>
               <th>Email</th>
+              <th>Ouro</th>
+              <th>Diamantes</th>
               <th>Criado em</th>
               <th>Ultimo login</th>
               <th>Status</th>
               <th>Acoes</th>
             </tr>
           </thead>
-          <tbody>${rows || `<tr><td colspan="7" style="padding:12px; opacity:.8;">Nenhum usuario.</td></tr>`}</tbody>
+          <tbody>${rows || `<tr><td colspan="9" style="padding:12px; opacity:.8;">Nenhum usuario.</td></tr>`}</tbody>
         </table>
       </div>
     `;
@@ -2532,6 +2598,65 @@ async function farmUnbanUser(id) {
   }
 }
 
+
+async function farmGrantEvent() {
+  try {
+    const ouro = Number(document.getElementById('farmEvtOuro')?.value || 0);
+    const diamantes = Number(document.getElementById('farmEvtDiam')?.value || 0);
+    const horas = Number(document.getElementById('farmEvtHoras')?.value || 48);
+
+    await farmFetchJson('https://sgiptv.com.br/farm/api/admin/events/grant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ouro, diamantes, horas })
+    });
+
+    alert('Evento aplicado.');
+    await farmLoadUsers();
+  } catch (e) {
+    alert(e.message || 'Erro ao aplicar evento');
+  }
+}
+
+async function farmCreateCoupon() {
+  try {
+    const codigo = String(document.getElementById('farmCupomCodigo')?.value || '').trim();
+    const desconto_percent = Number(document.getElementById('farmCupomDesc')?.value || 0);
+    const bonus_diamantes = Number(document.getElementById('farmCupomBonus')?.value || 0);
+    const max_usos = Number(document.getElementById('farmCupomMax')?.value || 0);
+
+    if (!codigo) return alert('Informe o codigo do cupom');
+
+    await farmFetchJson('https://sgiptv.com.br/farm/api/admin/coupons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo, desconto_percent, bonus_diamantes, max_usos })
+    });
+
+    alert('Cupom salvo: ' + codigo);
+  } catch (e) {
+    alert(e.message || 'Erro ao salvar cupom');
+  }
+}
+
+async function farmSendMessage() {
+  try {
+    const texto = String(document.getElementById('farmMsgTexto')?.value || '').trim();
+    if (!texto) return alert('Informe o texto');
+
+    await farmFetchJson('https://sgiptv.com.br/farm/api/admin/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: 'info', texto })
+    });
+
+    document.getElementById('farmMsgTexto').value = '';
+    alert('Mensagem enviada.');
+  } catch (e) {
+    alert(e.message || 'Erro ao enviar mensagem');
+  }
+}
+
 async function farmLoadShopItems() {
   const box = document.getElementById("farmItemsBox");
   if (!box) return;
@@ -2561,6 +2686,68 @@ async function farmLoadShopItems() {
     }).join("");
 
     box.innerHTML = `
+      <div class="admin-report" style="margin:0 0 12px 0; padding:12px; border:1px solid rgba(255,255,255,.12); border-radius:10px;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Evento (ult. 48h)</div>
+            <div style="font-size:12px; opacity:.8;">Adiciona saldo para usuarios ativos</div>
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Ouro</label><br/>
+            <input id="farmEvtOuro" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Diamantes</label><br/>
+            <input id="farmEvtDiam" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Horas</label><br/>
+            <input id="farmEvtHoras" type="number" value="48" min="1" step="1" style="width:120px;" />
+          </div>
+          <button type="button" onclick="farmGrantEvent()">Aplicar</button>
+        </div>
+
+        <div style="height:10px;"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Cupom</div>
+            <div style="font-size:12px; opacity:.8;">Cria/atualiza cupom</div>
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Codigo</label><br/>
+            <input id="farmCupomCodigo" value="" style="width:160px;" placeholder="EVENTO10" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">% desconto</label><br/>
+            <input id="farmCupomDesc" type="number" value="0" min="0" max="100" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Bonus diam</label><br/>
+            <input id="farmCupomBonus" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Max usos</label><br/>
+            <input id="farmCupomMax" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <button type="button" onclick="farmCreateCoupon()">Salvar Cupom</button>
+        </div>
+
+        <div style="height:10px;"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Mensagem Admin</div>
+            <div style="font-size:12px; opacity:.8;">Aparece no jogo</div>
+          </div>
+          <div style="flex:1; min-width:240px;">
+            <label style="font-size:12px; opacity:.8;">Texto</label><br/>
+            <input id="farmMsgTexto" value="" style="width:100%;" placeholder="Manutencao as 22h" />
+          </div>
+          <button type="button" onclick="farmSendMessage()">Enviar</button>
+        </div>
+      </div>
+
       <div class="tabela-area" style="margin-top:0;">
         <table>
           <thead>
@@ -2628,6 +2815,68 @@ async function farmLoadShopPlants() {
     }).join("");
 
     box.innerHTML = `
+      <div class="admin-report" style="margin:0 0 12px 0; padding:12px; border:1px solid rgba(255,255,255,.12); border-radius:10px;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Evento (ult. 48h)</div>
+            <div style="font-size:12px; opacity:.8;">Adiciona saldo para usuarios ativos</div>
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Ouro</label><br/>
+            <input id="farmEvtOuro" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Diamantes</label><br/>
+            <input id="farmEvtDiam" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Horas</label><br/>
+            <input id="farmEvtHoras" type="number" value="48" min="1" step="1" style="width:120px;" />
+          </div>
+          <button type="button" onclick="farmGrantEvent()">Aplicar</button>
+        </div>
+
+        <div style="height:10px;"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Cupom</div>
+            <div style="font-size:12px; opacity:.8;">Cria/atualiza cupom</div>
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Codigo</label><br/>
+            <input id="farmCupomCodigo" value="" style="width:160px;" placeholder="EVENTO10" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">% desconto</label><br/>
+            <input id="farmCupomDesc" type="number" value="0" min="0" max="100" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Bonus diam</label><br/>
+            <input id="farmCupomBonus" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; opacity:.8;">Max usos</label><br/>
+            <input id="farmCupomMax" type="number" value="0" min="0" step="1" style="width:120px;" />
+          </div>
+          <button type="button" onclick="farmCreateCoupon()">Salvar Cupom</button>
+        </div>
+
+        <div style="height:10px;"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="min-width:180px;">
+            <div style="font-weight:900; color:#fbbf24;">Mensagem Admin</div>
+            <div style="font-size:12px; opacity:.8;">Aparece no jogo</div>
+          </div>
+          <div style="flex:1; min-width:240px;">
+            <label style="font-size:12px; opacity:.8;">Texto</label><br/>
+            <input id="farmMsgTexto" value="" style="width:100%;" placeholder="Manutencao as 22h" />
+          </div>
+          <button type="button" onclick="farmSendMessage()">Enviar</button>
+        </div>
+      </div>
+
       <div class="tabela-area" style="margin-top:0;">
         <table>
           <thead>
