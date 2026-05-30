@@ -2333,7 +2333,13 @@ async function farmFetchJson(url, opts) {
   const finalUrl = String(res.url || "");
 
   if (ct.includes("text/html") && finalUrl.includes("/farm/login")) {
-    throw new Error("Precisa fazer login no FARM (admin). Clique em Login.");
+    try {
+      await farmEnsureSsoSession();
+      // tenta novamente agora que o cookie foi criado
+      return await farmFetchJson(url, opts);
+    } catch (e) {
+      throw new Error(e && e.message ? e.message : "Precisa fazer login no FARM (admin).");
+    }
   }
 
   const data = ct.includes("application/json") ? await res.json().catch(() => ({})) : {};
@@ -2380,6 +2386,35 @@ async function farmToggleMaintenance() {
   }
 }
 
+
+
+async function farmEnsureSsoSession() {
+  // SSO: usa o token do painel (admin_token) para criar cookie do FARM sem precisar login separado.
+  const adminToken = localStorage.getItem("admin_token");
+  if (!adminToken) throw new Error("Painel Admin: faca login primeiro.");
+
+  const ssoRes = await fetch(`${API}/farm/sso`, {
+    method: "POST",
+    headers: { Authorization: adminToken }
+  });
+
+  const ssoData = await ssoRes.json().catch(() => ({}));
+  if (!ssoRes.ok || !ssoData.token) {
+    throw new Error(ssoData.error || ("SSO falhou (HTTP " + ssoRes.status + ")"));
+  }
+
+  const farmRes = await fetch("https://sgiptv.com.br/farm/api/admin/sso", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: String(ssoData.token) })
+  });
+
+  const farmData = await farmRes.json().catch(() => ({}));
+  if (!farmRes.ok) {
+    throw new Error(farmData.error || ("FARM SSO falhou (HTTP " + farmRes.status + ")"));
+  }
+}
 async function farmRefreshAll() {
   await Promise.allSettled([
     farmLoadUsers(),
