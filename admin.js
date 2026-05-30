@@ -276,7 +276,7 @@ async function carregarClientesDoRevendedor(id) {
     };
 
     const linhasComissoes = comissoesPendentes.length === 0
-      ? `<tr><td colspan="5">Nenhuma comissao pendente.</td></tr>`
+      ? `<tr><td colspan="8">Nenhuma comissao pendente.</td></tr>`
       : comissoesPendentes.map((c) => `
           <tr>
             <td>${escaparHtml(formatarData(c.criado_em))}</td>
@@ -2767,11 +2767,14 @@ async function farmLoadShopItems() {
               <th>Codigo</th>
               <th>Nome</th>
               <th>Preco (Ouro)</th>
+              <th>Preco (Diam)</th>
+              <th>Tempo (s)</th>
+              <th>Recompensa (Ouro)</th>
               <th>Ativo</th>
               <th>Acoes</th>
             </tr>
           </thead>
-          <tbody>${rows || `<tr><td colspan="5" style="padding:12px; opacity:.8;">Sem itens.</td></tr>`}</tbody>
+          <tbody>${rows || `<tr><td colspan="8" style="padding:12px; opacity:.8;">Sem itens.</td></tr>`}</tbody>
         </table>
       </div>
     `;
@@ -2811,15 +2814,21 @@ async function farmLoadShopPlants() {
       const id = Number(pl.id);
       const codigo = escaparHtml(String(pl.codigo || ""));
       const nome = escaparHtml(String(pl.nome || ""));
-      const preco = Number(pl.preco_ouro || 0);
+      const precoOuro = Number(pl.preco_ouro || 0);
+      const precoDiam = Number(pl.preco_diamantes || 0);
+      const vida = Number(pl.vida_segundos || 0);
+      const colheita = Number(pl.colheita_ouro || 0);
       const ativo = Boolean(pl.ativo);
-      const codigoJs = String(pl.codigo || "").replace(/\\\\/g, "\\\\\\\\").replace(/'/g, "\\\\'");
+      const codigoJs = String(pl.codigo || "").split("\\").join("\\\\").split("'").join("\\'");
 
       return `
         <tr>
           <td>${codigo}</td>
           <td><input id="pl_nome_${id}" value="${nome}" style="width:100%; min-width:180px;" /></td>
-          <td><input id="pl_preco_${id}" value="${preco}" type="number" min="0" step="1" style="width:140px;" /></td>
+          <td><input id="pl_preco_ouro_${id}" value="${Math.max(0, Math.trunc(precoOuro))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="pl_preco_diam_${id}" value="${Math.max(0, Math.trunc(precoDiam))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="pl_vida_${id}" value="${Math.max(0, Math.trunc(vida))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="pl_colheita_${id}" value="${Math.max(0, Math.trunc(colheita))}" type="number" min="0" step="1" style="width:120px;" /></td>
           <td><input id="pl_ativo_${id}" type="checkbox" ${ativo ? "checked" : ""} /></td>
           <td><button type="button" onclick="farmSavePlant(${id}, '${codigoJs}')">Salvar</button></td>
         </tr>
@@ -2834,11 +2843,14 @@ async function farmLoadShopPlants() {
               <th>Codigo</th>
               <th>Nome</th>
               <th>Preco (Ouro)</th>
+              <th>Preco (Diam)</th>
+              <th>Tempo (s)</th>
+              <th>Recompensa (Ouro)</th>
               <th>Ativo</th>
               <th>Acoes</th>
             </tr>
           </thead>
-          <tbody>${rows || `<tr><td colspan="5" style="padding:12px; opacity:.8;">Sem plantas.</td></tr>`}</tbody>
+          <tbody>${rows || `<tr><td colspan="8" style="padding:12px; opacity:.8;">Sem plantas.</td></tr>`}</tbody>
         </table>
       </div>
     `;
@@ -2850,13 +2862,24 @@ async function farmLoadShopPlants() {
 async function farmSavePlant(id, codigo) {
   try {
     const nome = String(document.getElementById("pl_nome_" + id)?.value || "").trim();
-    const preco = Number(document.getElementById("pl_preco_" + id)?.value || 0);
+    const precoOuro = Number(document.getElementById("pl_preco_ouro_" + id)?.value || 0);
+    const precoDiam = Number(document.getElementById("pl_preco_diam_" + id)?.value || 0);
+    const vida = Number(document.getElementById("pl_vida_" + id)?.value || 0);
+    const colheita = Number(document.getElementById("pl_colheita_" + id)?.value || 0);
     const ativo = Boolean(document.getElementById("pl_ativo_" + id)?.checked);
 
     await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/plants", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigo: codigo, nome: nome, preco_ouro: Math.max(0, Math.trunc(preco)), ativo: ativo })
+      body: JSON.stringify({
+        codigo: codigo,
+        nome: nome,
+        preco_ouro: Math.max(0, Math.trunc(precoOuro)),
+        preco_diamantes: Math.max(0, Math.trunc(precoDiam)),
+        vida_segundos: Math.max(0, Math.trunc(vida)),
+        colheita_ouro: Math.max(0, Math.trunc(colheita)),
+        ativo: ativo
+      })
     });
 
     await farmLoadShopPlants();
