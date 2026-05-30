@@ -2415,14 +2415,103 @@ async function farmEnsureSsoSession() {
     throw new Error(farmData.error || ("FARM SSO falhou (HTTP " + farmRes.status + ")"));
   }
 }
-async function farmRefreshAll() {
-  await Promise.allSettled([
-    farmLoadUsers(),
-    farmLoadShopItems(),
-    farmLoadShopPlants(),
-    farmSyncMaintenanceButton()
-  ]);
+
+
+let _farmActiveTab = "users";
+function farmShowTab(name) {
+  _farmActiveTab = String(name || "users");
+  const names = ["users", "items", "plants", "trees", "events"];
+  for (const n of names) {
+    const el = document.getElementById("farmTab_" + n);
+    if (el) el.style.display = n === _farmActiveTab ? "block" : "none";
+    const btn = document.querySelector(`button[data-farmtab="${n}"]`);
+    if (btn) {
+      btn.style.opacity = n === _farmActiveTab ? "1" : ".7";
+      btn.style.borderColor = n === _farmActiveTab ? "#fbbf24" : "rgba(251,191,36,.35)";
+    }
+  }
+
+  // Load only what's needed
+  if (_farmActiveTab === "users") farmLoadUsers();
+  else if (_farmActiveTab === "items") farmLoadShopItems();
+  else if (_farmActiveTab === "plants") farmLoadShopPlants();
+  else if (_farmActiveTab === "events") farmRenderEvents();
 }
+
+function farmRenderEvents() {
+  const box = document.getElementById("farmEventsBox");
+  if (!box) return;
+
+  box.innerHTML = `
+    <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;">
+      <div style="min-width:240px;">
+        <div style="font-weight:900; color:#fbbf24;">Evento (ult. 48h)</div>
+        <div style="font-size:12px; opacity:.8;">Adiciona saldo para usuarios ativos</div>
+      </div>
+      <div>
+        <label style="font-size:12px; opacity:.8;">Ouro</label><br/>
+        <input id="farmEvtOuro" type="number" value="0" min="0" step="1" style="width:120px;" />
+      </div>
+      <div>
+        <label style="font-size:12px; opacity:.8;">Diamantes</label><br/>
+        <input id="farmEvtDiam" type="number" value="0" min="0" step="1" style="width:120px;" />
+      </div>
+      <div>
+        <label style="font-size:12px; opacity:.8;">Horas</label><br/>
+        <input id="farmEvtHoras" type="number" value="48" min="1" step="1" style="width:120px;" />
+      </div>
+      <button type="button" onclick="farmGrantEvent()">Aplicar</button>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;">
+      <div style="min-width:240px;">
+        <div style="font-weight:900; color:#fbbf24;">Cupom</div>
+        <div style="font-size:12px; opacity:.8;">Cria/atualiza cupom</div>
+      </div>
+      <div>
+        <label style="font-size:12px; opacity:.8;">Codigo</label><br/>
+        <input id="farmCupomCodigo" value="" style="width:160px;" placeholder="EVENTO10" />
+      </div>
+      <div>
+        <label style="font-size:12px; opacity:.8;">% desconto</label><br/>
+        <input id="farmCupomDesc" type="number" value="0" min="0" max="100" step="1" style="width:120px;" />
+      </div>
+      <div>
+        <label style="font-size:12px; opacity:.8;">Bonus diam</label><br/>
+        <input id="farmCupomBonus" type="number" value="0" min="0" step="1" style="width:120px;" />
+      </div>
+      <div>
+        <label style="font-size:12px; opacity:.8;">Max usos</label><br/>
+        <input id="farmCupomMax" type="number" value="0" min="0" step="1" style="width:120px;" />
+      </div>
+      <button type="button" onclick="farmCreateCoupon()">Salvar</button>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;">
+      <div style="min-width:240px;">
+        <div style="font-weight:900; color:#fbbf24;">Mensagem Admin</div>
+        <div style="font-size:12px; opacity:.8;">Aparece no jogo</div>
+      </div>
+      <div style="flex:1; min-width:240px;">
+        <label style="font-size:12px; opacity:.8;">Texto</label><br/>
+        <input id="farmMsgTexto" value="" style="width:100%;" placeholder="Manutencao as 22h" />
+      </div>
+      <button type="button" onclick="farmSendMessage()">Enviar</button>
+    </div>
+  `;
+}
+async function farmRefreshAll() {
+  await farmSyncMaintenanceButton();
+  // Render events UI once
+  farmRenderEvents();
+  // Load current tab
+  farmShowTab(_farmActiveTab || 'users');
+}
+
 
 async function farmLoadUsers() {
   const box = document.getElementById("farmUsersBox");
@@ -2919,7 +3008,7 @@ const _origMostrarSecaoAdmin = typeof mostrarSecaoAdmin === "function" ? mostrar
 if (_origMostrarSecaoAdmin) {
   mostrarSecaoAdmin = function (secao) {
     _origMostrarSecaoAdmin(secao);
-    if (secao === "farm") farmRefreshAll();
+    if (secao === "farm") { farmShowTab(_farmActiveTab || "users"); farmRefreshAll(); }
   };
 }
 

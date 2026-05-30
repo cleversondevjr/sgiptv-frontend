@@ -153,27 +153,46 @@
   <h2>FARM</h2>
   <p style="margin-top:-6px;">Fazendinha Online (administracao).</p>
 
-  <div class="admin-nav" style="margin-top: 0;">
+  <div class="admin-nav" style="margin-top: 0; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
     <button id="farmBtnRefresh" type="button" onclick="farmRefreshAll()">Atualizar</button>
     <button id="farmBtnMaintenance" type="button" onclick="farmToggleMaintenance()">Manutencao: OFF</button>
-    <button type="button" onclick="window.open('https://sgiptv.com.br/farm/login','_blank')">Login</button>
-    <button type="button" onclick="window.open('https://sgiptv.com.br/farm/download/fazendinha-online-latest.apk','_blank')">Baixar APK</button>
+    <button type="button" onclick="abrirFarmLogin()">Login</button>
+    <button type="button" onclick="baixarFarmApk()">Baixar APK</button>
   </div>
 
-  <div class="admin-report" style="margin-top:14px;">
+  <div class="admin-nav" style="margin-top: 12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <button type="button" class="tab-btn" data-farmtab="users" onclick="farmShowTab('users')">Jogadores</button>
+    <button type="button" class="tab-btn" data-farmtab="items" onclick="farmShowTab('items')">Loja Itens</button>
+    <button type="button" class="tab-btn" data-farmtab="plants" onclick="farmShowTab('plants')">Flores</button>
+    <button type="button" class="tab-btn" data-farmtab="trees" onclick="farmShowTab('trees')">Arvores</button>
+    <button type="button" class="tab-btn" data-farmtab="events" onclick="farmShowTab('events')">Eventos</button>
+  </div>
+
+  <div id="farmTab_users" class="admin-report" style="margin-top:14px;">
     <h3>Jogadores</h3>
     <div id="farmUsersBox" style="margin-top:10px; color:rgba(255,255,255,.8);">Carregando...</div>
   </div>
 
-  <div class="admin-report" style="margin-top:14px;">
+  <div id="farmTab_items" class="admin-report" style="margin-top:14px; display:none;">
     <h3>Loja - Itens</h3>
     <div id="farmItemsBox" style="margin-top:10px; color:rgba(255,255,255,.8);">Carregando...</div>
   </div>
 
-  <div class="admin-report" style="margin-top:14px;">
-    <h3>Loja - Plantas</h3>
+  <div id="farmTab_plants" class="admin-report" style="margin-top:14px; display:none;">
+    <h3>Flores</h3>
     <div id="farmPlantsBox" style="margin-top:10px; color:rgba(255,255,255,.8);">Carregando...</div>
   </div>
+
+  <div id="farmTab_trees" class="admin-report" style="margin-top:14px; display:none;">
+    <h3>Arvores</h3>
+    <div style="margin-top:10px; color:rgba(255,255,255,.8);">(Em breve) Vamos separar as arvores do catalogo.</div>
+  </div>
+
+  <div id="farmTab_events" class="admin-report" style="margin-top:14px; display:none;">
+    <h3>Eventos</h3>
+    <div id="farmEventsBox" style="margin-top:10px; color:rgba(255,255,255,.8);">Carregando...</div>
+  </div>
+
 </section>
 
   </div>
