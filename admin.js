@@ -2543,23 +2543,44 @@ async function farmLoadUsers() {
 
       const loginJs = String(u.login || "").replace(/\\\\/g, "\\\\\\\\").replace(/\\r/g, "\\\\r").replace(/\\n/g, "\\\\n").replace(/'/g, "\\\\'");
 
+      const saldo = !isAdmin && idNum > 0
+        ? {
+            ouroId: `farm_ouro_${idNum}`,
+            diamId: `farm_diam_${idNum}`,
+            ouro: Math.max(0, Math.trunc(Number(u.ouro ?? 0) || 0)),
+            diam: Math.max(0, Math.trunc(Number(u.diamantes ?? 0) || 0)),
+          }
+        : null;
+
       const btn = isAdmin
-        ? `<span style="opacity:.7;">-</span>`
+        ? `<span style=\"opacity:.7;\">-</span>`
         : banido
-          ? `<button type="button" onclick="farmUnbanUser(${idNum})">Desbanir</button>`
-          : `<button type="button" onclick="farmBanUserPrompt(${idNum}, '${loginJs}')">Banir</button>`;
+          ? `<button type=\"button\" onclick=\"farmUnbanUser(${idNum})\">Desbanir</button>`
+          : `<button type=\"button\" onclick=\"farmBanUserPrompt(${idNum}, '${loginJs}')\">Banir</button>`;
+
+      const btnSave = saldo
+        ? `<button type=\"button\" onclick=\"farmSaveBalance(${idNum})\">Salvar</button>`
+        : `<span style=\"opacity:.7;\">-</span>`;
+
+      const ouroCell = saldo
+        ? `<input id=\"${saldo.ouroId}\" type=\"number\" min=\"0\" step=\"1\" value=\"${escaparHtml(String(saldo.ouro))}\" style=\"width:92px;\" />`
+        : `${escaparHtml(String(u.ouro ?? 0))}`;
+
+      const diamCell = saldo
+        ? `<input id=\"${saldo.diamId}\" type=\"number\" min=\"0\" step=\"1\" value=\"${escaparHtml(String(saldo.diam))}\" style=\"width:92px;\" />`
+        : `${escaparHtml(String(u.diamantes ?? 0))}`;
 
       return `
         <tr>
           <td>${escaparHtml(rawId)}</td>
           <td>${login}</td>
           <td>${email}</td>
-          <td>${escaparHtml(String(u.ouro ?? 0))}</td>
-          <td>${escaparHtml(String(u.diamantes ?? 0))}</td>
+          <td>${ouroCell}</td>
+          <td>${diamCell}</td>
           <td>${created}</td>
           <td>${last}</td>
           <td>${status}</td>
-          <td>${btn}</td>
+          <td style=\"display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;\">${btnSave}${btn}</td>
         </tr>
       `;
     }).join("");
@@ -2586,6 +2607,34 @@ async function farmLoadUsers() {
     `;
   } catch (e) {
     farmSetError(box, e, "Jogadores");
+  }
+}
+
+
+async function farmSaveBalance(id) {
+  const idNum = Number(id || 0);
+  if (!idNum) return;
+
+  const ouroEl = document.getElementById(`farm_ouro_${idNum}`);
+  const diamEl = document.getElementById(`farm_diam_${idNum}`);
+
+  const ouro_set = Math.max(0, Math.trunc(Number(ouroEl && ouroEl.value ? ouroEl.value : 0) || 0));
+  const diamantes_set = Math.max(0, Math.trunc(Number(diamEl && diamEl.value ? diamEl.value : 0) || 0));
+
+  try {
+    const body = new URLSearchParams();
+    body.set('ouro_set', String(ouro_set));
+    body.set('diamantes_set', String(diamantes_set));
+
+    await farmFetchJson(`https://sgiptv.com.br/farm/api/admin/users/${encodeURIComponent(idNum)}/balance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body,
+    });
+
+    await farmLoadUsers();
+  } catch (e) {
+    alert((e && e.message) ? e.message : 'Erro ao salvar saldo');
   }
 }
 
