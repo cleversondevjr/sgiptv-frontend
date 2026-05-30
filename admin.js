@@ -2311,7 +2311,6 @@ function baixarFarmApk() {
   const box = document.getElementById("farmApkUrl");
   if (box) box.textContent = url;
 
-  // Verifica se existe antes de abrir (melhor UX)
   fetch(url, { method: "HEAD", cache: "no-store" })
     .then((r) => {
       if (!r.ok) {
@@ -2320,53 +2319,119 @@ function baixarFarmApk() {
       }
       window.open(url, "_blank");
     })
-    .catch(() => {
-      // fallback: tenta abrir mesmo assim
-      window.open(url, "_blank");
-    });
+    .catch(() => window.open(url, "_blank"));
 }
 
-async function carregarFarmUsuarios() {
-  const box = document.getElementById("farmJogadores");
-  if (!box) return;
-  box.innerHTML = `<div style="padding:12px; color:rgba(255,255,255,.75);">Carregando...</div>`;
+async function farmFetchJson(url, opts) {
+  const res = await fetch(url, Object.assign({
+    credentials: "include",
+    cache: "no-store",
+    redirect: "follow"
+  }, (opts || {})));
+
+  const ct = String(res.headers.get("content-type") || "").toLowerCase();
+  const finalUrl = String(res.url || "");
+
+  if (ct.includes("text/html") && finalUrl.includes("/farm/login")) {
+    throw new Error("Precisa fazer login no FARM (admin). Clique em Login.");
+  }
+
+  const data = ct.includes("application/json") ? await res.json().catch(() => ({})) : {};
+  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+  return data;
+}
+
+function farmSetError(box, err, prefix) {
+  const msg = String(err && err.message ? err.message : "falha");
+  if (msg.includes("login no FARM")) {
+    box.innerHTML = `<div style="padding:12px; color:#fbbf24; font-weight:900;">${escaparHtml(prefix ? (prefix + ': ') : '')}${escaparHtml(msg)} <button type="button" onclick="abrirFarmLogin()">Login</button></div>`;
+  } else {
+    box.innerHTML = `<div style="padding:12px; color:#ef4444; font-weight:900;">${escaparHtml(prefix ? (prefix + ': ') : '')}Erro: ${escaparHtml(msg)}</div>`;
+  }
+}
+
+async function farmSyncMaintenanceButton() {
+  try {
+    const cur = await farmFetchJson("https://sgiptv.com.br/farm/api/admin/maintenance");
+    const b = document.getElementById("farmBtnMaintenance");
+    if (b) b.textContent = "Manutencao: " + (cur.on ? "ON" : "OFF");
+  } catch {}
+}
+
+async function farmToggleMaintenance() {
+  const b = document.getElementById("farmBtnMaintenance");
+  if (b) b.disabled = true;
 
   try {
-    const res = await fetch("https://sgiptv.com.br/farm/api/admin/users", { credentials: "include", cache: "no-store" });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const cur = await farmFetchJson("https://sgiptv.com.br/farm/api/admin/maintenance");
+    const nextOn = !Boolean(cur.on);
 
+    await farmFetchJson("https://sgiptv.com.br/farm/api/admin/maintenance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ on: nextOn })
+    });
+
+    await farmSyncMaintenanceButton();
+  } catch (e) {
+    alert(e.message || "Erro ao alternar manutencao");
+  } finally {
+    if (b) b.disabled = false;
+  }
+}
+
+async function farmRefreshAll() {
+  await Promise.allSettled([
+    farmLoadUsers(),
+    farmLoadShopItems(),
+    farmLoadShopPlants(),
+    farmSyncMaintenanceButton()
+  ]);
+}
+
+async function farmLoadUsers() {
+  const box = document.getElementById("farmUsersBox");
+  if (!box) return;
+  box.textContent = "Carregando...";
+
+  try {
+    const data = await farmFetchJson("https://sgiptv.com.br/farm/api/admin/users");
     const users = Array.isArray(data.users) ? data.users : [];
+
     const rows = users.map((u) => {
+      const rawId = String(u.id ?? "");
+      const idNum = /^\\d+$/.test(rawId) ? Number(rawId) : 0;
+
+      const isAdmin = Boolean(u.is_admin) || rawId === "admin";
       const banido = Boolean(u.banido_em);
-        const isAdmin = Boolean(u.is_admin);
-        const online = Boolean(u.online);
+      const online = Boolean(u.online);
 
-        const status = isAdmin
-          ? `<span style="color:#60a5fa; font-weight:900;">ADMIN</span>`
-          : banido
-            ? `<span style="color:#ef4444; font-weight:900;">BANIDO</span>`
-            : online
-              ? `<span style="color:#22c55e; font-weight:900;">ON</span>`
-              : `<span style="color:#94a3b8; font-weight:900;">OFF</span>`;
+      const login = escaparHtml(String(u.login || ""));
+      const email = escaparHtml(String(u.email || ""));
+      const created = u.criado_em ? new Date(u.criado_em).toLocaleString("pt-BR") : "-";
+      const last = u.ultimo_login_em ? new Date(u.ultimo_login_em).toLocaleString("pt-BR") : "-";
 
-        const loginRaw = String(u.login || "");
-        const safeLoginJs = loginRaw
-          .replace(/\\/g, "\\\\")
-          .replace(/\r/g, "\\r")
-          .replace(/\n/g, "\\n")
-          .replace(/'/g, "\\'");
+      const status = isAdmin
+        ? `<span style="color:#60a5fa; font-weight:900;">ADMIN</span>`
+        : banido
+          ? `<span style="color:#ef4444; font-weight:900;">BANIDO</span>`
+          : online
+            ? `<span style="color:#22c55e; font-weight:900;">ON</span>`
+            : `<span style="color:#94a3b8; font-weight:900;">OFF</span>`;
 
-        const btn = isAdmin
-          ? `<span style="opacity:.7;">-</span>`
-          : banido
-            ? `<button type="button" onclick="farmUnbanUser(${id})">Desbanir</button>`
-            : `<button type="button" onclick="farmBanUserPrompt(${id}, '${safeLoginJs}')">Banir</button>`;
+      const loginJs = String(u.login || "").replace(/\\\\/g, "\\\\\\\\").replace(/\\r/g, "\\\\r").replace(/\\n/g, "\\\\n").replace(/'/g, "\\\\'");
+
+      const btn = isAdmin
+        ? `<span style="opacity:.7;">-</span>`
+        : banido
+          ? `<button type="button" onclick="farmUnbanUser(${idNum})">Desbanir</button>`
+          : `<button type="button" onclick="farmBanUserPrompt(${idNum}, '${loginJs}')">Banir</button>`;
+
       return `
         <tr>
-          <td>${Number(u.id)}</td>
-          <td>${safeLogin}</td>
-          <td>${safeEmail}</td>
+          <td>${escaparHtml(rawId)}</td>
+          <td>${login}</td>
+          <td>${email}</td>
           <td>${created}</td>
           <td>${last}</td>
           <td>${status}</td>
@@ -2383,18 +2448,52 @@ async function carregarFarmUsuarios() {
               <th>ID</th>
               <th>Login</th>
               <th>Email</th>
-              <th>Criado</th>
+              <th>Criado em</th>
               <th>Ultimo login</th>
               <th>Status</th>
               <th>Acoes</th>
             </tr>
           </thead>
-          <tbody>${rows || `<tr><td colspan="7" style="padding:12px; opacity:.8;">Nenhum jogador.</td></tr>`}</tbody>
+          <tbody>${rows || `<tr><td colspan="7" style="padding:12px; opacity:.8;">Nenhum usuario.</td></tr>`}</tbody>
         </table>
       </div>
     `;
   } catch (e) {
-    box.innerHTML = `<div style="padding:12px; color:#ef4444; font-weight:900;">Erro ao carregar jogadores: ${escaparHtml(e.message)}</div>`;
+    farmSetError(box, e, "Jogadores");
+  }
+}
+
+async function farmBanUserPrompt(id, login) {
+  const motivo = window.prompt(`Banir "${login}"? Motivo (opcional):`, "");
+  if (motivo === null) return;
+
+  try {
+    const body = new URLSearchParams();
+    if (motivo) body.set("motivo", motivo);
+
+    await farmFetchJson(`https://sgiptv.com.br/farm/api/admin/users/${encodeURIComponent(String(id))}/ban`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body
+    });
+
+    await farmRefreshAll();
+  } catch (e) {
+    alert(e.message || "Erro ao banir");
+  }
+}
+
+async function farmUnbanUser(id) {
+  if (!confirm("Desbanir este jogador?")) return;
+
+  try {
+    await farmFetchJson(`https://sgiptv.com.br/farm/api/admin/users/${encodeURIComponent(String(id))}/unban`, {
+      method: "POST"
+    });
+
+    await farmRefreshAll();
+  } catch (e) {
+    alert(e.message || "Erro ao desbanir");
   }
 }
 
@@ -2409,10 +2508,11 @@ async function farmLoadShopItems() {
 
     const rows = items.map((it) => {
       const id = Number(it.id);
-      const codigo = escaparHtml(it.codigo);
-      const nome = escaparHtml(it.nome);
+      const codigo = escaparHtml(String(it.codigo || ""));
+      const nome = escaparHtml(String(it.nome || ""));
       const preco = Number(it.preco_ouro || 0);
       const ativo = Boolean(it.ativo);
+      const codigoJs = String(it.codigo || "").replace(/\\\\/g, "\\\\\\\\").replace(/'/g, "\\\\'");
 
       return `
         <tr>
@@ -2420,7 +2520,7 @@ async function farmLoadShopItems() {
           <td><input id="item_nome_${id}" value="${nome}" style="width:100%; min-width:180px;" /></td>
           <td><input id="item_preco_${id}" value="${preco}" type="number" min="0" step="1" style="width:140px;" /></td>
           <td><input id="item_ativo_${id}" type="checkbox" ${ativo ? "checked" : ""} /></td>
-          <td><button type="button" onclick="farmSaveItem(${id}, '${codigo.replace(/'/g, "&#39;")}')">Salvar</button></td>
+          <td><button type="button" onclick="farmSaveItem(${id}, '${codigoJs}')">Salvar</button></td>
         </tr>
       `;
     }).join("");
@@ -2442,7 +2542,7 @@ async function farmLoadShopItems() {
       </div>
     `;
   } catch (e) {
-    box.innerHTML = `<div style="color:#ef4444;">Erro: ${escaparHtml(e.message || "falha")}</div>`;
+    farmSetError(box, e, "Loja - Itens");
   }
 }
 
@@ -2457,6 +2557,7 @@ async function farmSaveItem(id, codigo) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ codigo: codigo, nome: nome, preco_ouro: Math.max(0, Math.trunc(preco)), ativo: ativo })
     });
+
     await farmLoadShopItems();
   } catch (e) {
     alert(e.message || "Erro ao salvar item");
@@ -2474,10 +2575,11 @@ async function farmLoadShopPlants() {
 
     const rows = plants.map((pl) => {
       const id = Number(pl.id);
-      const codigo = escaparHtml(pl.codigo);
-      const nome = escaparHtml(pl.nome);
+      const codigo = escaparHtml(String(pl.codigo || ""));
+      const nome = escaparHtml(String(pl.nome || ""));
       const preco = Number(pl.preco_ouro || 0);
       const ativo = Boolean(pl.ativo);
+      const codigoJs = String(pl.codigo || "").replace(/\\\\/g, "\\\\\\\\").replace(/'/g, "\\\\'");
 
       return `
         <tr>
@@ -2485,7 +2587,7 @@ async function farmLoadShopPlants() {
           <td><input id="pl_nome_${id}" value="${nome}" style="width:100%; min-width:180px;" /></td>
           <td><input id="pl_preco_${id}" value="${preco}" type="number" min="0" step="1" style="width:140px;" /></td>
           <td><input id="pl_ativo_${id}" type="checkbox" ${ativo ? "checked" : ""} /></td>
-          <td><button type="button" onclick="farmSavePlant(${id}, '${codigo.replace(/'/g, "&#39;")}')">Salvar</button></td>
+          <td><button type="button" onclick="farmSavePlant(${id}, '${codigoJs}')">Salvar</button></td>
         </tr>
       `;
     }).join("");
@@ -2507,7 +2609,7 @@ async function farmLoadShopPlants() {
       </div>
     `;
   } catch (e) {
-    box.innerHTML = `<div style="color:#ef4444;">Erro: ${escaparHtml(e.message || "falha")}</div>`;
+    farmSetError(box, e, "Loja - Plantas");
   }
 }
 
@@ -2522,28 +2624,18 @@ async function farmSavePlant(id, codigo) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ codigo: codigo, nome: nome, preco_ouro: Math.max(0, Math.trunc(preco)), ativo: ativo })
     });
+
     await farmLoadShopPlants();
   } catch (e) {
     alert(e.message || "Erro ao salvar planta");
   }
 }
 
-// Auto-carrega quando entrar na secao farm
 const _origMostrarSecaoAdmin = typeof mostrarSecaoAdmin === "function" ? mostrarSecaoAdmin : null;
 if (_origMostrarSecaoAdmin) {
-  mostrarSecaoAdmin = function(secao) {
+  mostrarSecaoAdmin = function (secao) {
     _origMostrarSecaoAdmin(secao);
-    if (secao === "farm") {
-      farmRefreshAll(); farmSyncMaintenanceButton();
-    }
+    if (secao === "farm") farmRefreshAll();
   };
 }
 
-
-async function farmSyncMaintenanceButton() {
-  try {
-    const cur = await farmFetchJson("https://sgiptv.com.br/farm/api/admin/maintenance");
-    const b = document.getElementById("farmBtnMaintenance");
-    if (b) b.textContent = "Manutencao: " + (cur.enabled ? "ON" : "OFF");
-  } catch {}
-}
