@@ -2506,8 +2506,6 @@ function farmRenderEvents() {
 }
 async function farmRefreshAll() {
   await farmSyncMaintenanceButton();
-  // Render events UI once
-  farmRenderEvents();
   // Load current tab
   farmShowTab(_farmActiveTab || 'users');
 }
