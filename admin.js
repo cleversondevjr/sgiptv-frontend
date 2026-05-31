@@ -2745,6 +2745,9 @@ async function farmLoadShopItems() {
       const codigo = escaparHtml(String(it.codigo || ""));
       const nome = escaparHtml(String(it.nome || ""));
       const preco = Number(it.preco_ouro || 0);
+      const precoDiam = Number(it.preco_diamantes || 0);
+      const vida = Number(it.vida_segundos || 0);
+      const colheita = Number(it.colheita_ouro || 0);
       const ativo = Boolean(it.ativo);
       const codigoJs = String(it.codigo || "").replace(/\\\\/g, "\\\\\\\\").replace(/'/g, "\\\\'");
 
@@ -2752,7 +2755,10 @@ async function farmLoadShopItems() {
         <tr>
           <td>${codigo}</td>
           <td><input id="item_nome_${id}" value="${nome}" style="width:100%; min-width:180px;" /></td>
-          <td><input id="item_preco_${id}" value="${preco}" type="number" min="0" step="1" style="width:140px;" /></td>
+          <td><input id="item_preco_ouro_${id}" value="${Math.max(0, Math.trunc(preco))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="item_preco_diam_${id}" value="${Math.max(0, Math.trunc(precoDiam))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="item_vida_${id}" value="${Math.max(0, Math.trunc(vida))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="item_colheita_${id}" value="${Math.max(0, Math.trunc(colheita))}" type="number" min="0" step="1" style="width:120px;" /></td>
           <td><input id="item_ativo_${id}" type="checkbox" ${ativo ? "checked" : ""} /></td>
           <td><button type="button" onclick="farmSaveItem(${id}, '${codigoJs}')">Salvar</button></td>
         </tr>
@@ -2786,13 +2792,25 @@ async function farmLoadShopItems() {
 async function farmSaveItem(id, codigo) {
   try {
     const nome = String(document.getElementById("item_nome_" + id)?.value || "").trim();
-    const preco = Number(document.getElementById("item_preco_" + id)?.value || 0);
+    const precoOuro = Number(document.getElementById("item_preco_ouro_" + id)?.value || 0);
+    const precoDiam = Number(document.getElementById("item_preco_diam_" + id)?.value || 0);
+    const vida = Number(document.getElementById("item_vida_" + id)?.value || 0);
+    const colheita = Number(document.getElementById("item_colheita_" + id)?.value || 0);
     const ativo = Boolean(document.getElementById("item_ativo_" + id)?.checked);
+
+    const body = new URLSearchParams();
+    body.set("codigo", String(codigo || "").trim());
+    body.set("nome", nome);
+    body.set("preco_ouro", String(Math.max(0, Math.trunc(precoOuro))));
+    body.set("preco_diamantes", String(Math.max(0, Math.trunc(precoDiam))));
+    body.set("vida_segundos", String(Math.max(0, Math.trunc(vida))));
+    body.set("colheita_ouro", String(Math.max(0, Math.trunc(colheita))));
+    body.set("ativo", ativo ? "true" : "false");
 
     await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/items", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigo: codigo, nome: nome, preco_ouro: Math.max(0, Math.trunc(preco)), ativo: ativo })
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body
     });
 
     await farmLoadShopItems();
@@ -2800,6 +2818,7 @@ async function farmSaveItem(id, codigo) {
     alert(e.message || "Erro ao salvar item");
   }
 }
+
 
 async function farmLoadShopPlants() {
   const box = document.getElementById("farmPlantsBox");
@@ -2868,18 +2887,19 @@ async function farmSavePlant(id, codigo) {
     const colheita = Number(document.getElementById("pl_colheita_" + id)?.value || 0);
     const ativo = Boolean(document.getElementById("pl_ativo_" + id)?.checked);
 
+    const body = new URLSearchParams();
+    body.set("codigo", String(codigo || "").trim());
+    body.set("nome", nome);
+    body.set("preco_ouro", String(Math.max(0, Math.trunc(precoOuro))));
+    body.set("preco_diamantes", String(Math.max(0, Math.trunc(precoDiam))));
+    body.set("vida_segundos", String(Math.max(0, Math.trunc(vida))));
+    body.set("colheita_ouro", String(Math.max(0, Math.trunc(colheita))));
+    body.set("ativo", ativo ? "true" : "false");
+
     await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/plants", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        codigo: codigo,
-        nome: nome,
-        preco_ouro: Math.max(0, Math.trunc(precoOuro)),
-        preco_diamantes: Math.max(0, Math.trunc(precoDiam)),
-        vida_segundos: Math.max(0, Math.trunc(vida)),
-        colheita_ouro: Math.max(0, Math.trunc(colheita)),
-        ativo: ativo
-      })
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body
     });
 
     await farmLoadShopPlants();
@@ -2887,6 +2907,7 @@ async function farmSavePlant(id, codigo) {
     alert(e.message || "Erro ao salvar planta");
   }
 }
+
 
 const _origMostrarSecaoAdmin = typeof mostrarSecaoAdmin === "function" ? mostrarSecaoAdmin : null;
 if (_origMostrarSecaoAdmin) {
