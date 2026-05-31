@@ -2746,8 +2746,8 @@ async function farmLoadShopItems() {
       const nome = escaparHtml(String(it.nome || ""));
       const preco = Number(it.preco_ouro || 0);
       const precoDiam = Number(it.preco_diamantes || 0);
-      const vida = Number(it.vida_segundos || 0);
-      const colheita = Number(it.colheita_ouro || 0);
+      const vida = Number(it.tempo_segundos || 0);
+      const colheita = Number(it.recompensa_ouro || 0);
       const ativo = Boolean(it.ativo);
       const codigoJs = String(it.codigo || "").replace(/\\\\/g, "\\\\\\\\").replace(/'/g, "\\\\'");
 
@@ -2757,8 +2757,8 @@ async function farmLoadShopItems() {
           <td><input id="item_nome_${id}" value="${nome}" style="width:100%; min-width:180px;" /></td>
           <td><input id="item_preco_ouro_${id}" value="${Math.max(0, Math.trunc(preco))}" type="number" min="0" step="1" style="width:120px;" /></td>
           <td><input id="item_preco_diam_${id}" value="${Math.max(0, Math.trunc(precoDiam))}" type="number" min="0" step="1" style="width:120px;" /></td>
-          <td><input id="item_vida_${id}" value="${Math.max(0, Math.trunc(vida))}" type="number" min="0" step="1" style="width:120px;" /></td>
-          <td><input id="item_colheita_${id}" value="${Math.max(0, Math.trunc(colheita))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="item_tempo_${id}" value="${Math.max(0, Math.trunc(vida))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="item_recompensa_${id}" value="${Math.max(0, Math.trunc(colheita))}" type="number" min="0" step="1" style="width:120px;" /></td>
           <td><input id="item_ativo_${id}" type="checkbox" ${ativo ? "checked" : ""} /></td>
           <td><button type="button" onclick="farmSaveItem(${id}, '${codigoJs}')">Salvar</button></td>
         </tr>
@@ -2794,8 +2794,8 @@ async function farmSaveItem(id, codigo) {
     const nome = String(document.getElementById("item_nome_" + id)?.value || "").trim();
     const precoOuro = Number(document.getElementById("item_preco_ouro_" + id)?.value || 0);
     const precoDiam = Number(document.getElementById("item_preco_diam_" + id)?.value || 0);
-    const vida = Number(document.getElementById("item_vida_" + id)?.value || 0);
-    const colheita = Number(document.getElementById("item_colheita_" + id)?.value || 0);
+    const vida = Number(document.getElementById("item_tempo_" + id)?.value || 0);
+    const colheita = Number(document.getElementById("item_recompensa_" + id)?.value || 0);
     const ativo = Boolean(document.getElementById("item_ativo_" + id)?.checked);
 
     const body = new URLSearchParams();
@@ -2803,8 +2803,8 @@ async function farmSaveItem(id, codigo) {
     body.set("nome", nome);
     body.set("preco_ouro", String(Math.max(0, Math.trunc(precoOuro))));
     body.set("preco_diamantes", String(Math.max(0, Math.trunc(precoDiam))));
-    body.set("vida_segundos", String(Math.max(0, Math.trunc(vida))));
-    body.set("colheita_ouro", String(Math.max(0, Math.trunc(colheita))));
+    body.set("tempo_segundos", String(Math.max(0, Math.trunc(vida))));
+    body.set("recompensa_ouro", String(Math.max(0, Math.trunc(colheita))));
     body.set("ativo", ativo ? "true" : "false");
 
     await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/items", {
@@ -2835,8 +2835,8 @@ async function farmLoadShopPlants() {
       const nome = escaparHtml(String(pl.nome || ""));
       const precoOuro = Number(pl.preco_ouro || 0);
       const precoDiam = Number(pl.preco_diamantes || 0);
-      const vida = Number(pl.vida_segundos || 0);
-      const colheita = Number(pl.colheita_ouro || 0);
+      const vida = Number(pl.tempo_segundos || 0);
+      const colheita = Number(pl.recompensa_ouro || 0);
       const ativo = Boolean(pl.ativo);
       const codigoJs = String(pl.codigo || "").split("\\").join("\\\\").split("'").join("\\'");
 
@@ -2846,8 +2846,8 @@ async function farmLoadShopPlants() {
           <td><input id="pl_nome_${id}" value="${nome}" style="width:100%; min-width:180px;" /></td>
           <td><input id="pl_preco_ouro_${id}" value="${Math.max(0, Math.trunc(precoOuro))}" type="number" min="0" step="1" style="width:120px;" /></td>
           <td><input id="pl_preco_diam_${id}" value="${Math.max(0, Math.trunc(precoDiam))}" type="number" min="0" step="1" style="width:120px;" /></td>
-          <td><input id="pl_vida_${id}" value="${Math.max(0, Math.trunc(vida))}" type="number" min="0" step="1" style="width:120px;" /></td>
-          <td><input id="pl_colheita_${id}" value="${Math.max(0, Math.trunc(colheita))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="pl_tempo_${id}" value="${Math.max(0, Math.trunc(vida))}" type="number" min="0" step="1" style="width:120px;" /></td>
+          <td><input id="pl_recompensa_${id}" value="${Math.max(0, Math.trunc(colheita))}" type="number" min="0" step="1" style="width:120px;" /></td>
           <td><input id="pl_ativo_${id}" type="checkbox" ${ativo ? "checked" : ""} /></td>
           <td><button type="button" onclick="farmSavePlant(${id}, '${codigoJs}')">Salvar</button></td>
         </tr>
@@ -2883,8 +2883,8 @@ async function farmSavePlant(id, codigo) {
     const nome = String(document.getElementById("pl_nome_" + id)?.value || "").trim();
     const precoOuro = Number(document.getElementById("pl_preco_ouro_" + id)?.value || 0);
     const precoDiam = Number(document.getElementById("pl_preco_diam_" + id)?.value || 0);
-    const vida = Number(document.getElementById("pl_vida_" + id)?.value || 0);
-    const colheita = Number(document.getElementById("pl_colheita_" + id)?.value || 0);
+    const vida = Number(document.getElementById("pl_tempo_" + id)?.value || 0);
+    const colheita = Number(document.getElementById("pl_recompensa_" + id)?.value || 0);
     const ativo = Boolean(document.getElementById("pl_ativo_" + id)?.checked);
 
     const body = new URLSearchParams();
@@ -2892,8 +2892,8 @@ async function farmSavePlant(id, codigo) {
     body.set("nome", nome);
     body.set("preco_ouro", String(Math.max(0, Math.trunc(precoOuro))));
     body.set("preco_diamantes", String(Math.max(0, Math.trunc(precoDiam))));
-    body.set("vida_segundos", String(Math.max(0, Math.trunc(vida))));
-    body.set("colheita_ouro", String(Math.max(0, Math.trunc(colheita))));
+    body.set("tempo_segundos", String(Math.max(0, Math.trunc(vida))));
+    body.set("recompensa_ouro", String(Math.max(0, Math.trunc(colheita))));
     body.set("ativo", ativo ? "true" : "false");
 
     await farmFetchJson("https://sgiptv.com.br/farm/api/admin/shop/plants", {
