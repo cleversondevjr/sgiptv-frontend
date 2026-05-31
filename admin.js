@@ -2460,7 +2460,7 @@ function farmRenderEvents() {
         <label style="font-size:12px; opacity:.8;">Horas</label><br/>
         <input id="farmEvtHoras" type="number" value="48" min="1" step="1" style="width:120px;" />
       </div>
-      <button type="button" onclick="farmGrantEvent()">Aplicar</button>
+      <button type="button" onclick="farmGrantEvent()" style="padding:8px 14px; min-width:120px; width:auto;">Aplicar</button>
     </div>
 
     <div style="height:14px;"></div>
@@ -2486,7 +2486,7 @@ function farmRenderEvents() {
         <label style="font-size:12px; opacity:.8;">Max usos</label><br/>
         <input id="farmCupomMax" type="number" value="0" min="0" step="1" style="width:120px;" />
       </div>
-      <button type="button" onclick="farmCreateCoupon()">Salvar</button>
+      <button type="button" onclick="farmCreateCoupon()" style="padding:8px 14px; min-width:120px; width:auto;">Salvar</button>
     </div>
 
     <div style="height:14px;"></div>
@@ -2500,7 +2500,7 @@ function farmRenderEvents() {
         <label style="font-size:12px; opacity:.8;">Texto</label><br/>
         <input id="farmMsgTexto" value="" style="width:100%;" placeholder="Manutencao as 22h" />
       </div>
-      <button type="button" onclick="farmSendMessage()">Enviar</button>
+      <button type="button" onclick="farmSendMessage()" style="padding:8px 14px; min-width:120px; width:auto;">Enviar</button>
     </div>
   `;
 }
