@@ -2917,3 +2917,21 @@ if (_origMostrarSecaoAdmin) {
   };
 }
 
+
+const _mostrarSecaoComCopa = mostrarSecaoAdmin;
+mostrarSecaoAdmin = function (secao) {
+  const copa = document.getElementById("copa");
+  const btnCopa = document.getElementById("btnCopa");
+
+  if (secao === "copa") {
+    document.querySelectorAll(".admin-section").forEach(el => el.classList.add("admin-hidden"));
+    document.querySelectorAll(".admin-nav > button").forEach(el => el.classList.remove("nav-active"));
+    if (copa) copa.classList.remove("admin-hidden");
+    if (btnCopa) btnCopa.classList.add("nav-active");
+    return;
+  }
+
+  if (copa) copa.classList.add("admin-hidden");
+  if (btnCopa) btnCopa.classList.remove("nav-active");
+  _mostrarSecaoComCopa(secao);
+};
